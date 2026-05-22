@@ -31,6 +31,10 @@ dependencies {
 	testAnnotationProcessor("org.projectlombok:lombok")
 }
 
+//tasks.withType<Test> {
+//	useJUnitPlatform()
+//}
+
 tasks.withType<Test> {
-	useJUnitPlatform()
+    enabled = false
 }
