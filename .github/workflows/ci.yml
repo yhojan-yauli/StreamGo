@@ -1,0 +1,36 @@
+name: StreamGo CI
+
+on:
+  push:
+    branches:
+      - main
+      - backend
+
+  pull_request:
+    branches:
+      - main
+      - backend
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Entrar al backend
+        run: cd StreamGo-backend
+
+      - name: Dar permisos a Gradle
+        run: chmod +x StreamGo-backend/gradlew
+
+      - name: Compilar proyecto
+        run: cd StreamGo-backend && ./gradlew build
