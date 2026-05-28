@@ -11,6 +11,10 @@ on:
       - main
       - backend
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
