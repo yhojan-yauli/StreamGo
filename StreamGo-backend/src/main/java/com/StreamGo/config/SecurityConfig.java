@@ -13,10 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @RequiredArgsConstructor
-
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -26,29 +24,45 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // Desactivar CSRF para APIs REST
                 .csrf(csrf -> csrf.disable())
 
+                // JWT sin sesiones
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // Configuración de rutas
                 .authorizeHttpRequests(auth -> auth
 
+                        // Webhooks públicos
                         .requestMatchers("/webhook/**")
                         .permitAll()
 
-
+                        // Auth y Swagger públicos
                         .requestMatchers(
                                 "/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+                        // Rutas ADMIN
                         .requestMatchers("/admin/**")
                         .hasRole("ADMIN")
 
-                        .requestMatchers("/cliente/**")
+                        // Catálogo de contenidos
+                        .requestMatchers("/contenidos/**")
+                        .hasAnyRole("CLIENTE", "ADMIN")
+
+                        // Reproducción
+                        .requestMatchers("/reproduccion/**")
                         .hasRole("CLIENTE")
 
+                        // Otras rutas requieren login
                         .anyRequest().authenticated()
                 )
 
+                // Filtro JWT
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
