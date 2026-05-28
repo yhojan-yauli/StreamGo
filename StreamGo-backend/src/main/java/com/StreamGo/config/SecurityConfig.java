@@ -4,6 +4,7 @@ import com.StreamGo.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -45,24 +46,28 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
+                        
+                        // Permisos de Noticias
+                        .requestMatchers(HttpMethod.GET, "/noticias/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/noticias/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/noticias/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/noticias/**").hasAnyRole("ADMIN", "CLIENTE")
+                        .requestMatchers(HttpMethod.DELETE, "/noticias/**").hasRole("ADMIN")
+                                        
                         // Rutas ADMIN
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // Catálogo de contenidos
-                        .requestMatchers("/contenidos/**")
-                        .hasAnyRole("CLIENTE", "ADMIN")
+                        .requestMatchers("/contenidos/**").hasAnyRole("CLIENTE", "ADMIN")
 
                         // Reproducción
-                        .requestMatchers("/reproduccion/**")
-                        .hasRole("CLIENTE")
+                        .requestMatchers("/reproduccion/**").hasRole("CLIENTE")
 
                         // Otras rutas requieren login
                         .anyRequest().authenticated()
                 )
-
-                // Filtro JWT
+                
+                // Filtro JWT antes del filtro de usuario/contraseña
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -82,7 +87,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
     ) throws Exception {
-
         return config.getAuthenticationManager();
     }
 }
