@@ -44,6 +44,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Obtener email
         String email = jwtService.extractUsername(token);
 
+        if (!jwtService.isTokenValid(token, email)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Obtener rol
         String rol = jwtService.extractRole(token);
 
