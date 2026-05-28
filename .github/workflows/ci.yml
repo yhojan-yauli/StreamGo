@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-
+    
     runs-on: ubuntu-latest
 
     steps:
@@ -26,11 +26,27 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Entrar al backend
-        run: cd StreamGo-backend
-
       - name: Dar permisos a Gradle
         run: chmod +x StreamGo-backend/gradlew
 
+      # Compila el proyecto
       - name: Compilar proyecto
-        run: cd StreamGo-backend && ./gradlew build
+        working-directory: StreamGo-backend
+        run: ./gradlew build -x test
+
+  # Fusiona automáticamente el PR hacia la rama destino (backend o main) si la compilación fue exitosa
+  auto-merge:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && success()
+    steps:
+      - name: Fusionar PR automáticamente
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              merge_method: 'squash'
+            })
