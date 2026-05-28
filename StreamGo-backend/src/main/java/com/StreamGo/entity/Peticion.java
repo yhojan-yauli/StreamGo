@@ -20,10 +20,10 @@ public class Peticion {
     @Column(nullable = false)
     private String titulo;
 
-    // descripcion
+    // descripcion de la pelicula
     @Column(length = 1000)
     private String descripcion;
 
-    // imagen
+    // imagen/poster
     private String imagenUrl;
 }
