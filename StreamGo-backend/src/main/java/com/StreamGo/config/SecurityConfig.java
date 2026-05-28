@@ -14,10 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @RequiredArgsConstructor
-
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -27,56 +25,49 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // Desactivar CSRF para APIs REST
                 .csrf(csrf -> csrf.disable())
 
+                // JWT sin sesiones
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // Configuración de rutas
                 .authorizeHttpRequests(auth -> auth
 
+                        // Webhooks públicos
                         .requestMatchers("/webhook/**")
                         .permitAll()
 
-
+                        // Auth y Swagger públicos
                         .requestMatchers(
                                 "/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        
+                        // Permisos de Noticias
+                        .requestMatchers(HttpMethod.GET, "/noticias/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/noticias/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/noticias/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/noticias/**").hasAnyRole("ADMIN", "CLIENTE")
+                        .requestMatchers(HttpMethod.DELETE, "/noticias/**").hasRole("ADMIN")
+                                        
+                        // Rutas ADMIN
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "/noticias/**")
-                        .permitAll()
+                        // Catálogo de contenidos
+                        .requestMatchers("/contenidos/**").hasAnyRole("CLIENTE", "ADMIN")
 
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/noticias/**"
-                        ).hasRole("ADMIN")
+                        // Reproducción
+                        .requestMatchers("/reproduccion/**").hasRole("CLIENTE")
 
-                        .requestMatchers(
-                                HttpMethod.PUT,
-                                "/noticias/**"
-                        ).hasRole("ADMIN")
-
-                        .requestMatchers(
-                                HttpMethod.PATCH,
-                                "/noticias/**"
-                        ).hasAnyRole("ADMIN", "CLIENTE")
-
-                        .requestMatchers(
-                                HttpMethod.DELETE,
-                                "/noticias/**"
-                        ).hasRole("ADMIN")
-
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
-
-                        .requestMatchers("/cliente/**")
-                        .hasRole("CLIENTE")
-
+                        // Otras rutas requieren login
                         .anyRequest().authenticated()
                 )
-
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
+                
+                // Filtro JWT antes del filtro de usuario/contraseña
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -96,7 +87,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
     ) throws Exception {
-
         return config.getAuthenticationManager();
     }
 }
