@@ -35,7 +35,7 @@ public class ContenidoService {
                 .promedioCalificacion(0.0)
                 .totalCalificaciones(0)
                 .totalReproducciones(0)
-                .estado(EstadoContenido.ACTIVO)
+                .estado(request.getEstado() != null ? request.getEstado() : EstadoContenido.ACTIVO)
                 .build();
 
         return mapToResponse(contenidoRepository.save(contenido));
@@ -48,16 +48,34 @@ public class ContenidoService {
                 .toList();
     }
 
-    public List<ContenidoResponse> listarActivos() {
-        return contenidoRepository.findByEstado(EstadoContenido.ACTIVO)
+    // Público: usuario sin login
+    public List<ContenidoResponse> listarSinLogin() {
+        return contenidoRepository.findByEstado(EstadoContenido.SINLOGIN)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
     }
 
-    /// Actualiza los datos del contenido desde el CRUD del administrador.
-    /// Aquí el admin puede cambiar portada, video, categoría, si es gratuito,
-    /// y también marcarlo manualmente como recomendado o tendencia.
+    // Cliente sin suscripción: puede ver INACTIVO y SINLOGIN
+    public List<ContenidoResponse> listarParaClienteSinSuscripcion() {
+        return contenidoRepository.findAll()
+                .stream()
+                .filter(c ->
+                        c.getEstado() == EstadoContenido.INACTIVO ||
+                        c.getEstado() == EstadoContenido.SINLOGIN
+                )
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    // Cliente con suscripción: puede ver todo
+    public List<ContenidoResponse> listarParaClienteConSuscripcion() {
+        return contenidoRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     public ContenidoResponse actualizarContenido(
             Long id,
             ActualizarContenidoRequest request
@@ -78,19 +96,59 @@ public class ContenidoService {
         contenido.setRecomendado(request.getRecomendado());
         contenido.setTendencia(request.getTendencia());
 
+        if (request.getEstado() != null) {
+            contenido.setEstado(request.getEstado());
+        }
+
         return mapToResponse(contenidoRepository.save(contenido));
     }
 
-    // Desactivación lógica: no borra el contenido de la base de datos,
-    // solo lo oculta para los clientes.
-    public void desactivarContenido(Long id) {
+    // Ahora no significa borrar, sino cambiar el acceso del contenido.
+    public void cambiarEstadoContenido(Long id, EstadoContenido estado) {
 
         Contenido contenido = contenidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
 
-        contenido.setEstado(EstadoContenido.INACTIVO);
-
+        contenido.setEstado(estado);
         contenidoRepository.save(contenido);
+    }
+
+    public void desactivarContenido(Long id) {
+        cambiarEstadoContenido(id, EstadoContenido.INACTIVO);
+    }
+
+    public List<ContenidoResponse> listarPorCategoria(String categoria) {
+        return contenidoRepository.findAll()
+                .stream()
+                .filter(c -> c.getCategoria() != null &&
+                        c.getCategoria().equalsIgnoreCase(categoria))
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<ContenidoResponse> listarRecomendados() {
+        return contenidoRepository.findAll()
+                .stream()
+                .filter(c -> Boolean.TRUE.equals(c.getRecomendado()))
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<ContenidoResponse> listarTendencias() {
+        return contenidoRepository.findAll()
+                .stream()
+                .filter(c -> Boolean.TRUE.equals(c.getTendencia()))
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<ContenidoResponse> buscarPorTitulo(String titulo) {
+        return contenidoRepository.findAll()
+                .stream()
+                .filter(c -> c.getTitulo() != null &&
+                        c.getTitulo().toLowerCase().contains(titulo.toLowerCase()))
+                .map(this::mapToResponse)
+                .toList();
     }
 
     private ContenidoResponse mapToResponse(Contenido contenido) {
@@ -108,49 +166,10 @@ public class ContenidoService {
                 .gratuito(contenido.getGratuito())
                 .recomendado(contenido.getRecomendado())
                 .tendencia(contenido.getTendencia())
+                .estado(contenido.getEstado())
                 .promedioCalificacion(contenido.getPromedioCalificacion())
                 .totalCalificaciones(contenido.getTotalCalificaciones())
                 .totalReproducciones(contenido.getTotalReproducciones())
                 .build();
     }
-
-    public List<ContenidoResponse> listarPorCategoria(String categoria) {
-    return contenidoRepository.findByCategoriaAndEstado(
-                    categoria,
-                    EstadoContenido.ACTIVO
-            )
-            .stream()
-            .map(this::mapToResponse)
-            .toList();
-}
-
-public List<ContenidoResponse> listarRecomendados() {
-    return contenidoRepository.findByRecomendadoTrueAndEstado(
-                    EstadoContenido.ACTIVO
-            )
-            .stream()
-            .map(this::mapToResponse)
-            .toList();
-}
-
-public List<ContenidoResponse> listarTendencias() {
-    return contenidoRepository.findByTendenciaTrueAndEstado(
-                    EstadoContenido.ACTIVO
-            )
-            .stream()
-            .map(this::mapToResponse)
-            .toList();
-}
-
-public List<ContenidoResponse> buscarPorTitulo(String titulo) {
-    return contenidoRepository.findByTituloContainingIgnoreCaseAndEstado(
-                    titulo,
-                    EstadoContenido.ACTIVO
-            )
-            .stream()
-            .map(this::mapToResponse)
-            .toList();
-}
-
-
 }

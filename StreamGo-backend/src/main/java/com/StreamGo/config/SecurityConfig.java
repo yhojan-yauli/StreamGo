@@ -46,15 +46,19 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+                        // Contenido público SIN LOGIN
+                        .requestMatchers("/public/**")
+                        .permitAll()
+
                         // Rutas ADMIN
                         .requestMatchers("/admin/**")
                         .hasRole("ADMIN")
 
-                        // Catálogo de contenidos
+                        // Catálogo para usuarios logueados
                         .requestMatchers("/contenidos/**")
                         .hasAnyRole("CLIENTE", "ADMIN")
 
-                        // Reproducción
+                        // Reproducción para usuarios logueados
                         .requestMatchers("/reproduccion/**")
                         .hasRole("CLIENTE")
 

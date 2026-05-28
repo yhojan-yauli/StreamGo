@@ -1,5 +1,6 @@
 package com.StreamGo.dto.response;
 
+import com.StreamGo.entity.Enum.EstadoContenido;
 import com.StreamGo.entity.Enum.TipoContenido;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class ContenidoResponse {
     private Boolean gratuito;
     private Boolean recomendado;
     private Boolean tendencia;
-
+    private EstadoContenido estado;
     private Double promedioCalificacion;
     private Integer totalCalificaciones;
     private Integer totalReproducciones;
