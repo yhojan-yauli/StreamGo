@@ -1,12 +1,16 @@
 package com.StreamGo.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(
-    name = "peticiones",
+    name = "peticiones_usuario",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"usuario_id", "pelicula"})
+        @UniqueConstraint(columnNames = {
+                "usuario_id",
+                "peticion_id"
+        })
     }
 )
 @Getter
@@ -14,17 +18,19 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class petiuciones {
+public class PeticionUsuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // usuario que votó
+    // usuario
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    // película elegida
-    @Column(nullable = false)
-    private String pelicula;
+    // pelicula seleccionada
+    @ManyToOne
+    @JoinColumn(name = "peticion_id")
+    private Peticion peticion;
 }
