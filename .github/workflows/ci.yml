@@ -1,11 +1,6 @@
 name: StreamGo CI
 
 on:
-  push:
-    branches:
-      - main
-      - backend
-
   pull_request:
     branches:
       - main
@@ -13,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - name: Clonar repositorio
         uses: actions/checkout@v4
@@ -34,3 +27,19 @@ jobs:
 
       - name: Compilar proyecto
         run: cd StreamGo-backend && ./gradlew build
+
+  auto-merge:
+    needs: build  # Solo se ejecuta si el build tiene éxito
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && success()
+    steps:
+      - name: Fusionar PR automáticamente
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              merge_method: 'squash'  # O 'merge' o 'rebase'
+            })
