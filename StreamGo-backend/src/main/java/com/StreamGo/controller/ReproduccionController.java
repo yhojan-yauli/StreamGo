@@ -1,11 +1,16 @@
 package com.StreamGo.controller;
 
-import com.StreamGo.dto.response.ReproduccionResponse;
-import com.StreamGo.service.ReproduccionService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.StreamGo.dto.response.ReproduccionResponse;
+import com.StreamGo.service.ReproduccionService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/reproduccion")
@@ -16,7 +21,7 @@ public class ReproduccionController {
 
     @PostMapping("/{contenidoId}")
     public ResponseEntity<ReproduccionResponse> reproducir(
-            @PathVariable Long contenidoId,
+            @PathVariable("contenidoId") Long contenidoId,
             Authentication authentication
     ) {
 
