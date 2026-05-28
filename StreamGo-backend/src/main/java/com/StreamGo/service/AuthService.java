@@ -35,7 +35,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .rol(Rol.CLIENTE)
-                .estado(EstadoUsuario.ACTIVO)
+                .estado(EstadoUsuario.INACTIVO)
                 .fechaRegistro(LocalDateTime.now())
                 .build();
 
