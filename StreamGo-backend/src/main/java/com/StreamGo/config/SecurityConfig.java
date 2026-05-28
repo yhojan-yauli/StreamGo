@@ -4,6 +4,7 @@ import com.StreamGo.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -40,6 +41,29 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/noticias/**")
+                        .permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/noticias/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/noticias/**"
+                        ).hasRole("ADMIN")
+
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/noticias/**"
+                        ).hasAnyRole("ADMIN", "CLIENTE")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/noticias/**"
+                        ).hasRole("ADMIN")
+
                         .requestMatchers("/admin/**")
                         .hasRole("ADMIN")
 
@@ -47,6 +71,10 @@ public class SecurityConfig {
                         .hasRole("CLIENTE")
 
                         .anyRequest().authenticated()
+                )
+
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .addFilterBefore(
