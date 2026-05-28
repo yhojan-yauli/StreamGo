@@ -15,10 +15,19 @@ public class ContenidoClienteController {
 
     private final ContenidoService contenidoService;
 
+    // Usuario logueado sin suscripción: ve SINLOGIN e INACTIVO
     @GetMapping
-    public ResponseEntity<List<ContenidoResponse>> listarActivos() {
+    public ResponseEntity<List<ContenidoResponse>> listarClienteSinSuscripcion() {
         return ResponseEntity.ok(
-                contenidoService.listarActivos()
+                contenidoService.listarParaClienteSinSuscripcion()
+        );
+    }
+
+    // Usuario logueado con suscripción: ve todo
+    @GetMapping("/suscriptor")
+    public ResponseEntity<List<ContenidoResponse>> listarClienteConSuscripcion() {
+        return ResponseEntity.ok(
+                contenidoService.listarParaClienteConSuscripcion()
         );
     }
 

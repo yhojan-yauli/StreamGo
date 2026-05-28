@@ -1,5 +1,6 @@
 package com.StreamGo.dto.request;
 
+import com.StreamGo.entity.Enum.EstadoContenido;
 import com.StreamGo.entity.Enum.TipoContenido;
 import lombok.Data;
 
@@ -31,4 +32,6 @@ public class CrearContenidoRequest {
     private Boolean recomendado;
 
     private Boolean tendencia;
+
+    private EstadoContenido estado;
 }
