@@ -1,22 +1,27 @@
 package com.StreamGo.service;
 
+import java.time.LocalDateTime;
+
+import org.springframework.stereotype.Service;
+
 import com.StreamGo.dto.response.ReproduccionResponse;
 import com.StreamGo.entity.Contenido;
+import com.StreamGo.entity.Enum.EstadoContenido;
+import com.StreamGo.entity.Enum.EstadoSuscripcion;
+import com.StreamGo.entity.Enum.EstadoUsuario;
 import com.StreamGo.entity.HistorialReproduccion;
 import com.StreamGo.entity.Suscripcion;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.entity.Enum.EstadoContenido;
-import com.StreamGo.entity.Enum.EstadoSuscripcion;
 import com.StreamGo.repository.ContenidoRepository;
 import com.StreamGo.repository.HistorialReproduccionRepository;
 import com.StreamGo.repository.SuscripcionRepository;
 import com.StreamGo.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ReproduccionService {
 
@@ -27,9 +32,9 @@ public class ReproduccionService {
 
     /*
      * Usuario logueado:
-     * - SINLOGIN: permitido
-     * - INACTIVO: permitido sin suscripción
-     * - ACTIVO: requiere suscripción activa
+     * - Usuario ACTIVO: puede reproducir ACTIVO, INACTIVO y SINLOGIN.
+     * - Usuario INACTIVO: solo puede reproducir INACTIVO y SINLOGIN.
+     * - Usuario SUSPENDIDO: no puede reproducir contenido.
      */
     public ReproduccionResponse reproducir(
             Long contenidoId,
@@ -41,8 +46,34 @@ public class ReproduccionService {
         Contenido contenido = contenidoRepository.findById(contenidoId)
                 .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
 
-        if (contenido.getEstado() == EstadoContenido.ACTIVO) {
-            validarSuscripcionActiva(usuario);
+        log.info(
+                "Usuario {} intenta reproducir '{}' (ID={})",
+                email,
+                contenido.getTitulo(),
+                contenidoId
+        );
+
+        if (usuario.getEstado() == EstadoUsuario.SUSPENDIDO) {
+
+            log.warn(
+                    "Usuario {} suspendido intentó reproducir contenido ID {}",
+                    email,
+                    contenidoId
+            );
+
+            throw new RuntimeException("Tu cuenta se encuentra suspendida");
+        }
+
+        if (usuario.getEstado() == EstadoUsuario.INACTIVO &&
+                contenido.getEstado() == EstadoContenido.ACTIVO) {
+
+            log.warn(
+                    "Usuario {} sin suscripción intentó acceder a contenido premium '{}'",
+                    email,
+                    contenido.getTitulo()
+            );
+
+            throw new RuntimeException("Este contenido requiere una suscripción activa");
         }
 
         aumentarReproducciones(contenido);
@@ -56,6 +87,12 @@ public class ReproduccionService {
                 .build();
 
         historialRepository.save(historial);
+
+        log.info(
+                "Reproducción iniciada correctamente. Usuario: {} | Contenido: {}",
+                email,
+                contenido.getTitulo()
+        );
 
         return construirRespuesta(
                 contenido,
@@ -72,11 +109,27 @@ public class ReproduccionService {
         Contenido contenido = contenidoRepository.findById(contenidoId)
                 .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
 
+        log.info(
+                "Intento de reproducción pública del contenido '{}'",
+                contenido.getTitulo()
+        );
+
         if (contenido.getEstado() != EstadoContenido.SINLOGIN) {
+
+            log.warn(
+                    "Intento de acceso público a contenido restringido '{}'",
+                    contenido.getTitulo()
+            );
+
             throw new RuntimeException("Este contenido requiere iniciar sesión");
         }
 
         aumentarReproducciones(contenido);
+
+        log.info(
+                "Reproducción pública iniciada para '{}'",
+                contenido.getTitulo()
+        );
 
         return construirRespuesta(
                 contenido,
