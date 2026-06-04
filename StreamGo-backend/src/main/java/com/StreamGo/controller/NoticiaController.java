@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controlador REST que expone los endpoints para la gestión de las noticias en la aplicación StreamGo.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/noticias")
@@ -19,6 +22,12 @@ public class NoticiaController {
 
     private final NoticiaService noticiaService;
 
+    /**
+     * Recibe una petición HTTP POST para crear una nueva noticia.
+     *
+     * @param request Cuerpo de la petición que contiene los datos de la noticia.
+     * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} creado y un estado HTTP 201 (CREATED).
+     */
     @PostMapping
     public ResponseEntity<NoticiaResponse> crearNoticia(
             @RequestBody NoticiaRequest request
@@ -28,6 +37,11 @@ public class NoticiaController {
                 .body(noticiaService.crearNoticia(request));
     }
 
+    /**
+     * Recibe una petición HTTP GET para listar todas las noticias sin filtro.
+     *
+     * @return {@link ResponseEntity} con la lista de {@link NoticiaResponse} y un estado HTTP 200 (OK).
+     */
     @GetMapping
     public ResponseEntity<List<NoticiaResponse>> listarNoticias() {
         log.info("Petición REST recibida para LISTAR todas las noticias");
@@ -36,24 +50,12 @@ public class NoticiaController {
         );
     }
 
-    @GetMapping("/ordenadas")
-    public ResponseEntity<List<NoticiaResponse>> listarNoticiasOrdenadas() {
-        log.info("Petición REST recibida para LISTAR noticias ordenadas");
-        return ResponseEntity.ok(
-                noticiaService.listarNoticiasOrdenadas()
-        );
-    }
-
-    @PatchMapping("/{idPost}/fijar")
-    public ResponseEntity<NoticiaResponse> fijarNoticia(
-            @PathVariable Long idPost
-    ) {
-        log.info("Petición REST recibida para MODIFICAR estado fijado de la noticia ID: {}", idPost);
-        return ResponseEntity.ok(
-                noticiaService.fijarNoticia(idPost)
-        );
-    }
-
+    /**
+     * Recibe una petición HTTP GET para obtener una noticia en específico por su identificador.
+     *
+     * @param idPost Identificador único de la noticia en la URL.
+     * @return {@link ResponseEntity} con la {@link NoticiaResponse} encontrada y un estado HTTP 200 (OK).
+     */
     @GetMapping("/{idPost}")
     public ResponseEntity<NoticiaResponse> obtenerNoticia(
             @PathVariable Long idPost
@@ -64,6 +66,12 @@ public class NoticiaController {
         );
     }
 
+    /**
+     * Recibe una petición HTTP GET para obtener todas las noticias asociadas a un autor específico.
+     *
+     * @param idAutor Identificador del autor en la URL.
+     * @return {@link ResponseEntity} con la lista de {@link NoticiaResponse} y un estado HTTP 200 (OK).
+     */
     @GetMapping("/autor/{idAutor}")
     public ResponseEntity<List<NoticiaResponse>> listarPorAutor(
             @PathVariable Long idAutor
@@ -74,6 +82,12 @@ public class NoticiaController {
         );
     }
 
+    /**
+     * Recibe una petición HTTP GET para obtener todas las noticias asociadas a un usuario específico.
+     *
+     * @param idUsuario Identificador del usuario en la URL.
+     * @return {@link ResponseEntity} con la lista de {@link NoticiaResponse} y un estado HTTP 200 (OK).
+     */
     @GetMapping("/usuario/{idUsuario}")
     public ResponseEntity<List<NoticiaResponse>> listarPorUsuario(
             @PathVariable Long idUsuario
@@ -84,6 +98,13 @@ public class NoticiaController {
         );
     }
 
+    /**
+     * Recibe una petición HTTP PUT para actualizar completamente los datos de una noticia.
+     *
+     * @param idPost Identificador único de la noticia a actualizar en la URL.
+     * @param request Cuerpo de la petición que contiene los nuevos datos de la noticia.
+     * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} actualizado y un estado HTTP 200 (OK).
+     */
     @PutMapping("/{idPost}")
     public ResponseEntity<NoticiaResponse> actualizarNoticia(
             @PathVariable Long idPost,
@@ -95,6 +116,12 @@ public class NoticiaController {
         );
     }
 
+    /**
+     * Recibe una petición HTTP PATCH para sumar una reacción a la noticia indicada.
+     *
+     * @param idPost Identificador único de la noticia en la URL.
+     * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} actualizado y un estado HTTP 200 (OK).
+     */
     @PatchMapping("/{idPost}/reaccionar")
     public ResponseEntity<NoticiaResponse> reaccionar(
             @PathVariable Long idPost
@@ -105,6 +132,12 @@ public class NoticiaController {
         );
     }
 
+    /**
+     * Recibe una petición HTTP DELETE para eliminar definitivamente una noticia.
+     *
+     * @param idPost Identificador único de la noticia a eliminar en la URL.
+     * @return {@link ResponseEntity} con un mensaje de confirmación y estado HTTP 200 (OK).
+     */
     @DeleteMapping("/{idPost}")
     public ResponseEntity<String> eliminarNoticia(
             @PathVariable Long idPost
@@ -112,5 +145,35 @@ public class NoticiaController {
         log.info("Petición REST recibida para ELIMINAR la noticia con ID: {}", idPost);
         noticiaService.eliminarNoticia(idPost);
         return ResponseEntity.ok("Noticia eliminada");
+    }
+
+    /**
+     * Recibe una petición HTTP GET para obtener las noticias ordenadas,
+     * priorizando aquellas que están fijadas.
+     *
+     * @return {@link ResponseEntity} con la lista de {@link NoticiaResponse} ordenadas y estado HTTP 200 (OK).
+     */
+    @GetMapping("/ordenadas")
+    public ResponseEntity<List<NoticiaResponse>> listarNoticiasOrdenadas() {
+        log.info("Petición REST recibida para LISTAR noticias ordenadas");
+        return ResponseEntity.ok(
+                noticiaService.listarNoticiasOrdenadas()
+        );
+    }
+
+    /**
+     * Recibe una petición HTTP PATCH para alternar el estado fijado de una noticia específica.
+     *
+     * @param idPost Identificador de la noticia a fijar/desfijar en la URL.
+     * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} actualizado y estado HTTP 200 (OK).
+     */
+    @PatchMapping("/{idPost}/fijar")
+    public ResponseEntity<NoticiaResponse> fijarNoticia(
+            @PathVariable Long idPost
+    ) {
+        log.info("Petición REST recibida para MODIFICAR estado fijado de la noticia ID: {}", idPost);
+        return ResponseEntity.ok(
+                noticiaService.fijarNoticia(idPost)
+        );
     }
 }
