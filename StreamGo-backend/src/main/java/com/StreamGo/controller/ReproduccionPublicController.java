@@ -10,14 +10,23 @@ import com.StreamGo.dto.response.ReproduccionResponse;
 import com.StreamGo.service.ReproduccionService;
 
 import lombok.RequiredArgsConstructor;
-
+/**
+ * Controlador público para mostrar contenidos disponibles sin iniciar sesión.
+ *
+ * Permite que visitantes accedan únicamente a contenidos
+ * configurados con estado SINLOGIN.
+ */
 @RestController
 @RequestMapping("/public/reproduccion")
 @RequiredArgsConstructor
 public class ReproduccionPublicController {
 
     private final ReproduccionService reproduccionService;
-
+/**
+ * Lista los contenidos públicos disponibles para visitantes.
+ *
+ * @return lista de contenidos con estado SINLOGIN.
+ */
     @PostMapping("/{contenidoId}")
     public ResponseEntity<ReproduccionResponse> reproducirPublico(
             @PathVariable("contenidoId") Long contenidoId

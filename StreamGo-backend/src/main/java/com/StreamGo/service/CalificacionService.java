@@ -14,7 +14,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+/**
+ * Servicio encargado de la lógica de calificaciones.
+ *
+ * Permite registrar, actualizar y recalcular el promedio
+ * de calificación de un contenido.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -100,7 +105,11 @@ public class CalificacionService {
                 .mensaje("Calificación registrada correctamente")
                 .build();
     }
-
+/**
+ * Recalcula el promedio de calificación de un contenido.
+ *
+ * @param contenido contenido al que se le actualiza el promedio.
+ */
     private void actualizarPromedio(Contenido contenido) {
 
         log.debug("Actualizando promedio de calificaciones para contenido: {}", contenido.getTitulo());

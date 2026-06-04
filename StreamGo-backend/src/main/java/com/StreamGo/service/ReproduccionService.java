@@ -20,6 +20,14 @@ import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Servicio encargado de gestionar la reproducción
+ * de contenidos dentro de la plataforma StreamGo.
+ *
+ * Permite controlar el acceso según el estado
+ * del usuario y del contenido.
+ */
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -30,12 +38,19 @@ public class ReproduccionService {
     private final SuscripcionRepository suscripcionRepository;
     private final HistorialReproduccionRepository historialRepository;
 
-    /*
-     * Usuario logueado:
-     * - Usuario ACTIVO: puede reproducir ACTIVO, INACTIVO y SINLOGIN.
-     * - Usuario INACTIVO: solo puede reproducir INACTIVO y SINLOGIN.
-     * - Usuario SUSPENDIDO: no puede reproducir contenido.
-     */
+/**
+ * Inicia la reproducción de un contenido para un usuario autenticado.
+ *
+ * Reglas:
+ * - Usuario ACTIVO: acceso total.
+ * - Usuario INACTIVO: acceso a contenido INACTIVO y SINLOGIN.
+ * - Usuario SUSPENDIDO: acceso denegado.
+ *
+ * @param contenidoId identificador del contenido.
+ * @param email correo del usuario autenticado.
+ * @return información de reproducción.
+ */
+
     public ReproduccionResponse reproducir(
             Long contenidoId,
             String email
@@ -100,10 +115,14 @@ public class ReproduccionService {
         );
     }
 
-    /*
-     * Usuario sin login:
-     * Solo puede reproducir contenido SINLOGIN.
-     */
+/**
+ * Reproduce contenido para usuarios sin iniciar sesión.
+ *
+ * Solo permite contenidos con estado SINLOGIN.
+ *
+ * @param contenidoId identificador del contenido público.
+ * @return datos de reproducción pública.
+ */
     public ReproduccionResponse reproducirPublico(Long contenidoId) {
 
         Contenido contenido = contenidoRepository.findById(contenidoId)
@@ -137,6 +156,11 @@ public class ReproduccionService {
         );
     }
 
+/**
+ * Valida si el usuario posee una suscripción activa.
+ *
+ * @param usuario usuario a validar.
+ */
     private void validarSuscripcionActiva(Usuario usuario) {
 
         Suscripcion suscripcion = suscripcionRepository.findByUsuario(usuario)
@@ -151,7 +175,11 @@ public class ReproduccionService {
             throw new RuntimeException("Tu suscripción no está activa o ya expiró");
         }
     }
-
+/**
+ * Incrementa el contador total de reproducciones de un contenido.
+ *
+ * @param contenido contenido reproducido.
+ */
     private void aumentarReproducciones(Contenido contenido) {
 
         contenido.setTotalReproducciones(
@@ -162,7 +190,13 @@ public class ReproduccionService {
 
         contenidoRepository.save(contenido);
     }
-
+/**
+ * Construye la respuesta de reproducción.
+ *
+ * @param contenido contenido reproducido.
+ * @param mensaje mensaje de respuesta.
+ * @return respuesta con datos del contenido reproducido.
+ */
     private ReproduccionResponse construirRespuesta(
             Contenido contenido,
             String mensaje

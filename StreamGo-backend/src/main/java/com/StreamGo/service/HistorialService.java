@@ -10,7 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+/**
+ * Servicio encargado de obtener el historial de reproducción.
+ *
+ * Consulta las reproducciones registradas por usuario
+ * y las transforma en respuestas para el cliente.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -19,6 +24,12 @@ public class HistorialService {
     private final HistorialReproduccionRepository historialRepository;
     private final UsuarioRepository usuarioRepository;
 
+    /**
+     * Obtiene el historial de reproducción para un usuario específico.
+     *
+     * @param email correo del usuario.
+     * @return lista de reproducciones del usuario.
+     */
     public List<HistorialResponse> obtenerHistorial(String email) {
 
         log.debug("Intentando obtener historial para el usuario: {}", email);
@@ -44,7 +55,12 @@ public class HistorialService {
 
         return historial;
     }
-
+/**
+ * Convierte una entidad HistorialReproduccion en HistorialResponse.
+ *
+ * @param historial entidad de historial.
+ * @return respuesta con información del historial.
+ */
     private HistorialResponse mapToResponse(HistorialReproduccion historial) {
 
         log.debug("Mapeando historial ID: {} para contenido: {}", 
