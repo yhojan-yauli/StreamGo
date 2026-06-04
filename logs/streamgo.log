@@ -1,0 +1,55 @@
+2026-06-03T20:39:13.405-05:00  INFO 21260 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Starting StreamGoApplication using Java 21.0.10 with PID 21260 (C:\Users\MI PC\Documents\StreamGo\StreamGo-backend\build\classes\java\main started by MI PC in C:\Users\MI PC\Documents\StreamGo)
+2026-06-03T20:39:13.415-05:00 DEBUG 21260 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-06-03T20:39:13.418-05:00  INFO 21260 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-06-03T20:39:17.176-05:00  INFO 21260 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-03T20:39:17.516-05:00  INFO 21260 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 304 ms. Found 9 JPA repository interfaces.
+2026-06-03T20:39:19.416-05:00  INFO 21260 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-03T20:39:19.461-05:00  INFO 21260 --- [StreamGo] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-03T20:39:19.462-05:00  INFO 21260 --- [StreamGo] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-03T20:39:19.888-05:00  INFO 21260 --- [StreamGo] [main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 6063 ms
+2026-06-03T20:39:20.060-05:00 DEBUG 21260 --- [StreamGo] [main] c.S.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-06-03T20:39:20.612-05:00  INFO 21260 --- [StreamGo] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-03T20:39:20.887-05:00  INFO 21260 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-03T20:39:23.200-05:00  INFO 21260 --- [StreamGo] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-03T20:39:23.326-05:00  INFO 21260 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-03T20:39:25.872-05:00  INFO 21260 --- [StreamGo] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@69ac5752
+2026-06-03T20:39:25.880-05:00  INFO 21260 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-03T20:39:26.294-05:00  INFO 21260 --- [StreamGo] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/StreamGo]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.4.9
+	Default catalog/schema: StreamGo/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-03T20:39:29.664-05:00  INFO 21260 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-03T20:39:31.952-05:00  INFO 21260 --- [StreamGo] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-03T20:39:32.205-05:00  INFO 21260 --- [StreamGo] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-03T20:39:35.526-05:00  INFO 21260 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-06-03T20:39:35.547-05:00  INFO 21260 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Started StreamGoApplication in 24.186 seconds (process running for 25.522)
+2026-06-03T21:00:05.157-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-03T21:00:05.175-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-03T21:00:05.329-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 152 ms
+2026-06-03T21:00:07.931-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-9] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 1727 ms
+2026-06-03T21:14:28.157-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-7] com.StreamGo.service.AuthService         : Intento de login para brayan@gmail.com
+2026-06-03T21:14:30.075-05:00  WARN 21260 --- [StreamGo] [http-nio-8080-exec-7] com.StreamGo.service.AuthService         : Login fallido. Contraseña incorrecta para brayan@gmail.com
+2026-06-03T21:14:30.080-05:00 ERROR 21260 --- [StreamGo] [http-nio-8080-exec-7] c.S.controller.GlobalExceptionHandler    : Error de negocio: Contraseña incorrecta
+2026-06-03T21:14:59.579-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-4] com.StreamGo.service.AuthService         : Intento de login para brayan@gmail.com
+2026-06-03T21:14:59.736-05:00  WARN 21260 --- [StreamGo] [http-nio-8080-exec-4] com.StreamGo.service.AuthService         : Login fallido. Contraseña incorrecta para brayan@gmail.com
+2026-06-03T21:14:59.741-05:00 ERROR 21260 --- [StreamGo] [http-nio-8080-exec-4] c.S.controller.GlobalExceptionHandler    : Error de negocio: Contraseña incorrecta
+2026-06-03T21:15:09.368-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-1] com.StreamGo.service.AuthService         : Intento de login para brayan@gmail.com
+2026-06-03T21:15:09.490-05:00  WARN 21260 --- [StreamGo] [http-nio-8080-exec-1] com.StreamGo.service.AuthService         : Login fallido. Contraseña incorrecta para brayan@gmail.com
+2026-06-03T21:15:09.491-05:00 ERROR 21260 --- [StreamGo] [http-nio-8080-exec-1] c.S.controller.GlobalExceptionHandler    : Error de negocio: Contraseña incorrecta
+2026-06-03T21:15:29.298-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-10] com.StreamGo.service.AuthService         : Intentando registrar usuario con email: user@gmail.com
+2026-06-03T21:15:29.685-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-10] com.StreamGo.service.AuthService         : Usuario registrado correctamente: user@gmail.com
+2026-06-03T21:16:15.563-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-2] com.StreamGo.service.AuthService         : Intento de login para user@gmail.com
+2026-06-03T21:16:15.878-05:00  INFO 21260 --- [StreamGo] [http-nio-8080-exec-2] com.StreamGo.service.AuthService         : Login exitoso para user@gmail.com
+2026-06-03T21:38:40.025-05:00  INFO 21260 --- [StreamGo] [SpringApplicationShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-06-03T21:38:40.075-05:00  INFO 21260 --- [StreamGo] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-06-03T21:38:40.126-05:00  INFO 21260 --- [StreamGo] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-03T21:38:40.178-05:00  INFO 21260 --- [StreamGo] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-03T21:38:40.190-05:00  INFO 21260 --- [StreamGo] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
