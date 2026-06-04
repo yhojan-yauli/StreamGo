@@ -16,4 +16,5 @@ public class NoticiaResponse {
     private Integer reacciones;
     private String trailer;
     private String contenido;
+    private boolean fijado;
 }
