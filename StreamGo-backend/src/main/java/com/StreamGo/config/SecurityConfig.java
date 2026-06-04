@@ -74,6 +74,14 @@ public class SecurityConfig {
                         .requestMatchers("/historial/**")
                         .hasRole("CLIENTE")
 
+                        // Calificaciones solo para clientes
+                        .requestMatchers("/calificaciones/**")
+                        .hasRole("CLIENTE")
+
+                        // Historial solo para clientes para la parte de mis listas del frontend
+                        .requestMatchers("/historial/**")
+                        .hasRole("CLIENTE")
+
                                                 // Otras rutas requieren login
                         .anyRequest().authenticated()
                 )
