@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Logs ignora los loggs realizados en local, no se suben al repositorio
+logs/
+*.log

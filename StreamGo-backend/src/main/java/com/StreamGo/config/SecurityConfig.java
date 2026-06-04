@@ -1,7 +1,5 @@
 package com.StreamGo.config;
 
-import com.StreamGo.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +11,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
+
+import com.StreamGo.security.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -65,7 +67,15 @@ public class SecurityConfig {
                         .requestMatchers("/reproduccion/**")
                         .hasRole("CLIENTE")
 
-                        // Otras rutas requieren login
+                        // Calificaciones solo para clientes
+                        .requestMatchers("/calificaciones/**")
+                        .hasRole("CLIENTE")
+
+                        // Historial solo para clientes para la parte de mis listas del frontend
+                        .requestMatchers("/historial/**")
+                        .hasRole("CLIENTE")
+
+                                                // Otras rutas requieren login
                         .anyRequest().authenticated()
                 )
 
