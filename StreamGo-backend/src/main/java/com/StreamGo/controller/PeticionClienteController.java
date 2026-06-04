@@ -26,10 +26,10 @@ public class PeticionClienteController {
     @PostMapping("/elegir")
     public ResponseEntity<PeticionResponse> elegir(
             @RequestBody PeticionRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal String email
     ) {
         return ResponseEntity.ok(
-                peticionService.elegirPelicula(userDetails.getUsername(), request)
+                peticionService.elegirPelicula(email, request)
         );
     }
 }

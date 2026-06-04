@@ -14,4 +14,6 @@ public interface PeticionRepository extends JpaRepository<Peticion, Long> {
            "FROM Peticion p GROUP BY p.contenidoVotable.id, p.contenidoVotable.titulo " +
            "ORDER BY COUNT(p) DESC")
     List<Object[]> contarVotosPorContenido();
+    
+        long countByContenidoVotableId(Long contenidoVotableId);
 }

@@ -12,6 +12,8 @@ import com.StreamGo.repository.ContenidoVotableRepository;
 import com.StreamGo.repository.PeticionRepository;
 import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PeticionService {
 
+    private static final Logger log = LoggerFactory.getLogger(PeticionService.class);
+
     private final PeticionRepository peticionRepository;
     private final ContenidoVotableRepository contenidoVotableRepository;
     private final UsuarioRepository usuarioRepository;
@@ -29,6 +33,7 @@ public class PeticionService {
     // ── ADMIN ──────────────────────────────────────────
 
     public ContenidoVotableResponse agregarVotable(ContenidoVotableRequest request) {
+        log.debug("Agregando nuevo contenido votable: titulo={}", request.getTitulo());
         ContenidoVotable votable = ContenidoVotable.builder()
                 .titulo(request.getTitulo())
                 .descripcion(request.getDescripcion())
@@ -36,28 +41,53 @@ public class PeticionService {
                 .imagenUrl(request.getImagenUrl())
                 .activo(true)
                 .build();
-        return mapVotableToResponse(contenidoVotableRepository.save(votable));
+        ContenidoVotableResponse response = mapVotableToResponse(contenidoVotableRepository.save(votable));
+        log.info("Contenido votable creado exitosamente: id={}, titulo={}", response.getId(), response.getTitulo());
+        return response;
     }
 
     public ContenidoVotableResponse editarVotable(Long id, ContenidoVotableRequest request) {
+        log.debug("Editando contenido votable: id={}", id);
         ContenidoVotable votable = contenidoVotableRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Contenido votable no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Contenido votable no encontrado para editar: id={}", id);
+                    return new RuntimeException("Contenido votable no encontrado");
+                });
+
+        if (!votable.getActivo()) {
+            log.warn("Se está editando un contenido votable inactivo: id={}, titulo={}", id, votable.getTitulo());
+        }
+
         votable.setTitulo(request.getTitulo());
         votable.setDescripcion(request.getDescripcion());
         votable.setPosterUrl(request.getPosterUrl());
         votable.setImagenUrl(request.getImagenUrl());
-        return mapVotableToResponse(contenidoVotableRepository.save(votable));
+        ContenidoVotableResponse response = mapVotableToResponse(contenidoVotableRepository.save(votable));
+        log.info("Contenido votable editado exitosamente: id={}, titulo={}", response.getId(), response.getTitulo());
+        return response;
     }
 
     public void desactivarVotable(Long id) {
+        log.debug("Desactivando contenido votable: id={}", id);
         ContenidoVotable votable = contenidoVotableRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Contenido votable no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Contenido votable no encontrado para desactivar: id={}", id);
+                    return new RuntimeException("Contenido votable no encontrado");
+                });
+
+        long votos = peticionRepository.countByContenidoVotableId(id);
+        if (votos > 0) {
+            log.warn("Se está desactivando un contenido votable con {} votos: id={}, titulo={}", votos, id, votable.getTitulo());
+        }
+
         votable.setActivo(false);
         contenidoVotableRepository.save(votable);
+        log.info("Contenido votable desactivado: id={}, titulo={}", id, votable.getTitulo());
     }
 
     public List<VotoResponse> verRankingVotos() {
-        return peticionRepository.contarVotosPorContenido()
+        log.debug("Consultando ranking de votos");
+        List<VotoResponse> ranking = peticionRepository.contarVotosPorContenido()
                 .stream()
                 .map(row -> VotoResponse.builder()
                         .contenidoVotableId((Long) row[0])
@@ -65,34 +95,65 @@ public class PeticionService {
                         .totalVotos((Long) row[2])
                         .build())
                 .toList();
+
+        if (ranking.isEmpty()) {
+            log.warn("No hay votos registrados aún");
+        } else {
+            log.info("Ranking obtenido: {} entradas", ranking.size());
+        }
+
+        return ranking;
     }
 
     // ── CLIENTE ────────────────────────────────────────
 
     public List<ContenidoVotableResponse> listarVotables() {
-        return contenidoVotableRepository.findByActivoTrue()
+        log.debug("Listando contenidos votables activos");
+        List<ContenidoVotableResponse> lista = contenidoVotableRepository.findByActivoTrue()
                 .stream()
                 .map(this::mapVotableToResponse)
                 .toList();
+
+        if (lista.isEmpty()) {
+            log.warn("No hay contenidos votables activos disponibles");
+        } else {
+            log.info("Contenidos votables activos encontrados: {}", lista.size());
+        }
+
+        return lista;
     }
 
-    // ← ÚNICO MÉTODO QUE CAMBIÓ
     public PeticionResponse elegirPelicula(String email, PeticionRequest request) {
+        log.debug("Usuario {} intentando elegir contenido votable id={}", email, request.getContenidoVotableId());
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Usuario no encontrado: email={}", email);
+                    return new RuntimeException("Usuario no encontrado");
+                });
 
         ContenidoVotable votable = contenidoVotableRepository.findById(request.getContenidoVotableId())
-                .orElseThrow(() -> new RuntimeException("Contenido votable no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Contenido votable no encontrado: id={}", request.getContenidoVotableId());
+                    return new RuntimeException("Contenido votable no encontrado");
+                });
+
+        if (!votable.getActivo()) {
+            log.warn("Usuario {} intentó votar por un contenido votable inactivo: id={}, titulo={}",
+                    email, votable.getId(), votable.getTitulo());
+        }
 
         Optional<Peticion> existente = peticionRepository.findByUsuarioId(usuario.getId());
 
         Peticion peticion;
         if (existente.isPresent()) {
+            log.warn("Usuario {} está cambiando su elección: titulo anterior={} → nuevo titulo={}",
+                    email, existente.get().getContenidoVotable().getTitulo(), votable.getTitulo());
             peticion = existente.get();
             peticion.setContenidoVotable(votable);
             peticion.setFechaPeticion(LocalDateTime.now());
         } else {
+            log.debug("Creando nueva petición para usuario {}", email);
             peticion = Peticion.builder()
                     .usuario(usuario)
                     .contenidoVotable(votable)
@@ -100,7 +161,10 @@ public class PeticionService {
                     .build();
         }
 
-        return mapPeticionToResponse(peticionRepository.save(peticion));
+        PeticionResponse response = mapPeticionToResponse(peticionRepository.save(peticion));
+        log.info("Petición guardada: usuarioId={}, contenidoVotableId={}, titulo={}",
+                usuario.getId(), votable.getId(), votable.getTitulo());
+        return response;
     }
 
     // ── MAPPERS ────────────────────────────────────────
