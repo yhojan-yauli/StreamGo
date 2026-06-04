@@ -30,17 +30,32 @@ public class CalificacionService {
             CalificacionRequest request
     ) {
 
+        log.debug("Iniciando proceso de calificación. Usuario: {}, Contenido ID: {}, Puntaje: {}", 
+                email, contenidoId, request.getPuntaje());
+
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Usuario no encontrado con email: {}", email);
+                    return new RuntimeException("Usuario no encontrado");
+                });
 
         Contenido contenido = contenidoRepository.findById(contenidoId)
-                .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Contenido no encontrado con ID: {}", contenidoId);
+                    return new RuntimeException("Contenido no encontrado");
+                });
+
+        log.debug("Usuario y contenido encontrados correctamente. Usuario: {}, Contenido: {}", 
+                usuario.getEmail(), contenido.getTitulo());
 
         CalificacionContenido calificacion = calificacionRepository
                 .findByUsuarioAndContenido(usuario, contenido)
                 .orElse(null);
 
         if (calificacion == null) {
+
+            log.debug("Creando nueva calificación para el usuario {} en el contenido {}", 
+                    email, contenido.getTitulo());
 
             calificacion = CalificacionContenido.builder()
                     .usuario(usuario)
@@ -52,20 +67,28 @@ public class CalificacionService {
 
         } else {
 
+            log.debug("Actualizando calificación existente. Puntaje anterior: {}, Nuevo puntaje: {}", 
+                    calificacion.getPuntaje(), request.getPuntaje());
+
             calificacion.setPuntaje(request.getPuntaje());
             calificacion.setComentario(request.getComentario());
         }
 
         calificacionRepository.save(calificacion);
+        log.debug("Calificación guardada en base de datos");
 
         actualizarPromedio(contenido);
 
-        log.info(
-                "Usuario {} calificó '{}' con {} estrellas",
+        log.info("Usuario {} calificó '{}' con {} estrellas",
                 email,
                 contenido.getTitulo(),
                 request.getPuntaje()
         );
+
+        if (request.getComentario() != null && !request.getComentario().isEmpty()) {
+            log.debug("Usuario {} dejó comentario en '{}': {}", 
+                    email, contenido.getTitulo(), request.getComentario());
+        }
 
         return CalificacionResponse.builder()
                 .contenidoId(contenido.getId())
@@ -80,17 +103,30 @@ public class CalificacionService {
 
     private void actualizarPromedio(Contenido contenido) {
 
+        log.debug("Actualizando promedio de calificaciones para contenido: {}", contenido.getTitulo());
+
         List<CalificacionContenido> calificaciones =
                 calificacionRepository.findByContenido(contenido);
 
+        int totalCalificaciones = calificaciones.size();
         double promedio = calificaciones.stream()
                 .mapToInt(CalificacionContenido::getPuntaje)
                 .average()
                 .orElse(0.0);
 
+        log.debug("Contenido '{}' - Total calificaciones: {}, Promedio calculado: {}. Anterior promedio: {}, Anterior total: {}", 
+                contenido.getTitulo(), 
+                totalCalificaciones, 
+                promedio, 
+                contenido.getPromedioCalificacion(), 
+                contenido.getTotalCalificaciones());
+
         contenido.setPromedioCalificacion(promedio);
-        contenido.setTotalCalificaciones(calificaciones.size());
+        contenido.setTotalCalificaciones(totalCalificaciones);
 
         contenidoRepository.save(contenido);
+        
+        log.info("Promedio actualizado para '{}': {} estrellas ({} calificaciones)", 
+                contenido.getTitulo(), promedio, totalCalificaciones);
     }
 }

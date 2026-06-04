@@ -21,18 +21,35 @@ public class HistorialService {
 
     public List<HistorialResponse> obtenerHistorial(String email) {
 
+        log.debug("Intentando obtener historial para el usuario: {}", email);
+
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Usuario no encontrado con email: {}", email);
+                    return new RuntimeException("Usuario no encontrado");
+                });
 
         log.info("Consultando historial de reproducción del usuario {}", email);
 
-        return historialRepository.findByUsuarioOrderByFechaReproduccionDesc(usuario)
+        List<HistorialResponse> historial = historialRepository.findByUsuarioOrderByFechaReproduccionDesc(usuario)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+
+        log.debug("Historial recuperado para usuario {}. Total de registros: {}", email, historial.size());
+
+        if (historial.isEmpty()) {
+            log.info("El usuario {} no tiene historial de reproducción", email);
+        }
+
+        return historial;
     }
 
     private HistorialResponse mapToResponse(HistorialReproduccion historial) {
+
+        log.debug("Mapeando historial ID: {} para contenido: {}", 
+                historial.getId(), 
+                historial.getContenido().getTitulo());
 
         return HistorialResponse.builder()
                 .historialId(historial.getId())
