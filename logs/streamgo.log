@@ -1,0 +1,151 @@
+2026-06-03T21:25:37.646-05:00  INFO 37448 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Starting StreamGoApplication using Java 21.0.8 with PID 37448 (C:\Users\l3v1g\OneDrive\Documentos\Visual Studio 2022\INTEGRADOR\StreamGo\StreamGo-backend\build\classes\java\main started by l3v1g in C:\Users\l3v1g\OneDrive\Documentos\Visual Studio 2022\INTEGRADOR\StreamGo)
+2026-06-03T21:25:37.653-05:00 DEBUG 37448 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-06-03T21:25:37.654-05:00  INFO 37448 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-06-03T21:25:39.663-05:00  INFO 37448 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-03T21:25:39.840-05:00  INFO 37448 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 157 ms. Found 9 JPA repository interfaces.
+2026-06-03T21:25:41.195-05:00  INFO 37448 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-03T21:25:41.233-05:00  INFO 37448 --- [StreamGo] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-03T21:25:41.234-05:00  INFO 37448 --- [StreamGo] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-03T21:25:41.467-05:00  INFO 37448 --- [StreamGo] [main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 3701 ms
+2026-06-03T21:25:41.604-05:00 DEBUG 37448 --- [StreamGo] [main] c.S.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-06-03T21:25:41.993-05:00  INFO 37448 --- [StreamGo] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-03T21:25:42.167-05:00  INFO 37448 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-03T21:25:43.346-05:00  INFO 37448 --- [StreamGo] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-03T21:25:43.431-05:00  INFO 37448 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-03T21:25:44.300-05:00  INFO 37448 --- [StreamGo] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@3a6b94b6
+2026-06-03T21:25:44.305-05:00  INFO 37448 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-03T21:25:44.522-05:00  INFO 37448 --- [StreamGo] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/StreamGo]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.30
+	Default catalog/schema: StreamGo/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-03T21:25:46.673-05:00  INFO 37448 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-03T21:25:47.091-05:00  INFO 37448 --- [StreamGo] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-03T21:25:47.244-05:00  INFO 37448 --- [StreamGo] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-03T21:25:51.051-05:00  INFO 37448 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-06-03T21:25:51.065-05:00  INFO 37448 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Started StreamGoApplication in 14.533 seconds (process running for 15.802)
+2026-06-03T21:27:33.014-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-03T21:27:33.014-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-03T21:27:33.018-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
+2026-06-03T21:27:34.731-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-7] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 1097 ms
+2026-06-03T21:29:44.933-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-4] com.StreamGo.service.AuthService         : Intentando registrar usuario con email: lety@gmail.com
+2026-06-03T21:29:45.563-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-4] com.StreamGo.service.AuthService         : Usuario registrado correctamente: lety@gmail.com
+2026-06-03T21:30:48.176-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-9] com.StreamGo.service.AuthService         : Intento de login para lety@gmail.com
+2026-06-03T21:30:48.398-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-9] com.StreamGo.service.AuthService         : Login exitoso para lety@gmail.com
+2026-06-03T21:43:20.241-05:00  INFO 34544 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Starting StreamGoApplication using Java 21.0.8 with PID 34544 (C:\Users\l3v1g\OneDrive\Documentos\Visual Studio 2022\INTEGRADOR\StreamGo\StreamGo-backend\build\classes\java\main started by l3v1g in C:\Users\l3v1g\OneDrive\Documentos\Visual Studio 2022\INTEGRADOR\StreamGo)
+2026-06-03T21:43:20.247-05:00 DEBUG 34544 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-06-03T21:43:20.249-05:00  INFO 34544 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-06-03T21:43:22.130-05:00  INFO 34544 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-03T21:43:22.302-05:00  INFO 34544 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 151 ms. Found 9 JPA repository interfaces.
+2026-06-03T21:43:23.469-05:00  INFO 34544 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-03T21:43:23.499-05:00  INFO 34544 --- [StreamGo] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-03T21:43:23.499-05:00  INFO 34544 --- [StreamGo] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-03T21:43:23.709-05:00  INFO 34544 --- [StreamGo] [main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 3347 ms
+2026-06-03T21:43:23.818-05:00 DEBUG 34544 --- [StreamGo] [main] c.S.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-06-03T21:43:24.159-05:00  INFO 34544 --- [StreamGo] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-03T21:43:24.297-05:00  INFO 34544 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-03T21:43:25.401-05:00  INFO 34544 --- [StreamGo] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-03T21:43:25.472-05:00  INFO 34544 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-03T21:43:26.072-05:00  INFO 34544 --- [StreamGo] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4203529f
+2026-06-03T21:43:26.078-05:00  INFO 34544 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-03T21:43:26.259-05:00  INFO 34544 --- [StreamGo] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/StreamGo]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.30
+	Default catalog/schema: StreamGo/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-03T21:43:28.199-05:00  INFO 34544 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-03T21:43:28.552-05:00  INFO 34544 --- [StreamGo] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-03T21:43:28.709-05:00  INFO 34544 --- [StreamGo] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-03T21:43:32.264-05:00  WARN 34544 --- [StreamGo] [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-06-03T21:43:32.268-05:00  INFO 34544 --- [StreamGo] [main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-03T21:43:32.273-05:00  INFO 34544 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-03T21:43:32.288-05:00  INFO 34544 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-03T21:43:32.309-05:00  INFO 34544 --- [StreamGo] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-06-03T21:43:32.340-05:00 ERROR 34544 --- [StreamGo] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+2026-06-03T21:48:11.061-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-8] com.StreamGo.service.AuthService         : Intento de login para lety@gmail.com
+2026-06-03T21:48:11.206-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-8] com.StreamGo.service.AuthService         : Login exitoso para lety@gmail.com
+2026-06-03T21:54:43.721-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-1] com.StreamGo.service.AuthService         : Intentando registrar usuario con email: leEG@gmail.com
+2026-06-03T21:54:43.862-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-1] com.StreamGo.service.AuthService         : Usuario registrado correctamente: leEG@gmail.com
+2026-06-03T21:55:00.488-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-5] com.StreamGo.service.AuthService         : Intento de login para leEG@gmail.com
+2026-06-03T21:55:00.648-05:00  INFO 37448 --- [StreamGo] [http-nio-8080-exec-5] com.StreamGo.service.AuthService         : Login exitoso para leEG@gmail.com
+2026-06-03T22:08:11.723-05:00  INFO 14104 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Starting StreamGoApplication using Java 21.0.8 with PID 14104 (C:\Users\l3v1g\OneDrive\Documentos\Visual Studio 2022\INTEGRADOR\StreamGo\StreamGo-backend\build\classes\java\main started by l3v1g in C:\Users\l3v1g\OneDrive\Documentos\Visual Studio 2022\INTEGRADOR\StreamGo)
+2026-06-03T22:08:11.729-05:00 DEBUG 14104 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-06-03T22:08:11.730-05:00  INFO 14104 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-06-03T22:08:13.581-05:00  INFO 14104 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-03T22:08:13.747-05:00  INFO 14104 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 146 ms. Found 9 JPA repository interfaces.
+2026-06-03T22:08:15.049-05:00  INFO 14104 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-03T22:08:15.081-05:00  INFO 14104 --- [StreamGo] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-03T22:08:15.083-05:00  INFO 14104 --- [StreamGo] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-03T22:08:15.310-05:00  INFO 14104 --- [StreamGo] [main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 3458 ms
+2026-06-03T22:08:15.424-05:00 DEBUG 14104 --- [StreamGo] [main] c.S.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-06-03T22:08:15.765-05:00  INFO 14104 --- [StreamGo] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-03T22:08:15.933-05:00  INFO 14104 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-03T22:08:17.106-05:00  INFO 14104 --- [StreamGo] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-03T22:08:17.190-05:00  INFO 14104 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-03T22:08:17.890-05:00  INFO 14104 --- [StreamGo] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4203529f
+2026-06-03T22:08:17.895-05:00  INFO 14104 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-03T22:08:18.075-05:00  INFO 14104 --- [StreamGo] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/StreamGo]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.30
+	Default catalog/schema: StreamGo/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-03T22:08:20.152-05:00  INFO 14104 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-03T22:08:20.306-05:00  INFO 14104 --- [StreamGo] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-03T22:08:20.445-05:00  INFO 14104 --- [StreamGo] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-03T22:08:23.783-05:00  WARN 14104 --- [StreamGo] [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-06-03T22:08:23.788-05:00  INFO 14104 --- [StreamGo] [main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-06-03T22:08:23.793-05:00  INFO 14104 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-06-03T22:08:23.805-05:00  INFO 14104 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-06-03T22:08:23.827-05:00  INFO 14104 --- [StreamGo] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-06-03T22:08:23.860-05:00 ERROR 14104 --- [StreamGo] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
