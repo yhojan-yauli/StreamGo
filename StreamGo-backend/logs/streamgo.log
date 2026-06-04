@@ -1,0 +1,33 @@
+2026-06-04T00:06:27.765-05:00  INFO 33080 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Starting StreamGoApplication using Java 22.0.2 with PID 33080 (C:\Users\USUARIO\Desktop\StreamGo\StreamGo\StreamGo-backend\build\classes\java\main started by USUARIO in C:\Users\USUARIO\Desktop\StreamGo\StreamGo\StreamGo-backend)
+2026-06-04T00:06:27.788-05:00 DEBUG 33080 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-06-04T00:06:27.791-05:00  INFO 33080 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-06-04T00:06:30.410-05:00  INFO 33080 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-04T00:06:30.550-05:00  INFO 33080 --- [StreamGo] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 123 ms. Found 9 JPA repository interfaces.
+2026-06-04T00:06:32.318-05:00  INFO 33080 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-06-04T00:06:32.352-05:00  INFO 33080 --- [StreamGo] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-04T00:06:32.353-05:00  INFO 33080 --- [StreamGo] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-06-04T00:06:32.567-05:00  INFO 33080 --- [StreamGo] [main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 4609 ms
+2026-06-04T00:06:32.751-05:00 DEBUG 33080 --- [StreamGo] [main] c.S.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-06-04T00:06:33.197-05:00  INFO 33080 --- [StreamGo] [main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-04T00:06:33.375-05:00  INFO 33080 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-06-04T00:06:34.668-05:00  INFO 33080 --- [StreamGo] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-04T00:06:34.724-05:00  INFO 33080 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-04T00:06:35.418-05:00  INFO 33080 --- [StreamGo] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@6aa9a93b
+2026-06-04T00:06:35.424-05:00  INFO 33080 --- [StreamGo] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-04T00:06:35.644-05:00  INFO 33080 --- [StreamGo] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/StreamGo]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 9.4
+	Default catalog/schema: StreamGo/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-04T00:06:37.717-05:00  INFO 33080 --- [StreamGo] [main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-04T00:06:37.844-05:00  INFO 33080 --- [StreamGo] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-04T00:06:37.986-05:00  INFO 33080 --- [StreamGo] [main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-04T00:06:40.610-05:00  INFO 33080 --- [StreamGo] [main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-06-04T00:06:40.624-05:00  INFO 33080 --- [StreamGo] [main] com.StreamGo.StreamGoApplication         : Started StreamGoApplication in 13.88 seconds (process running for 14.903)

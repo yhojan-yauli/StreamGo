@@ -2,6 +2,7 @@ package com.StreamGo.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "peticiones")
@@ -16,14 +17,13 @@ public class Peticion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // titulo de la pelicula
-    @Column(nullable = false)
-    private String titulo;
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
-    // descripcion
-    @Column(length = 1000)
-    private String descripcion;
+    @ManyToOne
+    @JoinColumn(name = "contenido_votable_id", nullable = false)
+    private ContenidoVotable contenidoVotable;
 
-    // imagen
-    private String imagenUrl;
+    private LocalDateTime fechaPeticion;
 }

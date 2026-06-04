@@ -78,6 +78,9 @@ public class ReproduccionService {
 
             throw new RuntimeException("Tu cuenta se encuentra suspendida");
         }
+    }
+
+    private void aumentarReproducciones(Contenido contenido) {
 
         if (usuario.getEstado() == EstadoUsuario.INACTIVO &&
                 contenido.getEstado() == EstadoContenido.ACTIVO) {
