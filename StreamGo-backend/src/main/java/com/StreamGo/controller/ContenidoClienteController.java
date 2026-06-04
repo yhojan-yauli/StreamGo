@@ -31,10 +31,10 @@ public class ContenidoClienteController {
         );
     }
 
-    @GetMapping("/categoria/{categoria}")
-    public ResponseEntity<List<ContenidoResponse>> listarPorCategoria(
-            @PathVariable String categoria
-    ) {
+@GetMapping("/categoria/{categoria}")
+public ResponseEntity<List<ContenidoResponse>> listarPorCategoria(
+        @PathVariable("categoria") String categoria
+) {
         return ResponseEntity.ok(
                 contenidoService.listarPorCategoria(categoria)
         );
@@ -54,12 +54,13 @@ public class ContenidoClienteController {
         );
     }
 
-    @GetMapping("/buscar")
-    public ResponseEntity<List<ContenidoResponse>> buscarPorTitulo(
-            @RequestParam String titulo
-    ) {
-        return ResponseEntity.ok(
-                contenidoService.buscarPorTitulo(titulo)
-        );
-    }
+    //busca para content STRING titulo
+@GetMapping("/buscar")
+public ResponseEntity<List<ContenidoResponse>> buscarPorTitulo(
+        @RequestParam("titulo") String titulo
+) {
+    return ResponseEntity.ok(
+            contenidoService.buscarPorTitulo(titulo)
+    );
+}
 }

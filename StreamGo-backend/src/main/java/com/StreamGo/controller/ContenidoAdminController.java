@@ -33,9 +33,9 @@ public class ContenidoAdminController {
         );
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/editar parametros de un contenido")
     public ResponseEntity<ContenidoResponse> actualizarContenido(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestBody ActualizarContenidoRequest request
     ) {
         return ResponseEntity.ok(
@@ -43,11 +43,19 @@ public class ContenidoAdminController {
         );
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> desactivarContenido(
-            @PathVariable Long id
-    ) {
-        contenidoService.desactivarContenido(id);
-        return ResponseEntity.ok("Contenido desactivado");
-    }
+@DeleteMapping("/{id}/desactivar")
+public ResponseEntity<String> desactivarContenido(
+        @PathVariable("id") Long id
+) {
+    contenidoService.desactivarContenido(id);
+    return ResponseEntity.ok("Contenido desactivado");
+}
+
+@DeleteMapping("/{id}")
+public ResponseEntity<String> eliminarContenido(
+        @PathVariable("id") Long id
+) {
+    contenidoService.eliminarContenido(id);
+    return ResponseEntity.ok("Contenido eliminado correctamente");
+}
 }

@@ -172,4 +172,12 @@ public class ContenidoService {
                 .totalReproducciones(contenido.getTotalReproducciones())
                 .build();
     }
+//admin puede eliminar contenido, lo que realmente hace es borrarlo de la base de datos. Solo se recomienda usar esta función para eliminar contenido que se haya creado por error o que ya no se quiera mostrar en la plataforma, pero que no se quiera mantener un registro histórico de su existencia.
+    public void eliminarContenido(Long id) {
+
+    Contenido contenido = contenidoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+
+    contenidoRepository.delete(contenido);
+}
 }
