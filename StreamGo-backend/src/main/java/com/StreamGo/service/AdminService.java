@@ -13,14 +13,26 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Servicio de administración del sistema StreamGo.
+ * Gestiona  a  clientes y sus suscripciones.
+ *
+ * @author Yhojan Yauli
+ * @version 1.0
+ */
 @Service
 @RequiredArgsConstructor
 public class AdminService {
 
     private final UsuarioRepository usuarioRepository;
-
     private final SuscripcionRepository suscripcionRepository;
 
+    /**
+     * Obtiene la lista de clientes registrados con información de suscripción.
+     * Calcula si el cliente tiene suscripción activa y las horas restantes.
+     *
+     * @return lista de clientes con datos administrativos
+     */
     public List<ClienteAdminResponse> obtenerClientes() {
 
         List<Usuario> clientes = usuarioRepository.findByRol(Rol.CLIENTE);
@@ -36,7 +48,7 @@ public class AdminService {
 
             long horasRestantes = 0;
 
-            // Calcular horas restantes
+            // Calcular horas restantes de suscripción
             if (tieneSuscripcion) {
 
                 horasRestantes = Duration.between(
@@ -44,7 +56,6 @@ public class AdminService {
                         suscripcion.getFechaFin()
                 ).toHours();
 
-                // Evitar negativos
                 if (horasRestantes < 0) {
                     horasRestantes = 0;
                 }
