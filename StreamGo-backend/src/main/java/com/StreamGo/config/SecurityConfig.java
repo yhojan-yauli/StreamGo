@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class SecurityConfig {
         http
                 // Desactivar CSRF para APIs REST
                 .csrf(csrf -> csrf.disable())
-
+                .cors(cors -> {})
                 // JWT sin sesiones
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -48,6 +49,8 @@ public class SecurityConfig {
 
                         // Contenido público SIN LOGIN
                         .requestMatchers("/public/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
 
                         // Rutas ADMIN

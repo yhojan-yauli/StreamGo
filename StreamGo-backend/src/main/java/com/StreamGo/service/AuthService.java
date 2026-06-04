@@ -14,6 +14,13 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Servicio de autenticación del sistema StreamGo.
+ * Maneja registro, login y generación de tokens JWT.
+ *
+ * @author Yhojan Yauli
+ * @version 1.0
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,17 +30,21 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    // REGISTRO
+    /**
+     * Registra un nuevo usuario en el sistema.
+     * Valida que el correo no exista y genera un token JWT.
+     *
+     * @param request datos del usuario a registrar
+     * @return respuesta con token JWT y mensaje de confirmación
+     */
     public AuthResponse register(RegisterRequest request) {
         log.info("Intentando registrar usuario con email: {}", request.getEmail());
 
-        // Validar si el email ya existe
         if (usuarioRepository.existsByEmail(request.getEmail())) {
             log.warn("Intento de registro con correo ya existente: {}", request.getEmail());
             throw new RuntimeException("El correo ya está registrado");
         }
 
-        // Crear Usuario
         Usuario usuario = Usuario.builder()
                 .nombre(request.getNombre())
                 .email(request.getEmail())
@@ -43,11 +54,9 @@ public class AuthService {
                 .fechaRegistro(LocalDateTime.now())
                 .build();
 
-        // Guardar en BD
         usuarioRepository.save(usuario);
         log.info("Usuario registrado correctamente: {}", usuario.getEmail());
 
-        // Generar token JWT
         String token = jwtService.generateToken(usuario);
 
         return AuthResponse.builder()
@@ -56,19 +65,22 @@ public class AuthService {
                 .build();
     }
 
-
-    // LOGIN
+    /**
+     * Autentica un usuario en el sistema.
+     * Valida credenciales y genera token JWT.
+     *
+     * @param request credenciales de inicio de sesión
+     * @return respuesta con token JWT y mensaje de éxito
+     */
     public AuthResponse login(LoginRequest request) {
         log.info("Intento de login para {}", request.getEmail());
 
-        // Buscar Usuario
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
                     log.warn("Login fallido. Usuario no encontrado: {}", request.getEmail());
                     return new RuntimeException("Usuario no encontrado");
                 });
 
-        // Validar password
         boolean passwordValida = passwordEncoder.matches(
                 request.getPassword(),
                 usuario.getPassword()
@@ -79,13 +91,10 @@ public class AuthService {
             throw new RuntimeException("Contraseña incorrecta");
         }
 
-        // ACTUALIZAR ÚLTIMO ACCESO
         usuario.setUltimoAcceso(LocalDateTime.now());
         usuarioRepository.save(usuario);
         log.info("Login exitoso para {}", usuario.getEmail());
 
-
-        // Generar token
         String token = jwtService.generateToken(usuario);
 
         return AuthResponse.builder()

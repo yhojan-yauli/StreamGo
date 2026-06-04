@@ -43,4 +43,7 @@ import java.math.BigDecimal;
 
         // Activo o no
         private Boolean activo;
+
+        //plan personalisado
+        private Boolean personalizado = false;
     }
