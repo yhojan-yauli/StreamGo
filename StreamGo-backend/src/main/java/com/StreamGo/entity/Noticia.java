@@ -35,4 +35,8 @@ public class Noticia {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String contenido;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean fijado = false;
 }

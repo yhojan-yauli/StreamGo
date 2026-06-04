@@ -36,6 +36,24 @@ public class NoticiaController {
         );
     }
 
+    @GetMapping("/ordenadas")
+    public ResponseEntity<List<NoticiaResponse>> listarNoticiasOrdenadas() {
+        log.info("Petición REST recibida para LISTAR noticias ordenadas");
+        return ResponseEntity.ok(
+                noticiaService.listarNoticiasOrdenadas()
+        );
+    }
+
+    @PatchMapping("/{idPost}/fijar")
+    public ResponseEntity<NoticiaResponse> fijarNoticia(
+            @PathVariable Long idPost
+    ) {
+        log.info("Petición REST recibida para MODIFICAR estado fijado de la noticia ID: {}", idPost);
+        return ResponseEntity.ok(
+                noticiaService.fijarNoticia(idPost)
+        );
+    }
+
     @GetMapping("/{idPost}")
     public ResponseEntity<NoticiaResponse> obtenerNoticia(
             @PathVariable Long idPost

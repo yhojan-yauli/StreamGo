@@ -178,6 +178,27 @@ public class NoticiaService {
                 .reacciones(noticia.getReacciones())
                 .trailer(noticia.getTrailer())
                 .contenido(noticia.getContenido())
+                .fijado(noticia.isFijado())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NoticiaResponse> listarNoticiasOrdenadas() {
+        log.info("Consultando noticias ordenadas (Fijadas primero, luego por reacciones)");
+        return noticiaRepository.findAllByOrderByFijadoDescReaccionesDesc()
+                .stream()
+                .map(this::convertirAResponse)
+                .toList();
+    }
+
+    @Transactional
+    public NoticiaResponse fijarNoticia(Long idPost) {
+        log.info("Alternando estado de fijado para la noticia con ID: {}", idPost);
+        Noticia noticia = buscarNoticia(idPost);
+
+        noticia.setFijado(!noticia.isFijado());
+
+        log.info("Noticia ID: {} actualizada. Estado fijado: {}", idPost, noticia.isFijado());
+        return convertirAResponse(noticiaRepository.save(noticia));
     }
 }
