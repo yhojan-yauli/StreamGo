@@ -12,7 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -23,9 +25,11 @@ public class AuthService {
 
     // REGISTRO
     public AuthResponse register(RegisterRequest request) {
+        log.info("Intentando registrar usuario con email: {}", request.getEmail());
 
         // Validar si el email ya existe
         if (usuarioRepository.existsByEmail(request.getEmail())) {
+            log.warn("Intento de registro con correo ya existente: {}", request.getEmail());
             throw new RuntimeException("El correo ya está registrado");
         }
 
@@ -41,6 +45,7 @@ public class AuthService {
 
         // Guardar en BD
         usuarioRepository.save(usuario);
+        log.info("Usuario registrado correctamente: {}", usuario.getEmail());
 
         // Generar token JWT
         String token = jwtService.generateToken(usuario);
@@ -54,10 +59,14 @@ public class AuthService {
 
     // LOGIN
     public AuthResponse login(LoginRequest request) {
+        log.info("Intento de login para {}", request.getEmail());
 
         // Buscar Usuario
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> {
+                    log.warn("Login fallido. Usuario no encontrado: {}", request.getEmail());
+                    return new RuntimeException("Usuario no encontrado");
+                });
 
         // Validar password
         boolean passwordValida = passwordEncoder.matches(
@@ -66,12 +75,14 @@ public class AuthService {
         );
 
         if (!passwordValida) {
+            log.warn("Login fallido. Contraseña incorrecta para {}", request.getEmail());
             throw new RuntimeException("Contraseña incorrecta");
         }
 
         // ACTUALIZAR ÚLTIMO ACCESO
         usuario.setUltimoAcceso(LocalDateTime.now());
         usuarioRepository.save(usuario);
+        log.info("Login exitoso para {}", usuario.getEmail());
 
 
         // Generar token
