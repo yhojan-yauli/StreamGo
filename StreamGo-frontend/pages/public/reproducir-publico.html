@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamGO - Ver</title>
+
+    <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="../../css/public.css">
+</head>
+<body>
+
+<header class="navbar-cliente public-navbar">
+    <img src="../../assets/imagenes/streamlogo.png" class="logo-cliente">
+
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a href="explorar.html">Peliculas</a>
+        <a href="../auth/login.html">Iniciar Sesion</a>
+        <a href="../auth/registro.html" class="public-register-link">Registrarse</a>
+    </nav>
+</header>
+
+<main class="public-player-page">
+
+    <button class="btn-volver" onclick="history.back()">|◁</button>
+
+    <section class="public-player-layout">
+
+        <div>
+            <div class="public-video">
+                <iframe 
+                    id="publicVideoFrame"
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+
+            <div class="ad-bottom">
+                <strong>Betano</strong>
+                <p>Apuesta gratis de S/80 por tu primer depósito desde S/40</p>
+                <button>Regístrate aquí</button>
+                <span>⌃</span>
+            </div>
+        </div>
+
+        <aside class="ads-right">
+
+            <div class="ad-card ad-orange">
+                <h2>Betano</h2>
+                <p>Apuesta gratis de S/80 por tu primer depósito desde S/40</p>
+                <button>Regístrate aquí</button>
+            </div>
+
+            <div class="ad-card ad-orange2">
+                <h2>betsson</h2>
+                <p>¡Apuesta Gratis de S/100 + 30 Giros Gratis!</p>
+                <button>Regístrate ahora</button>
+            </div>
+
+            <div class="ad-card ad-green">
+                <h2>bet365</h2>
+                <p>Hasta S/500 en bonos de apuesta para nuevos clientes</p>
+                <button>Reciba su bonus</button>
+            </div>
+
+            <small>Publicidad</small>
+
+        </aside>
+
+    </section>
+
+</main>
+
+<script src="../../js/public.js"></script>
+</body>
+</html>
