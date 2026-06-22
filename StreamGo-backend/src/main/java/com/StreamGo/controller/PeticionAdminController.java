@@ -42,4 +42,3 @@ public class PeticionAdminController {
         return ResponseEntity.ok(peticionService.verRankingVotos());
     }
 }
-

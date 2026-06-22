@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 /**
  * Servicio encargado de la lógica de negocio relacionada con contenidos.
  *
@@ -23,12 +24,13 @@ import java.util.List;
 public class ContenidoService {
 
     private final ContenidoRepository contenidoRepository;
-/**
- * Crea un nuevo contenido dentro de la plataforma.
- *
- * @param request datos del contenido a crear.
- * @return respuesta con los datos del contenido creado.
- */
+
+    /**
+     * Crea un nuevo contenido dentro de la plataforma.
+     *
+     * @param request datos del contenido a crear.
+     * @return respuesta con los datos del contenido creado.
+     */
     public ContenidoResponse crearContenido(CrearContenidoRequest request) {
 
         log.info("Intentando crear nuevo contenido: {}", request.getTitulo());
@@ -59,11 +61,12 @@ public class ContenidoService {
 
         return response;
     }
-/**
- * Lista todos los contenidos para uso administrativo.
- *
- * @return lista completa de contenidos.
- */
+
+    /**
+     * Lista todos los contenidos para uso administrativo.
+     *
+     * @return lista completa de contenidos.
+     */
     public List<ContenidoResponse> listarAdmin() {
         log.debug("Listando todos los contenidos para administrador");
         
@@ -76,12 +79,11 @@ public class ContenidoService {
         return contenidos;
     }
 
-    // Público: usuario sin login
-/**
- * Lista los contenidos disponibles para usuarios no autenticados.
- *
- * @return lista de contenidos con estado SINLOGIN.
- */
+    /**
+     * Lista los contenidos disponibles para usuarios no autenticados.
+     *
+     * @return lista de contenidos con estado SINLOGIN.
+     */
     public List<ContenidoResponse> listarSinLogin() {
         log.debug("Listando contenidos públicos (SINLOGIN)");
         
@@ -94,14 +96,13 @@ public class ContenidoService {
         return contenidos;
     }
 
-    // Cliente sin suscripción: puede ver INACTIVO y SINLOGIN
-/**
- * Lista contenidos disponibles para clientes sin suscripción.
- *
- * Incluye contenidos INACTIVOS y SINLOGIN.
- *
- * @return lista de contenidos disponibles.
- */
+    /**
+     * Lista contenidos disponibles para clientes sin suscripción.
+     *
+     * Incluye contenidos INACTIVOS y SINLOGIN.
+     *
+     * @return lista de contenidos disponibles.
+     */
     public List<ContenidoResponse> listarParaClienteSinSuscripcion() {
         log.debug("Listando contenidos para cliente sin suscripción (INACTIVO y SINLOGIN)");
         
@@ -118,12 +119,11 @@ public class ContenidoService {
         return contenidos;
     }
 
-    // Cliente con suscripción: puede ver todo
-/**
- * Lista todos los contenidos disponibles para clientes con suscripción.
- *
- * @return catálogo completo de contenidos.
- */
+    /**
+     * Lista todos los contenidos disponibles para clientes con suscripción.
+     *
+     * @return catálogo completo de contenidos.
+     */
     public List<ContenidoResponse> listarParaClienteConSuscripcion() {
         log.debug("Listando todos los contenidos para cliente con suscripción");
         
@@ -182,13 +182,12 @@ public class ContenidoService {
         return response;
     }
 
-    // Ahora no significa borrar, sino cambiar el acceso del contenido.
-/**
- * Cambia el estado de un contenido.
- *
- * @param id identificador del contenido.
- * @param estado nuevo estado del contenido.
- */
+    /**
+     * Cambia el estado de un contenido.
+     *
+     * @param id identificador del contenido.
+     * @param estado nuevo estado del contenido.
+     */
     public void cambiarEstadoContenido(Long id, EstadoContenido estado) {
         log.info("Cambiando estado del contenido ID: {} al estado: {}", id, estado);
         
@@ -205,22 +204,24 @@ public class ContenidoService {
         log.info("Estado cambiado exitosamente. Contenido ID: {}, Título: '{}', Estado anterior: {}, Estado nuevo: {}", 
                 id, contenido.getTitulo(), estadoAnterior, estado);
     }
-/**
- * Desactiva un contenido cambiando su estado a INACTIVO.
- *
- * @param id identificador del contenido.
- */
+
+    /**
+     * Desactiva un contenido cambiando su estado a INACTIVO.
+     *
+     * @param id identificador del contenido.
+     */
     public void desactivarContenido(Long id) {
         log.info("Desactivando contenido con ID: {}", id);
         cambiarEstadoContenido(id, EstadoContenido.INACTIVO);
         log.info("Contenido ID: {} desactivado correctamente", id);
     }
-/**
- * Filtra contenidos por categoría.
- *
- * @param categoria categoría buscada.
- * @return lista de contenidos pertenecientes a la categoría.
- */
+
+    /**
+     * Filtra contenidos por categoría.
+     *
+     * @param categoria categoría buscada.
+     * @return lista de contenidos pertenecientes a la categoría.
+     */
     public List<ContenidoResponse> listarPorCategoria(String categoria) {
         log.debug("Buscando contenidos por categoría: {}", categoria);
         
@@ -234,11 +235,12 @@ public class ContenidoService {
         log.debug("Contenidos encontrados en categoría '{}': {}", categoria, contenidos.size());
         return contenidos;
     }
-/**
- * Lista los contenidos recomendados.
- *
- * @return lista de contenidos marcados como recomendados.
- */
+
+    /**
+     * Lista los contenidos recomendados.
+     *
+     * @return lista de contenidos marcados como recomendados.
+     */
     public List<ContenidoResponse> listarRecomendados() {
         log.debug("Listando contenidos recomendados");
         
@@ -251,11 +253,12 @@ public class ContenidoService {
         log.debug("Contenidos recomendados encontrados: {}", contenidos.size());
         return contenidos;
     }
-/**
- * Lista los contenidos en tendencia.
- *
- * @return lista de contenidos marcados como tendencia.
- */
+
+    /**
+     * Lista los contenidos en tendencia.
+     *
+     * @return lista de contenidos marcados como tendencia.
+     */
     public List<ContenidoResponse> listarTendencias() {
         log.debug("Listando contenidos en tendencia");
         
@@ -268,12 +271,13 @@ public class ContenidoService {
         log.debug("Contenidos en tendencia encontrados: {}", contenidos.size());
         return contenidos;
     }
-/**
- * Busca contenidos por título.
- *
- * @param titulo texto usado en la búsqueda.
- * @return lista de contenidos encontrados.
- */
+
+    /**
+     * Busca contenidos por título.
+     *
+     * @param titulo texto usado en la búsqueda.
+     * @return lista de contenidos encontrados.
+     */
     public List<ContenidoResponse> buscarPorTitulo(String titulo) {
         log.debug("Buscando contenidos por título: {}", titulo);
         
@@ -286,44 +290,6 @@ public class ContenidoService {
         
         log.debug("Contenidos encontrados con título que contiene '{}': {}", titulo, contenidos.size());
         return contenidos;
-    }
-
-    public void desactivarContenido(Long id) {
-        cambiarEstadoContenido(id, EstadoContenido.INACTIVO);
-    }
-
-    public List<ContenidoResponse> listarPorCategoria(String categoria) {
-        return contenidoRepository.findAll()
-                .stream()
-                .filter(c -> c.getCategoria() != null &&
-                        c.getCategoria().equalsIgnoreCase(categoria))
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<ContenidoResponse> listarRecomendados() {
-        return contenidoRepository.findAll()
-                .stream()
-                .filter(c -> Boolean.TRUE.equals(c.getRecomendado()))
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<ContenidoResponse> listarTendencias() {
-        return contenidoRepository.findAll()
-                .stream()
-                .filter(c -> Boolean.TRUE.equals(c.getTendencia()))
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    public List<ContenidoResponse> buscarPorTitulo(String titulo) {
-        return contenidoRepository.findAll()
-                .stream()
-                .filter(c -> c.getTitulo() != null &&
-                        c.getTitulo().toLowerCase().contains(titulo.toLowerCase()))
-                .map(this::mapToResponse)
-                .toList();
     }
 
     private ContenidoResponse mapToResponse(Contenido contenido) {
@@ -348,7 +314,11 @@ public class ContenidoService {
                 .build();
     }
     
-    //admin puede eliminar contenido, lo que realmente hace es borrarlo de la base de datos. Solo se recomienda usar esta función para eliminar contenido que se haya creado por error o que ya no se quiera mostrar en la plataforma, pero que no se quiera mantener un registro histórico de su existencia.
+    /**
+     * Admin puede eliminar contenido, lo que realmente hace es borrarlo de la base de datos.
+     * Solo se recomienda usar esta función para eliminar contenido que se haya creado por error
+     * o que ya no se quiera mostrar en la plataforma.
+     */
     public void eliminarContenido(Long id) {
         log.warn("Intentando eliminar contenido con ID: {}", id);
         
