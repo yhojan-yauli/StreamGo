@@ -11,34 +11,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.StreamGo.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
 
-/**
- * Configuración principal de seguridad del backend de StreamGo.
- *
- * Define las rutas públicas, rutas protegidas por rol,
- * autenticación mediante JWT y política sin sesiones.
- */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    /**
-     * Configura la cadena de filtros de seguridad de Spring Security.
-     *
-     * Permite rutas públicas como autenticación, Swagger, noticias públicas
-     * y reproducción pública. También protege rutas administrativas,
-     * rutas de cliente, reproducción, calificaciones e historial.
-     *
-     * @param http objeto de configuración de seguridad HTTP.
-     * @return cadena de filtros de seguridad configurada.
-     * @throws Exception si ocurre un error durante la configuración.
-     */
+    // Configuración principal de seguridad
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -46,8 +34,8 @@ public class SecurityConfig {
                 // Desactivar CSRF para APIs REST
                 .csrf(csrf -> csrf.disable())
 
-                // Habilitar configuración CORS básica
-                .cors(cors -> {})
+                // Enlazar la configuración de CORS nativa de Spring Security
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // JWT sin sesiones
                 .sessionManagement(session ->
@@ -67,32 +55,36 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Rutas públicas sin autenticación
-                        .requestMatchers("/public/**").permitAll()
-
-                        // Noticias públicas y administración de noticias
+                        // Permisos de Noticias
                         .requestMatchers(HttpMethod.GET, "/noticias/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/noticias/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/noticias/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/noticias/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.DELETE, "/noticias/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/noticias/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/noticias/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/noticias/**").hasAnyAuthority("ADMIN", "CLIENTE")
+                        .requestMatchers(HttpMethod.DELETE, "/noticias/**").hasAuthority("ADMIN")
 
-                        // Rutas administrativas
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // Rutas ADMIN (Manejo estricto de autoridades sin prefijos)
+                        .requestMatchers(HttpMethod.GET, "/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/admin/**").hasAuthority("ADMIN")
 
-                        // Catálogo de contenidos para clientes y administradores
-                        .requestMatchers("/contenidos/**").hasAnyRole("CLIENTE", "ADMIN")
+                        // Catálogo de contenidos
+                        .requestMatchers("/contenidos/**").hasAnyAuthority("CLIENTE", "ADMIN")
 
-                        // Rutas exclusivas para clientes
-                        .requestMatchers("/reproduccion/**").hasRole("CLIENTE")
-                        .requestMatchers("/calificaciones/**").hasRole("CLIENTE")
-                        .requestMatchers("/historial/**").hasRole("CLIENTE")
+                        // Reproducción
+                        .requestMatchers("/reproduccion/**").hasAuthority("CLIENTE")
 
-                        // Cualquier otra ruta requiere autenticación
+                        // Calificaciones solo para clientes
+                        .requestMatchers("/calificaciones/**").hasAuthority("CLIENTE")
+
+                        // Historial solo para clientes
+                        .requestMatchers("/historial/**").hasAuthority("CLIENTE")
+
+                        // Otras rutas requieren estar autenticados
                         .anyRequest().authenticated()
                 )
 
-                // Filtro JWT antes del filtro de autenticación tradicional
+                // Filtro JWT antes del filtro de usuario/contraseña
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -101,23 +93,28 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Define el encriptador de contraseñas utilizado por el sistema.
-     *
-     * @return instancia de BCryptPasswordEncoder.
-     */
+    // Configuración explícita de CORS para Spring Security
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    // Encriptador BCrypt
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Expone el AuthenticationManager de Spring Security.
-     *
-     * @param config configuración de autenticación.
-     * @return AuthenticationManager configurado.
-     * @throws Exception si ocurre un error al obtener el manager.
-     */
+    // Authentication Manager
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
