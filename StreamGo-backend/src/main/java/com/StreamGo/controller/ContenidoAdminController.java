@@ -53,7 +53,7 @@ public class ContenidoAdminController {
      * @param request nuevos datos del contenido.
      * @return contenido actualizado.
      */
-    @PutMapping("/{id}/editar parametros de un contenido")
+    @PutMapping("/{id}/editar")
     public ResponseEntity<ContenidoResponse> actualizarContenido(
             @PathVariable("id") Long id,
             @RequestBody ActualizarContenidoRequest request
