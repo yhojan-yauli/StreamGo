@@ -39,6 +39,9 @@ dependencies {
 //mercadopago
     implementation("com.mercadopago:sdk-java:2.1.28")
 
+    //OAuth2
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+
 }
 
 tasks.withType<Test> {

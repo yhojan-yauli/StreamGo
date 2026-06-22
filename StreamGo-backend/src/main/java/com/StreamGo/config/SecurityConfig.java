@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import com.StreamGo.security.CustomOAuth2SuccessHandler;
 
 import com.StreamGo.security.JwtAuthenticationFilter;
 
@@ -31,6 +32,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2SuccessHandler oAuth2SuccessHandler; // <- Inyectamos tu Handler de éxito
 
     /**
      * Configura la cadena de filtros de seguridad de Spring Security.
@@ -55,7 +57,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/login/oauth2/**", // <- CRUCIAL: Permite el flujo de login de Spring con Google
+                                "/oauth2/**"
                         ).permitAll()
 
                         // Rutas públicas del frontend: contenidos y reproducción SINLOGIN
@@ -85,6 +89,10 @@ public class SecurityConfig {
                         .requestMatchers("/contenidos/**").hasAnyAuthority("CLIENTE", "ADMIN")
 
                         .anyRequest().authenticated()
+                )
+                // Habilitamos el login social vinculándolo con nuestro Handler personalizado
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2SuccessHandler)
                 )
                 .addFilterBefore(
                         jwtAuthenticationFilter,
