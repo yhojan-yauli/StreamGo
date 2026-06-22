@@ -12,6 +12,8 @@ import java.util.List;
 /**
  * Servicio de administración del sistema StreamGo.
  * Gestiona a clientes y sus suscripciones.
+ * @author Yhojan Yauli
+ * @version 1.0
  */
 @Service
 @RequiredArgsConstructor
