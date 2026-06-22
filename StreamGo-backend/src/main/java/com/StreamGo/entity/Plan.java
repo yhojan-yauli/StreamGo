@@ -45,5 +45,6 @@ import java.math.BigDecimal;
         private Boolean activo;
 
         //plan personalisado
+        @Builder.Default
         private Boolean personalizado = false;
     }
