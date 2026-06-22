@@ -11,11 +11,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.StreamGo.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,7 +33,10 @@ public class SecurityConfig {
         http
                 // Desactivar CSRF para APIs REST
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
+
+                // Enlazar la configuración de CORS nativa de Spring Security
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 // JWT sin sesiones
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -40,8 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // Webhooks públicos
-                        .requestMatchers("/webhook/**")
-                        .permitAll()
+                        .requestMatchers("/webhook/**").permitAll()
 
                         // Auth y Swagger públicos
                         .requestMatchers(
@@ -49,35 +54,36 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        
+
                         // Permisos de Noticias
                         .requestMatchers(HttpMethod.GET, "/noticias/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/noticias/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/noticias/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/noticias/**").hasAnyRole("ADMIN", "CLIENTE")
-                        .requestMatchers(HttpMethod.DELETE, "/noticias/**").hasRole("ADMIN")
-                                        
-                        // Rutas ADMIN
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/noticias/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/noticias/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/noticias/**").hasAnyAuthority("ADMIN", "CLIENTE")
+                        .requestMatchers(HttpMethod.DELETE, "/noticias/**").hasAuthority("ADMIN")
+
+                        // Rutas ADMIN (Manejo estricto de autoridades sin prefijos)
+                        .requestMatchers(HttpMethod.GET, "/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/admin/**").hasAuthority("ADMIN")
 
                         // Catálogo de contenidos
-                        .requestMatchers("/contenidos/**").hasAnyRole("CLIENTE", "ADMIN")
+                        .requestMatchers("/contenidos/**").hasAnyAuthority("CLIENTE", "ADMIN")
 
                         // Reproducción
-                        .requestMatchers("/reproduccion/**").hasRole("CLIENTE")
+                        .requestMatchers("/reproduccion/**").hasAuthority("CLIENTE")
 
                         // Calificaciones solo para clientes
-                        .requestMatchers("/calificaciones/**")
-                        .hasRole("CLIENTE")
+                        .requestMatchers("/calificaciones/**").hasAuthority("CLIENTE")
 
-                        // Historial solo para clientes para la parte de mis listas del frontend
-                        .requestMatchers("/historial/**")
-                        .hasRole("CLIENTE")
+                        // Historial solo para clientes
+                        .requestMatchers("/historial/**").hasAuthority("CLIENTE")
 
-                                                // Otras rutas requieren login
+                        // Otras rutas requieren estar autenticados
                         .anyRequest().authenticated()
                 )
-                
+
                 // Filtro JWT antes del filtro de usuario/contraseña
                 .addFilterBefore(
                         jwtAuthenticationFilter,
@@ -85,6 +91,21 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    // Configuración explícita de CORS para Spring Security
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     // Encriptador BCrypt

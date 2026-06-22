@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
  * Permite controlar el acceso según el estado
  * del usuario y del contenido.
  */
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -38,64 +37,50 @@ public class ReproduccionService {
     private final SuscripcionRepository suscripcionRepository;
     private final HistorialReproduccionRepository historialRepository;
 
-/**
- * Inicia la reproducción de un contenido para un usuario autenticado.
- *
- * Reglas:
- * - Usuario ACTIVO: acceso total.
- * - Usuario INACTIVO: acceso a contenido INACTIVO y SINLOGIN.
- * - Usuario SUSPENDIDO: acceso denegado.
- *
- * @param contenidoId identificador del contenido.
- * @param email correo del usuario autenticado.
- * @return información de reproducción.
- */
-
-    public ReproduccionResponse reproducir(
-            Long contenidoId,
-            String email
-    ) {
+    /**
+     * Inicia la reproducción de un contenido para un usuario autenticado.
+     *
+     * Reglas:
+     * - Usuario ACTIVO: acceso total.
+     * - Usuario INACTIVO: acceso a contenido INACTIVO y SINLOGIN.
+     * - Usuario SUSPENDIDO: acceso denegado.
+     *
+     * @param contenidoId identificador del contenido.
+     * @param email correo del usuario autenticado.
+     * @return información de reproducción.
+     */
+    public ReproduccionResponse reproducir(Long contenidoId, String email) {
+        
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Contenido contenido = contenidoRepository.findById(contenidoId)
                 .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
 
-        log.info(
-                "Usuario {} intenta reproducir '{}' (ID={})",
-                email,
-                contenido.getTitulo(),
-                contenidoId
-        );
+        log.info("Usuario {} intenta reproducir '{}' (ID={})", email, contenido.getTitulo(), contenidoId);
 
+        // Verificar si usuario está suspendido
         if (usuario.getEstado() == EstadoUsuario.SUSPENDIDO) {
-
-            log.warn(
-                    "Usuario {} suspendido intentó reproducir contenido ID {}",
-                    email,
-                    contenidoId
-            );
-
+            log.warn("Usuario {} suspendido intentó reproducir contenido ID {}", email, contenidoId);
             throw new RuntimeException("Tu cuenta se encuentra suspendida");
         }
-    }
 
-    private void aumentarReproducciones(Contenido contenido) {
-
+        // Verificar acceso según estado del usuario y contenido
         if (usuario.getEstado() == EstadoUsuario.INACTIVO &&
                 contenido.getEstado() == EstadoContenido.ACTIVO) {
-
-            log.warn(
-                    "Usuario {} sin suscripción intentó acceder a contenido premium '{}'",
-                    email,
-                    contenido.getTitulo()
-            );
-
+            log.warn("Usuario {} sin suscripción intentó acceder a contenido premium '{}'", email, contenido.getTitulo());
             throw new RuntimeException("Este contenido requiere una suscripción activa");
         }
 
+        // Verificar suscripción activa si el contenido lo requiere
+        if (contenido.getEstado() == EstadoContenido.ACTIVO) {
+            validarSuscripcionActiva(usuario);
+        }
+
+        // Incrementar reproducciones
         aumentarReproducciones(contenido);
 
+        // Registrar en historial
         HistorialReproduccion historial = HistorialReproduccion.builder()
                 .usuario(usuario)
                 .contenido(contenido)
@@ -106,104 +91,76 @@ public class ReproduccionService {
 
         historialRepository.save(historial);
 
-        log.info(
-                "Reproducción iniciada correctamente. Usuario: {} | Contenido: {}",
-                email,
-                contenido.getTitulo()
-        );
+        log.info("Reproducción iniciada correctamente. Usuario: {} | Contenido: {}", email, contenido.getTitulo());
 
-        return construirRespuesta(
-                contenido,
-                "Reproducción iniciada"
-        );
+        return construirRespuesta(contenido, "Reproducción iniciada");
     }
 
-/**
- * Reproduce contenido para usuarios sin iniciar sesión.
- *
- * Solo permite contenidos con estado SINLOGIN.
- *
- * @param contenidoId identificador del contenido público.
- * @return datos de reproducción pública.
- */
+    /**
+     * Reproduce contenido para usuarios sin iniciar sesión.
+     *
+     * Solo permite contenidos con estado SINLOGIN.
+     *
+     * @param contenidoId identificador del contenido público.
+     * @return datos de reproducción pública.
+     */
     public ReproduccionResponse reproducirPublico(Long contenidoId) {
 
         Contenido contenido = contenidoRepository.findById(contenidoId)
                 .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
 
-        log.info(
-                "Intento de reproducción pública del contenido '{}'",
-                contenido.getTitulo()
-        );
+        log.info("Intento de reproducción pública del contenido '{}'", contenido.getTitulo());
 
         if (contenido.getEstado() != EstadoContenido.SINLOGIN) {
-
-            log.warn(
-                    "Intento de acceso público a contenido restringido '{}'",
-                    contenido.getTitulo()
-            );
-
+            log.warn("Intento de acceso público a contenido restringido '{}'", contenido.getTitulo());
             throw new RuntimeException("Este contenido requiere iniciar sesión");
         }
 
         aumentarReproducciones(contenido);
 
-        log.info(
-                "Reproducción pública iniciada para '{}'",
-                contenido.getTitulo()
-        );
+        log.info("Reproducción pública iniciada para '{}'", contenido.getTitulo());
 
-        return construirRespuesta(
-                contenido,
-                "Reproducción pública iniciada"
-        );
+        return construirRespuesta(contenido, "Reproducción pública iniciada");
     }
 
-/**
- * Valida si el usuario posee una suscripción activa.
- *
- * @param usuario usuario a validar.
- */
+    /**
+     * Valida si el usuario posee una suscripción activa.
+     *
+     * @param usuario usuario a validar.
+     */
     private void validarSuscripcionActiva(Usuario usuario) {
 
         Suscripcion suscripcion = suscripcionRepository.findByUsuario(usuario)
-                .orElseThrow(() ->
-                        new RuntimeException("Necesitas una suscripción activa para reproducir este contenido")
-                );
+                .orElseThrow(() -> new RuntimeException("Necesitas una suscripción activa para reproducir este contenido"));
 
         if (suscripcion.getEstado() != EstadoSuscripcion.ACTIVA ||
-                suscripcion.getFechaFin().isBefore(LocalDateTime.now()) ||
-                suscripcion.getHorasRestantes() <= 0) {
-
+                suscripcion.getFechaFin().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Tu suscripción no está activa o ya expiró");
         }
     }
-/**
- * Incrementa el contador total de reproducciones de un contenido.
- *
- * @param contenido contenido reproducido.
- */
-    private void aumentarReproducciones(Contenido contenido) {
 
+    /**
+     * Incrementa el contador total de reproducciones de un contenido.
+     *
+     * @param contenido contenido reproducido.
+     */
+    private void aumentarReproducciones(Contenido contenido) {
         contenido.setTotalReproducciones(
                 contenido.getTotalReproducciones() == null
                         ? 1
                         : contenido.getTotalReproducciones() + 1
         );
-
         contenidoRepository.save(contenido);
     }
-/**
- * Construye la respuesta de reproducción.
- *
- * @param contenido contenido reproducido.
- * @param mensaje mensaje de respuesta.
- * @return respuesta con datos del contenido reproducido.
- */
-    private ReproduccionResponse construirRespuesta(
-            Contenido contenido,
-            String mensaje
-    ) {
+
+    /**
+     * Construye la respuesta de reproducción.
+     *
+     * @param contenido contenido reproducido.
+     * @param mensaje mensaje de respuesta.
+     * @return respuesta con datos del contenido reproducido.
+     */
+    private ReproduccionResponse construirRespuesta(Contenido contenido, String mensaje) {
         return ReproduccionResponse.builder()
                 .contenidoId(contenido.getId())
                 .titulo(contenido.getTitulo())
