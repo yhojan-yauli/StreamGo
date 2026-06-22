@@ -1,0 +1,55 @@
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo-auth {
+    width: 360px;
+    margin-top: 45px;
+    margin-bottom: 35px;
+}
+
+.auth-box {
+    width: 330px;
+    padding: 18px;
+    border: 1px solid #6f27ff;
+    border-radius: 6px;
+    background: rgba(5, 10, 30, 0.75);
+}
+
+.auth-box label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 9px;
+    margin-bottom: 14px;
+    border-radius: 5px;
+    border: 1px solid #aaa;
+    background: #4b4b4b;
+    color: white;
+}
+
+.btn-morado {
+    width: 100%;
+    padding: 9px;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #6f2bff, #8b18ff);
+    color: white;
+}
+
+.btn-google {
+    width: 100%;
+    padding: 9px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 5px;
+    background: white;
+    color: #333;
+}
