@@ -6,6 +6,7 @@ import { Login } from './pages-public/login/login';
 import { Register } from './pages-public/register/register';
 import { Peliculas } from './pages-public/peliculas/peliculas';
 import { ReproducirPublico } from './pages-public/reproducir-publico/reproducir-publico';
+import { Oauth2RedirectComponent } from './pages-public/oauth2-redirect/oauth2-redirect';
 
 // CLIENTE
 import { HomeClient } from './pages-client/home-client/home-client';
@@ -37,6 +38,7 @@ export const routes: Routes = [
   { path: 'register', component: Register, canActivate: [PublicGuard] },
   { path: 'peliculas', component: Peliculas, canActivate: [PublicGuard] },
   { path: 'peliculas/:id', component: ReproducirPublico, canActivate: [PublicGuard] },
+  { path: 'oauth2/redirect', component: Oauth2RedirectComponent },
 
   // CLIENTE
   { path: 'client/home', component: HomeClient, canActivate: [AuthGuard, RoleGuard], data: { role: 'CLIENTE' } },

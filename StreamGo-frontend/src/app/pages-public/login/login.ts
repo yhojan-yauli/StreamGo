@@ -50,4 +50,9 @@ export class Login {
       }
     });
   }
+
+  loginConGoogle(): void {
+  // Redirección directa hacia el endpoint automático de Spring Boot
+  window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+}
 }

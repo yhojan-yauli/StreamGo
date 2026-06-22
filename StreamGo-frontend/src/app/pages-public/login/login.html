@@ -16,7 +16,12 @@
       <button class="btn-morado" type="submit">Iniciar Sesión</button>
     </form>
 
-    <button class="btn-google" type="button">🌐 Iniciar con Google</button>
+    <div class="oauth-container">
+  <hr>
+  <button type="button" (click)="loginConGoogle()" class="btn-google">
+    Iniciar sesión con Google
+  </button>
+</div>
 
     <p class="auth-link">
       ¿No tienes cuenta?
