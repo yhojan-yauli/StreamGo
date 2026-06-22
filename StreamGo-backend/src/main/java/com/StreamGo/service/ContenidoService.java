@@ -6,6 +6,13 @@ import com.StreamGo.dto.response.ContenidoResponse;
 import com.StreamGo.entity.Contenido;
 import com.StreamGo.entity.Enum.EstadoContenido;
 import com.StreamGo.repository.ContenidoRepository;
+import com.StreamGo.repository.UsuarioRepository;
+import com.StreamGo.repository.SuscripcionRepository;
+import com.StreamGo.entity.Usuario;
+import com.StreamGo.entity.Suscripcion;
+import com.StreamGo.entity.Enum.EstadoUsuario;
+import com.StreamGo.entity.Enum.EstadoSuscripcion;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +31,8 @@ import java.util.List;
 public class ContenidoService {
 
     private final ContenidoRepository contenidoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final SuscripcionService suscripcionService;
 
     /**
      * Crea un nuevo contenido dentro de la plataforma.
@@ -134,6 +143,46 @@ public class ContenidoService {
         
         log.debug("Total de contenidos listados para cliente con suscripción: {}", contenidos.size());
         return contenidos;
+    }
+
+
+    /**
+     * Lista contenidos para un usuario autenticado según su estado y suscripción.
+     *
+     * Reglas:
+     * - Usuario ACTIVO o con suscripción activa: ve ACTIVO, INACTIVO y SINLOGIN.
+     * - Usuario INACTIVO: ve INACTIVO y SINLOGIN.
+     * - Usuario SUSPENDIDO: no visualiza contenidos.
+     *
+     * @param email correo del usuario autenticado.
+     * @return lista de contenidos permitidos para el usuario.
+     */
+    public List<ContenidoResponse> listarParaUsuario(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getEstado() == EstadoUsuario.SUSPENDIDO) {
+            log.warn("Usuario suspendido {} intentó listar contenidos", email);
+            throw new RuntimeException("Tu cuenta se encuentra suspendida");
+        }
+
+        boolean accesoTotal = usuario.getEstado() == EstadoUsuario.ACTIVO || tieneSuscripcionActiva(usuario);
+
+        if (accesoTotal) {
+            return listarParaClienteConSuscripcion();
+        }
+
+        return listarParaClienteSinSuscripcion();
+    }
+
+    /**
+     * Verifica si el usuario tiene una suscripción activa y vigente.
+     *
+     * @param usuario usuario a validar.
+     * @return true si posee suscripción activa, false en caso contrario.
+     */
+    private boolean tieneSuscripcionActiva(Usuario usuario) {
+        return suscripcionService.usuarioTieneSuscripcionActiva(usuario);
     }
 
     /**

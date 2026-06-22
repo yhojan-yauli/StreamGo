@@ -34,7 +34,7 @@ public class ReproduccionService {
 
     private final UsuarioRepository usuarioRepository;
     private final ContenidoRepository contenidoRepository;
-    private final SuscripcionRepository suscripcionRepository;
+    private final SuscripcionService suscripcionService;
     private final HistorialReproduccionRepository historialRepository;
 
     /**
@@ -65,16 +65,11 @@ public class ReproduccionService {
             throw new RuntimeException("Tu cuenta se encuentra suspendida");
         }
 
-        // Verificar acceso según estado del usuario y contenido
-        if (usuario.getEstado() == EstadoUsuario.INACTIVO &&
-                contenido.getEstado() == EstadoContenido.ACTIVO) {
-            log.warn("Usuario {} sin suscripción intentó acceder a contenido premium '{}'", email, contenido.getTitulo());
+        // Verificar acceso premium si el contenido es ACTIVO.
+        // Se permite si el usuario está ACTIVO o si tiene una suscripción activa vigente.
+        if (contenido.getEstado() == EstadoContenido.ACTIVO && !tieneAccesoPremium(usuario)) {
+            log.warn("Usuario {} sin acceso premium intentó acceder a contenido '{}'", email, contenido.getTitulo());
             throw new RuntimeException("Este contenido requiere una suscripción activa");
-        }
-
-        // Verificar suscripción activa si el contenido lo requiere
-        if (contenido.getEstado() == EstadoContenido.ACTIVO) {
-            validarSuscripcionActiva(usuario);
         }
 
         // Incrementar reproducciones
@@ -124,19 +119,21 @@ public class ReproduccionService {
     }
 
     /**
-     * Valida si el usuario posee una suscripción activa.
+     * Verifica si el usuario posee acceso premium.
+     *
+     * Se considera acceso premium cuando el usuario está en estado ACTIVO
+     * o cuando tiene una suscripción ACTIVA y vigente.
      *
      * @param usuario usuario a validar.
+     * @return true si puede acceder a contenido ACTIVO.
      */
-    private void validarSuscripcionActiva(Usuario usuario) {
+    private boolean tieneAccesoPremium(Usuario usuario) {
 
-        Suscripcion suscripcion = suscripcionRepository.findByUsuario(usuario)
-                .orElseThrow(() -> new RuntimeException("Necesitas una suscripción activa para reproducir este contenido"));
-
-        if (suscripcion.getEstado() != EstadoSuscripcion.ACTIVA ||
-                suscripcion.getFechaFin().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Tu suscripción no está activa o ya expiró");
+        if (usuario.getEstado() == EstadoUsuario.ACTIVO) {
+            return true;
         }
+
+        return suscripcionService.usuarioTieneSuscripcionActiva(usuario);
     }
 
     /**

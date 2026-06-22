@@ -97,7 +97,7 @@ public class PaymentService {
         log.info("Usuario activado: {}", usuario.getEmail());
 
         Suscripcion suscripcion =
-                suscripcionService.crearSuscripcion(plan);
+                suscripcionService.crearSuscripcion(usuario, plan);
 
         log.info("Suscripción creada ID: {}", suscripcion.getId());
 

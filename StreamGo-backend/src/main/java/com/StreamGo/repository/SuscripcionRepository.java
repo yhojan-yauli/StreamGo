@@ -11,8 +11,26 @@ import java.util.Optional;
 public interface SuscripcionRepository
         extends JpaRepository<Suscripcion, Long> {
 
-    Optional<Suscripcion> findByUsuarioId(Long usuarioId);
-    Optional<Suscripcion> findByUsuario(Usuario usuario);
-    List<Suscripcion> findByEstado(EstadoSuscripcion estado);
+    List<Suscripcion> findByUsuarioId(Long usuarioId);
 
+    List<Suscripcion> findByUsuario(Usuario usuario);
+
+    List<Suscripcion> findByUsuarioIdAndEstado(
+            Long usuarioId,
+            EstadoSuscripcion estado
+    );
+
+    List<Suscripcion> findByUsuarioAndEstado(
+            Usuario usuario,
+            EstadoSuscripcion estado
+    );
+
+    Optional<Suscripcion> findTopByUsuarioIdOrderByFechaFinDesc(Long usuarioId);
+
+    Optional<Suscripcion> findTopByUsuarioIdAndEstadoOrderByFechaFinDesc(
+            Long usuarioId,
+            EstadoSuscripcion estado
+    );
+
+    List<Suscripcion> findByEstado(EstadoSuscripcion estado);
 }
