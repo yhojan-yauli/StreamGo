@@ -20,71 +20,72 @@ import com.StreamGo.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import java.util.Arrays;
 
+/**
+ * Configuración principal de seguridad del backend de StreamGo.
+ *
+ * Define las rutas públicas, rutas protegidas por autoridad,
+ * autenticación mediante JWT, configuración CORS y política sin sesiones.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    // Configuración principal de seguridad
+    /**
+     * Configura la cadena de filtros de seguridad de Spring Security.
+     *
+     * @param http objeto de configuración HTTP.
+     * @return cadena de filtros configurada.
+     * @throws Exception si ocurre un error durante la configuración.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // Desactivar CSRF para APIs REST
                 .csrf(csrf -> csrf.disable())
-
-                // Enlazar la configuración de CORS nativa de Spring Security
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // JWT sin sesiones
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                // Configuración de rutas
                 .authorizeHttpRequests(auth -> auth
 
-                        // Webhooks públicos
+                        // Rutas públicas generales
                         .requestMatchers("/webhook/**").permitAll()
-
-                        // Auth y Swagger públicos
                         .requestMatchers(
                                 "/auth/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Permisos de Noticias
+                        // Rutas públicas del frontend: contenidos y reproducción SINLOGIN
+                        .requestMatchers("/public/**").permitAll()
+
+                        // Planes públicos
+                        .requestMatchers(HttpMethod.GET, "/planes/**").permitAll()
+
+                        // Noticias públicas y administración de noticias
                         .requestMatchers(HttpMethod.GET, "/noticias/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/noticias/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/noticias/**").hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/noticias/**").hasAnyAuthority("ADMIN", "CLIENTE")
                         .requestMatchers(HttpMethod.DELETE, "/noticias/**").hasAuthority("ADMIN")
 
-                        // Rutas ADMIN (Manejo estricto de autoridades sin prefijos)
-                        .requestMatchers(HttpMethod.GET, "/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/admin/**").hasAuthority("ADMIN")
+                        // Administración
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
 
-                        // Catálogo de contenidos
-                        .requestMatchers("/contenidos/**").hasAnyAuthority("CLIENTE", "ADMIN")
-
-                        // Reproducción
+                        // Rutas de cliente
+                        .requestMatchers("/cliente/**").hasAuthority("CLIENTE")
+                        .requestMatchers("/payments/**").hasAuthority("CLIENTE")
                         .requestMatchers("/reproduccion/**").hasAuthority("CLIENTE")
-
-                        // Calificaciones solo para clientes
                         .requestMatchers("/calificaciones/**").hasAuthority("CLIENTE")
-
-                        // Historial solo para clientes
                         .requestMatchers("/historial/**").hasAuthority("CLIENTE")
 
-                        // Otras rutas requieren estar autenticados
+                        // Catálogo autenticado para cliente o administrador
+                        .requestMatchers("/contenidos/**").hasAnyAuthority("CLIENTE", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
-
-                // Filtro JWT antes del filtro de usuario/contraseña
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -93,11 +94,19 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Configuración explícita de CORS para Spring Security
+    /**
+     * Configura CORS para permitir el consumo desde Angular y Live Server.
+     *
+     * @return fuente de configuración CORS.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:4200",
+                "http://localhost:5500",
+                "http://127.0.0.1:5500"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
         configuration.setExposedHeaders(Arrays.asList("Authorization"));
@@ -108,13 +117,23 @@ public class SecurityConfig {
         return source;
     }
 
-    // Encriptador BCrypt
+    /**
+     * Define el encriptador de contraseñas del sistema.
+     *
+     * @return PasswordEncoder con BCrypt.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Authentication Manager
+    /**
+     * Expone el AuthenticationManager usado por Spring Security.
+     *
+     * @param config configuración de autenticación.
+     * @return AuthenticationManager configurado.
+     * @throws Exception si ocurre un error al obtenerlo.
+     */
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config
