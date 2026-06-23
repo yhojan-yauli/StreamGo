@@ -1,0 +1,31 @@
+<app-navbar-public [showAuthButtons]="false"></app-navbar-public>
+
+<main class="auth-page">
+  <img src="/logo.png" class="logo-auth" alt="StreamGO">
+
+  <section class="auth-box">
+    <h1>Iniciar Sesión</h1>
+
+    <form (ngSubmit)="login()">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" placeholder="usuario@gmail.com" required>
+
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" name="password" placeholder="********" required>
+
+      <button class="btn-morado" type="submit">Iniciar Sesión</button>
+    </form>
+
+    <div class="oauth-container">
+  <hr>
+  <button type="button" (click)="loginConGoogle()" class="btn-google">
+    Iniciar sesión con Google
+  </button>
+</div>
+
+    <p class="auth-link">
+      ¿No tienes cuenta?
+      <a routerLink="/register">Regístrate</a>
+    </p>
+  </section>
+</main>

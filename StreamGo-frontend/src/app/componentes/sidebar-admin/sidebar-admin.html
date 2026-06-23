@@ -1,0 +1,26 @@
+<button class="menu-toggle" type="button" (click)="toggleSidebar()">☰</button>
+
+<aside class="sidebar-admin" [class.sidebar-cerrado]="!sidebarAbierto">
+  <div class="sidebar-header">
+    <img src="/logo.png" alt="StreamGO" class="sidebar-logo">
+
+    <div>
+      <strong>Panel Admin</strong>
+      <small>Gestión StreamGO</small>
+    </div>
+  </div>
+
+  <nav class="sidebar-menu">
+    <a routerLink="/admin/home" routerLinkActive="activo"><span>🏠</span><p>Home</p></a>
+    <a routerLink="/admin/usuarios" routerLinkActive="activo"><span>👥</span><p>Gestión de usuarios</p></a>
+    <a routerLink="/admin/contenido" routerLinkActive="activo"><span>🎬</span><p>Gestión de contenido</p></a>
+    <a routerLink="/admin/noticias" routerLinkActive="activo"><span>📰</span><p>Noticias / Comunidad</p></a>
+    <a routerLink="/admin/peticiones" routerLinkActive="activo"><span>⭐</span><p>Peticiones / Ranking</p></a>
+    <a routerLink="/admin/planes" routerLinkActive="activo"><span>💳</span><p>Planes</p></a>
+    <a routerLink="/admin/suscripciones" routerLinkActive="activo"><span>📄</span><p>Suscripciones</p></a>
+  </nav>
+
+  <div class="logout-container">
+    <button type="button" class="logout-btn" (click)="logout()">🚪 Cerrar sesión</button>
+  </div>
+</aside>

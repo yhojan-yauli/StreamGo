@@ -1,0 +1,15 @@
+<header class="public-navbar">
+  <a routerLink="/" class="navbar-logo-box">
+    <img src="/logo.png" alt="StreamGO" class="logo-cliente">
+  </a>
+
+  <nav>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+    <a routerLink="/peliculas" routerLinkActive="active">Películas</a>
+
+    @if (showAuthButtons) {
+      <a routerLink="/login" class="btn-login-nav">Iniciar Sesión</a>
+      <a routerLink="/register" class="btn-register-nav">Registrarse</a>
+    }
+  </nav>
+</header>

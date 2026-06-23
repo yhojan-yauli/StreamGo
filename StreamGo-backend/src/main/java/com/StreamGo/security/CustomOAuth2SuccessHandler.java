@@ -36,7 +36,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
 
-        // 💡 LEER LA ACCIÓN GUARDADA EN LA SESIÓN DEL SERVIDOR
+        // LEER LA ACCIÓN GUARDADA EN LA SESIÓN DEL SERVIDOR
         String action = (String) request.getSession().getAttribute("oauth2_action");
         boolean esFlujoRegistro = "register".equals(action);
 
@@ -54,8 +54,8 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 // Registramos al usuario en MySQL con tu método tradicional
                 authService.registerFromGoogle(email, name);
 
-                // ❌ NO GENERAMOS TOKEN AQUÍ.
-                // 💡 Redirigimos directo al Login de Angular con un parámetro de éxito
+                // NO GENERAMOS TOKEN AQUÍ.
+                // Redirigimos directo al Login de Angular con un parámetro de éxito
                 targetUrl = "http://localhost:4200/login?registro=exitoso";
             }
         } else {
