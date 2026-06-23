@@ -1,5 +1,8 @@
 package com.StreamGo.security;
 
+import com.StreamGo.entity.Usuario;
+import com.StreamGo.repository.UsuarioRepository;
+import com.StreamGo.service.AuthService; // Inyectamos tu servicio
 import com.StreamGo.service.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,12 +15,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
+    private final UsuarioRepository usuarioRepository;
+    private final AuthService authService; // <- Inyectado
 
     @Override
     public void onAuthenticationSuccess(
@@ -28,17 +34,48 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
 
-        // Usamos el rol que maneja tu sistema
-        String rol = "CLIENTE";
+        // Capturamos el parámetro "state" enviado desde Angular
+        String action = request.getParameter("state");
 
-        // 💡 LLAMADA AL NUEVO MÉTODO QUE AGREGAMOS
-        String token = jwtService.generateTokenFromOAuth2(email, rol);
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        String targetUrl;
 
-        // Redirigir a Angular
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:4200/oauth2/redirect")
-                .queryParam("token", token)
-                .build().toUriString();
+        if ("register".equals(action)) {
+            // === FLUJO DE REGISTRO ===
+            if (usuarioOptional.isPresent()) {
+                // Si ya existe, lo mandamos al register con error de duplicado
+                targetUrl = "http://localhost:4200/register?error=ya_existe";
+            } else {
+                // Si no existe, lo creamos usando tu nuevo método en AuthService
+                Usuario nuevoUsuario = authService.registerFromGoogle(email, name);
+                String token = jwtService.generateTokenFromOAuth2(nuevoUsuario.getEmail(), nuevoUsuario.getRol().name());
+
+                targetUrl = UriComponentsBuilder.fromUriString("http://localhost:4200/oauth2/redirect")
+                        .queryParam("token", token)
+                        .build().toUriString();
+            }
+        } else {
+            // === FLUJO DE LOGIN (Tus reglas estrictas) ===
+            if (usuarioOptional.isEmpty()) {
+                // No existe -> Error y rebote
+                targetUrl = "http://localhost:4200/login?error=usuario_no_registrado";
+            } else {
+                // Sí existe -> Login exitoso
+                Usuario usuario = usuarioOptional.get();
+
+                // Actualizas el último acceso como en tu login clásico
+                usuario.setUltimoAcceso(java.time.LocalDateTime.now());
+                usuarioRepository.save(usuario);
+
+                String token = jwtService.generateTokenFromOAuth2(usuario.getEmail(), usuario.getRol().name());
+
+                targetUrl = UriComponentsBuilder.fromUriString("http://localhost:4200/oauth2/redirect")
+                        .queryParam("token", token)
+                        .build().toUriString();
+            }
+        }
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }

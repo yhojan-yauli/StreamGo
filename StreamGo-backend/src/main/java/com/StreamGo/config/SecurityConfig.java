@@ -125,27 +125,4 @@ public class SecurityConfig {
         return source;
     }
 
-    /**
-     * Define el encriptador de contraseñas del sistema.
-     *
-     * @return PasswordEncoder con BCrypt.
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * Expone el AuthenticationManager usado por Spring Security.
-     *
-     * @param config configuración de autenticación.
-     * @return AuthenticationManager configurado.
-     * @throws Exception si ocurre un error al obtenerlo.
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config
-    ) throws Exception {
-        return config.getAuthenticationManager();
-    }
 }

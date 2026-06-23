@@ -102,4 +102,33 @@ public class AuthService {
                 .mensaje("Login exitoso")
                 .build();
     }
+
+    /**
+     * Registra un nuevo usuario en el sistema a través de una cuenta de Google (OAuth2).
+     *
+     * @param email email obtenido de Google
+     * @param nombre nombre obtenido de Google
+     * @return El usuario guardado en la base de datos
+     */
+    public Usuario registerFromGoogle(String email, String nombre) {
+        log.info("Intentando registrar usuario vía Google con email: {}", email);
+
+        if (usuarioRepository.existsByEmail(email)) {
+            log.warn("Intento de registro vía Google con correo ya existente: {}", email);
+            throw new RuntimeException("El correo ya está registrado");
+        }
+
+        Usuario usuario = Usuario.builder()
+                .nombre(nombre)
+                .email(email)
+                .password("") // Al ser login social, no maneja contraseña clásica
+                .rol(Rol.CLIENTE)
+                .estado(EstadoUsuario.INACTIVO) // Mantiene tu regla de negocio
+                .fechaRegistro(LocalDateTime.now())
+                .ultimoAcceso(LocalDateTime.now())
+                .build();
+
+        log.info("Usuario registrado correctamente vía Google: {}", email);
+        return usuarioRepository.save(usuario);
+    }
 }
