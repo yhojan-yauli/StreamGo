@@ -2,7 +2,7 @@ package com.StreamGo.security;
 
 import com.StreamGo.entity.Usuario;
 import com.StreamGo.repository.UsuarioRepository;
-import com.StreamGo.service.AuthService; // Inyectamos tu servicio
+import com.StreamGo.service.AuthService;
 import com.StreamGo.service.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
-    private final AuthService authService; // <- Inyectado
+    private final AuthService authService;
 
     @Override
     public void onAuthenticationSuccess(
@@ -36,41 +36,39 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
 
-        // Capturamos el parámetro "state" enviado desde Angular
-        String action = request.getParameter("state");
+        // LEER LA ACCIÓN GUARDADA EN LA SESIÓN DEL SERVIDOR
+        String action = (String) request.getSession().getAttribute("oauth2_action");
+        boolean esFlujoRegistro = "register".equals(action);
+
+        // Limpiamos la sesión para que no se quede guardada permanentemente
+        request.getSession().removeAttribute("oauth2_action");
 
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
         String targetUrl;
 
-        if ("register".equals(action)) {
+        if (esFlujoRegistro) {
             // === FLUJO DE REGISTRO ===
             if (usuarioOptional.isPresent()) {
-                // Si ya existe, lo mandamos al register con error de duplicado
                 targetUrl = "http://localhost:4200/register?error=ya_existe";
             } else {
-                // Si no existe, lo creamos usando tu nuevo método en AuthService
-                Usuario nuevoUsuario = authService.registerFromGoogle(email, name);
-                String token = jwtService.generateTokenFromOAuth2(nuevoUsuario.getEmail(), nuevoUsuario.getRol().name());
+                // Registramos al usuario en MySQL con tu método tradicional
+                authService.registerFromGoogle(email, name);
 
-                targetUrl = UriComponentsBuilder.fromUriString("http://localhost:4200/oauth2/redirect")
-                        .queryParam("token", token)
-                        .build().toUriString();
+                // NO GENERAMOS TOKEN AQUÍ.
+                // Redirigimos directo al Login de Angular con un parámetro de éxito
+                targetUrl = "http://localhost:4200/login?registro=exitoso";
             }
         } else {
-            // === FLUJO DE LOGIN (Tus reglas estrictas) ===
+            // === FLUJO DE LOGIN ===
+            // (Este bloque se queda exactamente igual como ya lo tienes)
             if (usuarioOptional.isEmpty()) {
-                // No existe -> Error y rebote
                 targetUrl = "http://localhost:4200/login?error=usuario_no_registrado";
             } else {
-                // Sí existe -> Login exitoso
                 Usuario usuario = usuarioOptional.get();
-
-                // Actualizas el último acceso como en tu login clásico
                 usuario.setUltimoAcceso(java.time.LocalDateTime.now());
                 usuarioRepository.save(usuario);
 
                 String token = jwtService.generateTokenFromOAuth2(usuario.getEmail(), usuario.getRol().name());
-
                 targetUrl = UriComponentsBuilder.fromUriString("http://localhost:4200/oauth2/redirect")
                         .queryParam("token", token)
                         .build().toUriString();

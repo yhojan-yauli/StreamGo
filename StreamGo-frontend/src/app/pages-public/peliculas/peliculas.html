@@ -1,0 +1,42 @@
+<app-navbar-public></app-navbar-public>
+
+<main class="public-explore">
+  <section class="floating-posters explore-posters">
+    <div class="poster-track">
+      <img *ngFor="let item of posters()" [src]="imagen(item)" [alt]="item.titulo || 'poster'">
+    </div>
+  </section>
+
+  <section class="public-list-area">
+    <div class="public-search">
+      <input type="text" placeholder="busca tu película favorita" (input)="buscar($event)">
+      <span>⌕</span>
+    </div>
+
+    <div class="categorias-publicas">
+      <button type="button" *ngFor="let categoria of categorias" [class.activa]="categoria === categoriaActiva" (click)="filtrarCategoria(categoria)">{{ categoria }}</button>
+    </div>
+
+    <div class="loading-box" *ngIf="cargando">Cargando contenido...</div>
+
+    <div class="public-list" *ngIf="!cargando">
+      <article class="public-item" *ngFor="let pelicula of peliculas">
+        <img [src]="imagen(pelicula)" [alt]="pelicula.titulo">
+        <div>
+          <small>{{ pelicula.tipoContenido || 'Contenido' }}</small>
+          <h3>{{ pelicula.titulo }}</h3>
+          <small>Estreno: {{ pelicula.fechaEstreno || 'Sin fecha' }}</small>
+          <p>{{ pelicula.descripcion || 'Sin descripción disponible.' }}</p>
+          <div class="meta-publica">
+            <span>⭐ {{ pelicula.promedioCalificacion || 0 }}</span>
+            <span>▶ {{ pelicula.totalReproducciones || 0 }}</span>
+            <span>{{ pelicula.categoria || 'Sin categoría' }}</span>
+          </div>
+        </div>
+        <button type="button" (click)="verPelicula(pelicula)">ver</button>
+      </article>
+    </div>
+
+    <div class="empty-public" *ngIf="!cargando && peliculas.length === 0">No se encontró contenido disponible.</div>
+  </section>
+</main>

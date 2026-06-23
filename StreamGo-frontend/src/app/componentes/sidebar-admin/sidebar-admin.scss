@@ -1,0 +1,131 @@
+.menu-toggle {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 1200;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(125, 90, 255, .45);
+  border-radius: 12px;
+  background: rgba(12, 16, 30, .9);
+  color: white;
+  font-size: 22px;
+  display: none;
+}
+
+.sidebar-admin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  z-index: 1100;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(10, 14, 26, .96), rgba(8, 10, 18, .96));
+  border-right: 1px solid rgba(125, 90, 255, .32);
+  box-shadow: 16px 0 40px rgba(0, 0, 0, .35);
+  transition: transform .3s ease;
+}
+
+.sidebar-cerrado {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  padding: 24px 18px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.sidebar-logo {
+  width: 165px;
+  display: block;
+  margin: 0 auto 12px;
+}
+
+.sidebar-header div {
+  text-align: center;
+}
+
+.sidebar-header strong {
+  display: block;
+  font-size: 18px;
+}
+
+.sidebar-header small {
+  color: #b9b9c8;
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 18px 10px;
+  overflow-y: auto;
+}
+
+.sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  text-decoration: none;
+  padding: 13px 14px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  transition: .25s ease;
+}
+
+.sidebar-menu a span {
+  width: 28px;
+  text-align: center;
+}
+
+.sidebar-menu a p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.sidebar-menu a:hover {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(125, 90, 255, .30);
+}
+
+.sidebar-menu a.activo {
+  background: linear-gradient(90deg, #6d32ff, #884cff);
+  box-shadow: 0 0 18px rgba(125, 90, 255, .30);
+}
+
+.logout-container {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(255, 79, 109, .45);
+  border-radius: 12px;
+  background: rgba(255, 79, 109, .16);
+  color: white;
+  font-weight: 700;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 79, 109, .28);
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: grid;
+    place-items: center;
+  }
+
+  .sidebar-admin {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-admin:not(.sidebar-cerrado) {
+    transform: translateX(0);
+  }
+}
