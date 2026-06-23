@@ -41,4 +41,8 @@ public class PeticionAdminController {
     public ResponseEntity<List<VotoResponse>> ranking() {
         return ResponseEntity.ok(peticionService.verRankingVotos());
     }
+    @GetMapping("/lista")
+    public ResponseEntity<List<ContenidoVotableResponse>> listar() {
+        return ResponseEntity.ok(peticionService.listarVotables());
+    }
 }
