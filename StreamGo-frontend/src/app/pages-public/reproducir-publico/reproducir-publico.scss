@@ -1,0 +1,22 @@
+.public-player-page { min-height: 100vh; padding: 120px 35px 30px; }
+.btn-volver { position: fixed; left: 40px; top: 150px; background: none; color: white; border: none; font-size: 42px; z-index: 30; }
+.public-player-layout { display: grid; grid-template-columns: 1fr 250px; gap: 50px; width: min(1060px, 92%); margin: 0 auto; align-items: start; }
+.public-video { width: 100%; height: 365px; background: black; border-radius: 10px; overflow: hidden; border: 1px solid rgba(125, 90, 255, .25); }
+.public-video iframe { width: 100%; height: 100%; border: none; }
+.video-empty { height: 100%; display: grid; place-items: center; color: #ddd; text-align: center; padding: 20px; }
+.player-info { margin-top: 18px; background: rgba(10, 15, 30, .42); border: 1px solid rgba(125, 90, 255, .25); border-radius: 14px; padding: 18px; }
+.player-info h1 { margin: 0 0 10px; font-size: 28px; }
+.player-info p { color: #d8d8e5; line-height: 1.5; font-size: 14px; }
+.player-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.player-meta span { font-size: 12px; padding: 6px 12px; border-radius: 14px; background: rgba(255, 255, 255, .10); }
+.ads-right { background: #111; border-radius: 8px; overflow: hidden; text-align: center; }
+.ad-card { padding: 18px 15px; min-height: 155px; text-align: left; }
+.ad-card h2 { margin-bottom: 12px; }
+.ad-card p { font-size: 16px; font-weight: bold; line-height: 1.35; }
+.ad-card button, .ad-bottom button { width: 100%; padding: 9px; margin-top: 18px; border: none; border-radius: 8px; font-size: 12px; font-weight: bold; }
+.ad-orange { background: #ff3d0a; } .ad-orange2 { background: #ff7300; } .ad-green { background: #117b55; }
+.ad-orange button { background: white; color: #ff3d0a; } .ad-orange2 button { background: #37c852; color: white; } .ad-green button { background: #ffe936; color: #116d4d; }
+.ad-bottom { width: 560px; max-width: 90%; margin: 15px auto 0; background: #ff3d0a; padding: 12px; border-radius: 8px; position: relative; }
+.ad-bottom strong { font-size: 24px; } .ad-bottom p { font-size: 15px; font-weight: bold; } .ad-bottom span { position: absolute; right: 14px; top: 12px; }
+@media (max-width: 1050px) { .public-player-layout { grid-template-columns: 1fr; } .ads-right { display: grid; grid-template-columns: repeat(3, 1fr); } .btn-volver { position: static; margin-left: 20px; } }
+@media (max-width: 700px) { .public-player-page { padding: 30px 15px; } .public-video { height: 230px; } .ads-right { grid-template-columns: 1fr; } }

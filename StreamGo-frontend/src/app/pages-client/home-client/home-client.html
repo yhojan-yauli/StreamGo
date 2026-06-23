@@ -1,0 +1,59 @@
+<app-navbar-client></app-navbar-client>
+
+<main class="cliente-main">
+  <h1 class="titulo-cliente">{{ tituloPagina }}</h1>
+
+  <div class="buscador-centro">
+    <input class="search-cliente" type="text" placeholder="Buscar" (input)="buscar($event)">
+    <span>⌕</span>
+  </div>
+
+  <div class="categorias-cliente">
+    <span *ngFor="let categoria of categorias" [class.categoria-activa]="categoria === categoriaActual" (click)="seleccionarCategoria(categoria)">{{ categoria }}</span>
+  </div>
+
+  <div class="tabs-contenido">
+    <button type="button" [class.tab-activo]="tipoActual === 'recomendados'" (click)="seleccionarTipo('recomendados')">Recomendados</button>
+    <button type="button" [class.tab-activo]="tipoActual === 'tendencias'" (click)="seleccionarTipo('tendencias')">Tendencias</button>
+  </div>
+
+  <section class="carousel-u" (wheel)="moverConScroll($event)">
+    <button type="button" class="carousel-arrow arrow-left" (click)="moverManual(-1)">‹</button>
+
+    <article class="carousel-card" *ngFor="let item of obtenerVisibles(); let i = index" [ngClass]="'pos-' + i" (click)="verContenido(item)">
+      <img [src]="imagen(item)" [alt]="item.titulo || 'contenido'">
+    </article>
+
+    <button type="button" class="carousel-arrow arrow-right" (click)="moverManual(1)">›</button>
+    <div class="loading-carousel" *ngIf="cargando">Cargando contenido...</div>
+  </section>
+
+  <p class="titulo-card-centro">{{ tituloCentro }}</p>
+
+  <h3 class="noticias-link" routerLink="/client/noticias">Noticias</h3>
+
+  <section class="historial-preview" *ngIf="historial.length > 0">
+    <h3>Continuar viendo</h3>
+    <div class="historial-grid">
+      <article class="historial-card" *ngFor="let item of historial">
+        <img [src]="item.imagenUrl || '/background.png'" [alt]="item.titulo">
+        <div>
+          <strong>{{ item.titulo }}</strong>
+          <small>{{ item.categoria || 'Contenido' }}</small>
+          <div class="progress"><span [style.width.%]="item.completado ? 100 : 35"></span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<div class="plan-bottom">
+  <span>Adquiere un plan personalizado</span>
+  <button type="button" routerLink="/client/planes">Ver Planes disponibles</button>
+</div>
+
+<div class="random-box">
+  <strong>¿No sabes qué mirar?</strong>
+  <span>contenido aleatorio</span>
+  <button type="button" (click)="contenidoAleatorio()">↕</button>
+</div>

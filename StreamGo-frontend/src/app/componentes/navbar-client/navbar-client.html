@@ -1,0 +1,19 @@
+<header class="navbar-cliente">
+  <a routerLink="/client/home" class="logo-box">
+    <img src="/logo.png" class="logo-cliente" alt="StreamGO">
+  </a>
+
+  <nav>
+    <a routerLink="/client/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+    <a routerLink="/client/home">Categorías</a>
+    <a routerLink="/client/noticias" routerLinkActive="active">Noticias</a>
+    <a routerLink="/client/peticiones" routerLinkActive="active">Peticiones</a>
+    <a routerLink="/client/historial" routerLinkActive="active">Historial</a>
+    <a routerLink="/client/planes" routerLinkActive="active">Planes</a>
+    <a routerLink="/client/mi-cuenta" routerLinkActive="active">Mi cuenta</a>
+
+    <span class="avatar-navbar">👤</span>
+
+    <button type="button" class="logout-client" (click)="logout()">Salir</button>
+  </nav>
+</header>
