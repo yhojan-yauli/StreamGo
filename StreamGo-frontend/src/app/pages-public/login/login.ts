@@ -1,27 +1,46 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavbarPublic } from "../../componentes/navbar-public/navbar-public";
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router'; // 1. Importamos ActivatedRoute
 import { Auth } from '../../services/auth';
 import { FormsModule } from '@angular/forms';
-
+import { NgIf } from '@angular/common'; // 2. Importamos NgIf para las alertas del HTML
 
 @Component({
   selector: 'app-login',
-  imports: [NavbarPublic,RouterLink,FormsModule],
+  imports: [NavbarPublic, RouterLink, FormsModule, NgIf], // 3. Añadimos NgIf aquí
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
-   email = '';
+export class Login implements OnInit { // 4. Implementamos OnInit
+  email = '';
   password = '';
+  
+  // Variables para controlar los mensajes informativos
+  mensajeInfo: string | null = null;
+  mensajeError: string | null = null;
 
   constructor(
     private authService: Auth,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute // 5. Inyectamos ActivatedRoute
   ) {}
 
-  login() {
+  ngOnInit(): void {
+    // 6. Escuchamos los parámetros que vienen de las redirecciones del Backend
+    this.route.queryParams.subscribe(params => {
+      if (params['registro'] === 'exitoso') {
+        this.mensajeInfo = '¡Registro exitoso con Google! Tu cuenta ha sido creada en StreamGO. Ahora puedes iniciar sesión.';
+        this.mensajeError = null;
+      }
+      
+      if (params['error'] === 'usuario_no_registrado') {
+        this.mensajeError = 'Tu cuenta de Google no está registrada en el sistema. Por favor, ve a la sección de Registro.';
+        this.mensajeInfo = null;
+      }
+    });
+  }
 
+  login() {
     const data = {
       email: this.email,
       password: this.password
@@ -29,7 +48,7 @@ export class Login {
 
     this.authService.login(data).subscribe({
       next: (res: any) => {
-// 1. guardar token
+        // 1. guardar token
         this.authService.saveToken(res.token);
 
         // 2. leer rol del JWT
@@ -43,7 +62,6 @@ export class Login {
         } else {
           this.router.navigate(['/client/home']);
         }
-
       },
       error: () => {
         alert('Credenciales incorrectas');
@@ -52,7 +70,6 @@ export class Login {
   }
 
   loginConGoogle(): void {
-  // Redirección directa hacia el endpoint automático de Spring Boot
-  window.location.href = 'http://localhost:8080/oauth2/authorization/google';
-}
+    window.location.href = 'http://localhost:8080/auth/google-init?action=login';
+  }
 }
