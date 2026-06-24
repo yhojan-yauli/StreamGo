@@ -136,6 +136,8 @@ class ContenidoServiceTest {
         assertTrue(response.stream().noneMatch(c -> c.getEstado() == EstadoContenido.ACTIVO));
     }
 
+
+    
     @Test
     void usuarioActivoDebeVerTodo() {
         Usuario usuario = Usuario.builder()

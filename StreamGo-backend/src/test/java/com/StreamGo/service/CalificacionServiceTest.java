@@ -122,6 +122,7 @@ class CalificacionServiceTest {
         CalificacionRequest request = new CalificacionRequest();
         request.setPuntaje(5);
 
+        
         when(usuarioRepository.findByEmail("noexiste@gmail.com")).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(

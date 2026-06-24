@@ -123,6 +123,7 @@ class ReproduccionServiceTest {
                 () -> reproduccionService.reproducirPublico(1L)
         );
 
+        
         assertEquals("Este contenido requiere iniciar sesión", exception.getMessage());
     }
 }
