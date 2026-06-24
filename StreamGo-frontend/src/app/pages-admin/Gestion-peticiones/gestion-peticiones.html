@@ -1,0 +1,137 @@
+<!-- Sidebar -->
+<app-sidebar-admin></app-sidebar-admin>
+
+<!-- Main -->
+<main class="admin-page">
+  
+  <!-- Header -->
+  <section class="admin-header">
+    <div>
+      <h1>📋 Gestión de Peticiones</h1>
+      <p>Administra todas las peticiones de la plataforma.</p>
+    </div>
+    <button class="sg-btn" type="button" (click)="nuevaPeticion()">
+      + Nueva petición
+    </button>
+  </section>
+
+  <!-- Mensajes -->
+  <section class="alert-box success" *ngIf="mensaje">
+    {{ mensaje }}
+  </section>
+  <section class="alert-box error" *ngIf="error">
+    {{ error }}
+  </section>
+
+  <!-- Panel -->
+  <section class="sg-panel gestion-panel">
+    
+    <div class="loading-box" *ngIf="cargando">
+      Cargando peticiones...
+    </div>
+
+    <div *ngIf="!cargando">
+      
+      <!-- Buscador -->
+      <div class="buscador">
+        <input 
+          type="text" 
+          placeholder="🔍 Buscar petición..." 
+          [(ngModel)]="filtro"
+          (input)="filtrarPeticiones()"
+        >
+      </div>
+
+      <!-- Tabla -->
+      <table class="tabla-gestion">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Votos</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of peticionesFiltradas">
+            <td>#{{ item.contenidoVotableId }}</td>
+            <td>
+              <div class="titulo-celda">
+                <span class="icono-preview" *ngIf="item.posterUrl">
+                  <img [src]="item.posterUrl" alt="poster" width="30" height="30">
+                </span>
+                <strong>{{ item.titulo }}</strong>
+              </div>
+            </td>
+            <td class="descripcion-celda">
+              {{ item.descripcion | slice:0:60 }}{{ item.descripcion?.length > 60 ? '...' : '' }}
+            </td>
+            <td>
+              <span class="badge" [class.activo]="item.activo" [class.inactivo]="!item.activo">
+                {{ item.activo ? '✅ Activo' : '❌ Inactivo' }}
+              </span>
+            </td>
+            <td class="votos-celda">{{ item.totalVotos || 0 }}</td>
+            <td>{{ item.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+            <td class="acciones">
+              <button class="btn-edit" (click)="editar(item)" title="Editar">✏️</button>
+              <button class="btn-toggle" (click)="toggleEstado(item)" title="Cambiar estado">🔄</button>
+              <button class="btn-delete" (click)="eliminar(item)" title="Eliminar">🗑️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="sg-empty" *ngIf="peticionesFiltradas.length === 0">
+        <p *ngIf="peticiones.length === 0">📭 No hay peticiones registradas.</p>
+        <p *ngIf="peticiones.length > 0">🔍 No se encontraron peticiones con "{{ filtro }}"</p>
+      </div>
+
+      <div class="contador" *ngIf="peticiones.length > 0">
+        Mostrando {{ peticionesFiltradas.length }} de {{ peticiones.length }} peticiones
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+<!-- Modal -->
+<div class="modal-backdrop-custom" *ngIf="modalVisible">
+  <section class="modal-custom">
+    <div class="modal-header-custom">
+      <h2>{{ modoEdicion ? '✏️ Editar petición' : '➕ Nueva petición' }}</h2>
+      <button class="btn-close-custom" (click)="cerrarModal()">✖</button>
+    </div>
+    <div class="modal-body-custom">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Título *</label>
+          <input [(ngModel)]="form.titulo" type="text" placeholder="Ingresa el título">
+        </div>
+        <div class="form-group full">
+          <label>Descripción</label>
+          <textarea rows="4" [(ngModel)]="form.descripcion" placeholder="Describe la petición"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Poster URL</label>
+          <input [(ngModel)]="form.posterUrl" type="text" placeholder="https://ejemplo.com/poster.jpg">
+        </div>
+        <div class="form-group">
+          <label>Imagen URL</label>
+          <input [(ngModel)]="form.imagenUrl" type="text" placeholder="https://ejemplo.com/imagen.jpg">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="sg-btn-dark" (click)="cerrarModal()">Cancelar</button>
+      <button class="sg-btn" [disabled]="guardando || !form.titulo.trim()" (click)="guardar()">
+        {{ guardando ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </section>
+</div>

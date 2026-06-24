@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Pruebas del Servicio de Peticiones" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-06-24T12:36:40.585Z" hostname="LEVI" time="3.373">
+  <properties/>
+  <testcase name="Admin: Ver ranking de votos" classname="com.StreamGo.service.PeticionServiceTest" time="3.25"/>
+  <testcase name="Cliente: Elegir película (votar)" classname="com.StreamGo.service.PeticionServiceTest" time="0.032"/>
+  <testcase name="Admin: Agregar contenido votable" classname="com.StreamGo.service.PeticionServiceTest" time="0.018"/>
+  <testcase name="Cliente: Listar contenidos votables activos" classname="com.StreamGo.service.PeticionServiceTest" time="0.009"/>
+  <testcase name="Admin: Editar contenido votable" classname="com.StreamGo.service.PeticionServiceTest" time="0.009"/>
+  <testcase name="Admin: Desactivar contenido votable" classname="com.StreamGo.service.PeticionServiceTest" time="0.01"/>
+  <system-out><![CDATA[07:36:43.798 [Test worker] INFO com.StreamGo.service.PeticionService -- Ranking obtenido: 1 entradas
+07:36:43.900 [Test worker] INFO com.StreamGo.service.PeticionService -- Petición guardada: usuarioId=1, contenidoVotableId=1, titulo=Película de prueba
+07:36:43.924 [Test worker] INFO com.StreamGo.service.PeticionService -- Contenido votable creado exitosamente: id=1, titulo=Película de prueba
+07:36:43.935 [Test worker] INFO com.StreamGo.service.PeticionService -- Contenidos votables activos encontrados: 1
+07:36:43.945 [Test worker] INFO com.StreamGo.service.PeticionService -- Contenido votable editado exitosamente: id=1, titulo=Película editada
+07:36:43.951 [Test worker] WARN com.StreamGo.service.PeticionService -- Se está desactivando un contenido votable con 5 votos: id=1, titulo=Película de prueba
+07:36:43.951 [Test worker] INFO com.StreamGo.service.PeticionService -- Contenido votable desactivado: id=1, titulo=Película de prueba
+]]></system-out>
+  <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\l3v1g\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

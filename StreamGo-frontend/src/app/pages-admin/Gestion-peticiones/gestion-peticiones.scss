@@ -1,0 +1,291 @@
+.gestion-panel {
+    padding: 18px;
+}
+
+.buscador {
+    margin-bottom: 20px;
+}
+
+.buscador input {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(125, 90, 255, .30);
+    background: rgba(255, 255, 255, .06);
+    color: white;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.buscador input:focus {
+    border-color: rgba(125, 90, 255, .70);
+    background: rgba(255, 255, 255, .10);
+}
+
+.tabla-gestion {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tabla-gestion thead {
+    background: rgba(125, 90, 255, .15);
+    border-bottom: 2px solid rgba(125, 90, 255, .30);
+}
+
+.tabla-gestion th {
+    text-align: left;
+    padding: 14px 12px;
+    font-weight: 600;
+    color: #b9b9c8;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.tabla-gestion td {
+    padding: 14px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+    vertical-align: middle;
+}
+
+.tabla-gestion tbody tr:hover {
+    background: rgba(125, 90, 255, .08);
+}
+
+.titulo-celda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icono-preview img {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.descripcion-celda {
+    color: #b9b9c8;
+    max-width: 300px;
+}
+
+.votos-celda {
+    text-align: center;
+    font-weight: bold;
+    color: #ffcc66;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge.activo {
+    background: rgba(53, 208, 127, .20);
+    color: #35d07f;
+}
+
+.badge.inactivo {
+    background: rgba(255, 79, 109, .20);
+    color: #ff4f6d;
+}
+
+.tabla-gestion .acciones {
+    display: flex;
+    gap: 6px;
+}
+
+.tabla-gestion .acciones button {
+    border: none;
+    background: transparent;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.tabla-gestion .btn-edit:hover {
+    background: rgba(255, 204, 102, .25);
+    transform: scale(1.1);
+}
+
+.tabla-gestion .btn-delete:hover {
+    background: rgba(255, 79, 109, .25);
+    transform: scale(1.1);
+}
+
+.tabla-gestion .btn-toggle:hover {
+    background: rgba(53, 208, 127, .25);
+    transform: scale(1.1);
+}
+
+.contador {
+    margin-top: 16px;
+    padding: 12px;
+    text-align: center;
+    color: #b9b9c8;
+    font-size: 13px;
+    border-top: 1px solid rgba(255, 255, 255, .06);
+}
+
+/* Modal - Copiado del ranking */
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, .72);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-custom {
+    width: 650px;
+    max-width: 96%;
+    border-radius: 18px;
+    background: rgba(10, 15, 30, .96);
+    border: 1px solid rgba(125, 90, 255, .40);
+    overflow: hidden;
+}
+
+.modal-header-custom,
+.modal-footer-custom {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(125, 90, 255, .12);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.modal-footer-custom {
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    border-bottom: 0;
+}
+
+.btn-close-custom {
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-close-custom:hover {
+    transform: rotate(90deg);
+}
+
+.modal-body-custom {
+    padding: 24px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #d8d8e5;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    border: 1px solid rgba(125, 90, 255, .30);
+    border-radius: 12px;
+    padding: 11px 13px;
+    outline: none;
+    color: white;
+    background: rgba(255, 255, 255, .08);
+    font-family: inherit;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: rgba(125, 90, 255, .70);
+    background: rgba(255, 255, 255, .12);
+}
+
+.alert-box {
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: rgba(10, 15, 30, .55);
+    border: 1px solid rgba(125, 90, 255, .25);
+}
+
+.alert-box.success {
+    border-color: rgba(53, 208, 127, .45);
+    background: rgba(53, 208, 127, .16);
+    color: #35d07f;
+}
+
+.alert-box.error {
+    border-color: rgba(255, 79, 109, .45);
+    background: rgba(255, 79, 109, .16);
+    color: #ff4f6d;
+}
+
+.loading-box {
+    padding: 40px;
+    text-align: center;
+    color: #b9b9c8;
+}
+
+.sg-empty {
+    padding: 40px;
+    text-align: center;
+    color: #b9b9c8;
+}
+
+@media (max-width: 1024px) {
+    .tabla-gestion {
+        font-size: 13px;
+    }
+    .descripcion-celda {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tabla-gestion {
+        font-size: 12px;
+        display: block;
+        overflow-x: auto;
+    }
+    .tabla-gestion th,
+    .tabla-gestion td {
+        padding: 10px 8px;
+    }
+    .tabla-gestion .acciones button {
+        font-size: 14px;
+        padding: 2px 6px;
+    }
+    .modal-custom {
+        width: 95%;
+    }
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
