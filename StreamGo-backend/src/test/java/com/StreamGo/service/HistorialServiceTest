@@ -1,0 +1,95 @@
+package com.StreamGo.service;
+
+import com.StreamGo.dto.response.HistorialResponse;
+import com.StreamGo.entity.Contenido;
+import com.StreamGo.entity.HistorialReproduccion;
+import com.StreamGo.entity.Usuario;
+import com.StreamGo.repository.HistorialReproduccionRepository;
+import com.StreamGo.repository.UsuarioRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class HistorialServiceTest {
+
+    @Mock
+    private HistorialReproduccionRepository historialRepository;
+
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
+    @InjectMocks
+    private HistorialService historialService;
+
+    @Test
+    void debeObtenerHistorialDelUsuario() {
+        Usuario usuario = Usuario.builder()
+                .id(1L)
+                .email("cliente@gmail.com")
+                .build();
+
+        Contenido contenido = Contenido.builder()
+                .id(1L)
+                .titulo("Naruto")
+                .imagenUrl("imagen.jpg")
+                .categoria("Animes")
+                .build();
+
+        HistorialReproduccion historial = HistorialReproduccion.builder()
+                .id(1L)
+                .usuario(usuario)
+                .contenido(contenido)
+                .fechaReproduccion(LocalDateTime.now())
+                .progresoSegundos(0)
+                .completado(false)
+                .build();
+
+        when(usuarioRepository.findByEmail("cliente@gmail.com")).thenReturn(Optional.of(usuario));
+        when(historialRepository.findByUsuarioOrderByFechaReproduccionDesc(usuario))
+                .thenReturn(List.of(historial));
+
+        List<HistorialResponse> response = historialService.obtenerHistorial("cliente@gmail.com");
+
+        assertEquals(1, response.size());
+        assertEquals("Naruto", response.get(0).getTitulo());
+        assertEquals("Animes", response.get(0).getCategoria());
+    }
+
+    @Test
+    void debeRetornarListaVaciaSiNoHayHistorial() {
+        Usuario usuario = Usuario.builder()
+                .id(1L)
+                .email("cliente@gmail.com")
+                .build();
+
+        when(usuarioRepository.findByEmail("cliente@gmail.com")).thenReturn(Optional.of(usuario));
+        when(historialRepository.findByUsuarioOrderByFechaReproduccionDesc(usuario))
+                .thenReturn(List.of());
+
+        List<HistorialResponse> response = historialService.obtenerHistorial("cliente@gmail.com");
+
+        assertTrue(response.isEmpty());
+    }
+
+    @Test
+    void debeLanzarErrorSiUsuarioNoExiste() {
+        when(usuarioRepository.findByEmail("noexiste@gmail.com")).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> historialService.obtenerHistorial("noexiste@gmail.com")
+        );
+
+        assertEquals("Usuario no encontrado", exception.getMessage());
+    }
+}
