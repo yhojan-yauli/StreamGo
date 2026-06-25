@@ -123,4 +123,61 @@ class NoticiaServiceTest {
         assertEquals(100L, response.getIdPost());
         assertEquals("Autor Test", response.getAutorNombre());
     }
+
+    @Test
+    void obtenerNoticia_FallaPorNoEncontrada() {
+        // Arrange
+        when(noticiaRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            noticiaService.obtenerNoticia(999L);
+        });
+
+        assertEquals("Noticia no encontrada", exception.getMessage());
+    }
+
+    @Test
+    void reaccionar_IncrementaReacciones() {
+        // Arrange
+        int reaccionesIniciales = mockNoticia.getReacciones();
+        when(noticiaRepository.findById(100L)).thenReturn(Optional.of(mockNoticia));
+        when(noticiaRepository.save(any(Noticia.class))).thenReturn(mockNoticia);
+
+        // Act
+        NoticiaResponse response = noticiaService.reaccionar(100L);
+
+        // Assert
+        assertEquals(reaccionesIniciales + 1, mockNoticia.getReacciones());
+        assertEquals(reaccionesIniciales + 1, response.getReacciones());
+        verify(noticiaRepository, times(1)).save(mockNoticia);
+    }
+
+    @Test
+    void fijarNoticia_AlternaEstado() {
+        // Arrange
+        boolean estadoInicial = mockNoticia.isFijado(); // false
+        when(noticiaRepository.findById(100L)).thenReturn(Optional.of(mockNoticia));
+        when(noticiaRepository.save(any(Noticia.class))).thenReturn(mockNoticia);
+
+        // Act
+        NoticiaResponse response = noticiaService.fijarNoticia(100L);
+
+        // Assert
+        assertTrue(mockNoticia.isFijado()); // Ahora debe ser true
+        assertTrue(response.isFijado());
+        assertNotEquals(estadoInicial, mockNoticia.isFijado());
+    }
+
+    @Test
+    void eliminarNoticia_Exito() {
+        // Arrange
+        when(noticiaRepository.findById(100L)).thenReturn(Optional.of(mockNoticia));
+
+        // Act
+        noticiaService.eliminarNoticia(100L);
+
+        // Assert
+        verify(noticiaRepository, times(1)).delete(mockNoticia);
+    }
 }
