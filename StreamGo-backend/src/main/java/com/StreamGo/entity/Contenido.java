@@ -2,13 +2,10 @@ package com.StreamGo.entity;
 
 import com.StreamGo.entity.Enum.EstadoContenido;
 import com.StreamGo.entity.Enum.TipoContenido;
-import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "contenidos")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,19 +13,14 @@ import java.time.LocalDate;
 @Builder
 public class Contenido {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String titulo;
 
-    @Column(columnDefinition = "TEXT")
     private String descripcion;
 
     private String categoria;
 
-    @Enumerated(EnumType.STRING)
     private TipoContenido tipoContenido;
 
     private String imagenUrl;
@@ -53,6 +45,5 @@ public class Contenido {
 
     private Integer totalReproducciones;
 
-    @Enumerated(EnumType.STRING)
     private EstadoContenido estado;
 }

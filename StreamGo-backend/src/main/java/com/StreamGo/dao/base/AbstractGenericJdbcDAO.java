@@ -10,6 +10,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -203,6 +207,60 @@ public abstract class AbstractGenericJdbcDAO<T, ID> implements IGenericDAO<T, ID
         } finally {
             releaseConnection(connection);
         }
+    }
+
+    protected Long getLongOrNull(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        long value = resultSet.getLong(columnName);
+        return resultSet.wasNull() ? null : value;
+    }
+
+    protected Integer getIntegerOrNull(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        int value = resultSet.getInt(columnName);
+        return resultSet.wasNull() ? null : value;
+    }
+
+    protected Double getDoubleOrNull(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        double value = resultSet.getDouble(columnName);
+        return resultSet.wasNull() ? null : value;
+    }
+
+    protected Boolean getBooleanOrNull(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        boolean value = resultSet.getBoolean(columnName);
+        return resultSet.wasNull() ? null : value;
+    }
+
+    protected LocalDate getLocalDateOrNull(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        Date date = resultSet.getDate(columnName);
+        return date == null ? null : date.toLocalDate();
+    }
+
+    protected LocalDateTime getLocalDateTimeOrNull(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        Timestamp timestamp = resultSet.getTimestamp(columnName);
+        return timestamp == null ? null : timestamp.toLocalDateTime();
     }
 
     private Connection getConnection() {
