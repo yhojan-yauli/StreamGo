@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,6 +60,7 @@ public class PeticionService {
      * @return {@link ContenidoVotableResponse} con los datos del contenido creado, incluyendo su ID
      * @throws RuntimeException Si ocurre un error durante el guardado (loggeado internamente)
      */
+    @Transactional
     public ContenidoVotableResponse agregarVotable(ContenidoVotableRequest request) {
         log.debug("Agregando nuevo contenido votable: titulo={}", request.getTitulo());
         ContenidoVotable votable = ContenidoVotable.builder()
@@ -85,6 +87,7 @@ public class PeticionService {
      * @return {@link ContenidoVotableResponse} con los datos actualizados del contenido
      * @throws RuntimeException Si no se encuentra el contenido votable con el ID especificado
      */
+    @Transactional
     public ContenidoVotableResponse editarVotable(Long id, ContenidoVotableRequest request) {
         log.debug("Editando contenido votable: id={}", id);
         ContenidoVotable votable = contenidoVotableDAO.findById(id);
@@ -112,6 +115,7 @@ public class PeticionService {
      * @param id ID del contenido votable a desactivar
      * @throws RuntimeException Si no se encuentra el contenido votable con el ID especificado
      */
+    @Transactional
     public void desactivarVotable(Long id) {
         log.debug("Desactivando contenido votable: id={}", id);
         ContenidoVotable votable = contenidoVotableDAO.findById(id);
@@ -192,6 +196,7 @@ public class PeticionService {
      * @return {@link PeticionResponse} con los detalles de la petición registrada
      * @throws RuntimeException Si el usuario no existe o el contenido votable no existe
      */
+    @Transactional
     public PeticionResponse elegirPelicula(String email, PeticionRequest request) {
         log.debug("Usuario {} intentando elegir contenido votable id={}", email, request.getContenidoVotableId());
 
@@ -246,6 +251,7 @@ public class PeticionService {
      * @param peticion Entidad Peticion a guardar
      * @return La petición guardada
      */
+    @Transactional
     public Peticion guardar(Peticion peticion) {
         log.debug("Guardando petición en administración: id={}", peticion.getId());
         if (peticion.getId() == null) {
@@ -261,6 +267,7 @@ public class PeticionService {
      * 
      * @param id ID de la petición a eliminar
      */
+    @Transactional
     public void eliminar(Long id) {
         log.info("Eliminando petición con ID: {}", id);
         peticionDAO.delete(id);

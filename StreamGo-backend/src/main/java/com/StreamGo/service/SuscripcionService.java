@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -67,6 +68,7 @@ public class SuscripcionService {
      * @param plan plan seleccionado por el usuario.
      * @return suscripción acumulada actual del usuario.
      */
+    @Transactional
     public Suscripcion crearSuscripcion(Plan plan) {
         Usuario usuario = obtenerUsuarioLogueado();
         return crearSuscripcion(usuario, plan);
@@ -88,6 +90,7 @@ public class SuscripcionService {
      * @param plan plan seleccionado.
      * @return suscripción acumulada actual del usuario.
      */
+    @Transactional
     public Suscripcion crearSuscripcion(Usuario usuario, Plan plan) {
 
         verificarExpiracionUsuario(usuario);
@@ -147,6 +150,7 @@ public class SuscripcionService {
      *
      * @return suscripción acumulada actualizada.
      */
+    @Transactional
     public Suscripcion verificarExpiracion() {
 
         Usuario usuario = obtenerUsuarioLogueado();
@@ -162,6 +166,7 @@ public class SuscripcionService {
      * @param usuario usuario a validar.
      * @return true si tiene suscripción activa por tiempo real.
      */
+    @Transactional
     public boolean usuarioTieneSuscripcionActiva(Usuario usuario) {
         return calcularHorasRestantesTotales(usuario) > 0;
     }
@@ -175,6 +180,7 @@ public class SuscripcionService {
      * @param usuario usuario a evaluar.
      * @return horas restantes por reloj.
      */
+    @Transactional
     public long calcularHorasRestantesTotales(Usuario usuario) {
 
         verificarExpiracionUsuario(usuario);
@@ -362,6 +368,7 @@ public class SuscripcionService {
      * Ejecuta una verificación automática de suscripciones expiradas.
      */
     @Scheduled(fixedRate = 600000)
+    @Transactional
     public void actualizarSuscripcionesExpiradas() {
 
         logger.info("Ejecutando verificación de suscripciones...");

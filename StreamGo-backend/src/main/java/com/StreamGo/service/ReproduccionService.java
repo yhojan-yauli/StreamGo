@@ -3,6 +3,7 @@ package com.StreamGo.service;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.StreamGo.dao.ContenidoDAO;
 import com.StreamGo.dao.HistorialReproduccionDAO;
@@ -46,6 +47,7 @@ public class ReproduccionService {
      * @param email correo del usuario autenticado.
      * @return información de reproducción.
      */
+    @Transactional
     public ReproduccionResponse reproducir(Long contenidoId, String email) {
         
         Usuario usuario = usuarioDAO.findByEmail(email)
@@ -95,6 +97,7 @@ public class ReproduccionService {
      * @param contenidoId identificador del contenido público.
      * @return datos de reproducción pública.
      */
+    @Transactional
     public ReproduccionResponse reproducirPublico(Long contenidoId) {
 
         Contenido contenido = contenidoDAO.findById(contenidoId);

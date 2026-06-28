@@ -11,6 +11,7 @@ import com.StreamGo.entity.Usuario;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +30,7 @@ public class CalificacionService {
     private final UsuarioDAO usuarioDAO;
     private final ContenidoDAO contenidoDAO;
 
+    @Transactional
     public CalificacionResponse calificarContenido(
             Long contenidoId,
             String email,

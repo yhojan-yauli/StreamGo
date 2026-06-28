@@ -36,7 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/auth/")
                 || path.startsWith("/swagger-ui/")
                 || path.startsWith("/v3/api-docs/")
-                || path.startsWith("/webhook/")) {
+                || path.startsWith("/webhook/")
+                || path.startsWith("/oauth2/")
+                || path.startsWith("/login/oauth2/")) {
 
             filterChain.doFilter(request, response);
             return;
@@ -52,14 +54,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        String email = jwtService.extractUsername(token);
+        String email;
+
+        try {
+            email = jwtService.extractUsername(token);
+        } catch (Exception exception) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (!jwtService.isTokenValid(token, email)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String rol = jwtService.extractRole(token);
+        String rol;
+
+        try {
+            rol = jwtService.extractRole(token);
+        } catch (Exception exception) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         SimpleGrantedAuthority authority =
                 new SimpleGrantedAuthority(rol);
