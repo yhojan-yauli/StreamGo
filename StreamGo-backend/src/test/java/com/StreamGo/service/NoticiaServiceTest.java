@@ -2,19 +2,16 @@ package com.StreamGo.service;
 
 import com.StreamGo.dto.request.NoticiaRequest;
 import com.StreamGo.dto.response.NoticiaResponse;
+import com.StreamGo.dao.NoticiaDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Noticia;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.NoticiaRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,10 +21,10 @@ import static org.mockito.Mockito.*;
 class NoticiaServiceTest {
 
     @Mock
-    private NoticiaRepository noticiaRepository;
+    private NoticiaDAO noticiaDAO;
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioDAO usuarioDAO;
 
     @InjectMocks
     private NoticiaService noticiaService;
@@ -69,9 +66,15 @@ class NoticiaServiceTest {
     @Test
     void crearNoticia_Exito() {
         // Arrange (Preparar)
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(mockAutor));
-        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(mockUsuario));
-        when(noticiaRepository.save(any(Noticia.class))).thenReturn(mockNoticia);
+        when(usuarioDAO.findById(1L)).thenReturn(mockAutor);
+        when(usuarioDAO.findById(2L)).thenReturn(mockUsuario);
+        doAnswer(invocation -> {
+            Noticia noticia = invocation.getArgument(0);
+            noticia.setIdPost(100L);
+            noticia.setAutor(mockAutor);
+            noticia.setUsuario(mockUsuario);
+            return null;
+        }).when(noticiaDAO).save(any(Noticia.class));
 
         // Act (Actuar)
         NoticiaResponse response = noticiaService.crearNoticia(mockRequest);
@@ -79,8 +82,8 @@ class NoticiaServiceTest {
         // Assert (Afirmar)
         assertNotNull(response);
         assertEquals(100L, response.getIdPost());
-        assertEquals("Título de Prueba", response.getTitulo());
-        verify(noticiaRepository, times(1)).save(any(Noticia.class));
+        assertEquals("Nuevo Título", response.getTitulo());
+        verify(noticiaDAO, times(1)).save(any(Noticia.class));
     }
 
     @Test
@@ -94,13 +97,13 @@ class NoticiaServiceTest {
         });
 
         assertEquals("El título es obligatorio", exception.getMessage());
-        verify(noticiaRepository, never()).save(any(Noticia.class));
+        verify(noticiaDAO, never()).save(any(Noticia.class));
     }
 
     @Test
     void crearNoticia_FallaPorAutorNoEncontrado() {
         // Arrange
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.empty());
+        when(usuarioDAO.findById(1L)).thenThrow(new RuntimeException("Autor no encontrado"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -113,7 +116,7 @@ class NoticiaServiceTest {
     @Test
     void obtenerNoticia_Exito() {
         // Arrange
-        when(noticiaRepository.findById(100L)).thenReturn(Optional.of(mockNoticia));
+        when(noticiaDAO.findById(100L)).thenReturn(mockNoticia);
 
         // Act
         NoticiaResponse response = noticiaService.obtenerNoticia(100L);
@@ -127,7 +130,7 @@ class NoticiaServiceTest {
     @Test
     void obtenerNoticia_FallaPorNoEncontrada() {
         // Arrange
-        when(noticiaRepository.findById(999L)).thenReturn(Optional.empty());
+        when(noticiaDAO.findById(999L)).thenThrow(new RuntimeException("Noticia no encontrada"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -141,8 +144,7 @@ class NoticiaServiceTest {
     void reaccionar_IncrementaReacciones() {
         // Arrange
         int reaccionesIniciales = mockNoticia.getReacciones();
-        when(noticiaRepository.findById(100L)).thenReturn(Optional.of(mockNoticia));
-        when(noticiaRepository.save(any(Noticia.class))).thenReturn(mockNoticia);
+        when(noticiaDAO.findById(100L)).thenReturn(mockNoticia);
 
         // Act
         NoticiaResponse response = noticiaService.reaccionar(100L);
@@ -150,15 +152,14 @@ class NoticiaServiceTest {
         // Assert
         assertEquals(reaccionesIniciales + 1, mockNoticia.getReacciones());
         assertEquals(reaccionesIniciales + 1, response.getReacciones());
-        verify(noticiaRepository, times(1)).save(mockNoticia);
+        verify(noticiaDAO, times(1)).update(mockNoticia);
     }
 
     @Test
     void fijarNoticia_AlternaEstado() {
         // Arrange
         boolean estadoInicial = mockNoticia.isFijado(); // false
-        when(noticiaRepository.findById(100L)).thenReturn(Optional.of(mockNoticia));
-        when(noticiaRepository.save(any(Noticia.class))).thenReturn(mockNoticia);
+        when(noticiaDAO.findById(100L)).thenReturn(mockNoticia);
 
         // Act
         NoticiaResponse response = noticiaService.fijarNoticia(100L);
@@ -172,12 +173,12 @@ class NoticiaServiceTest {
     @Test
     void eliminarNoticia_Exito() {
         // Arrange
-        when(noticiaRepository.findById(100L)).thenReturn(Optional.of(mockNoticia));
+        when(noticiaDAO.findById(100L)).thenReturn(mockNoticia);
 
         // Act
         noticiaService.eliminarNoticia(100L);
 
         // Assert
-        verify(noticiaRepository, times(1)).delete(mockNoticia);
+        verify(noticiaDAO, times(1)).delete(100L);
     }
 }

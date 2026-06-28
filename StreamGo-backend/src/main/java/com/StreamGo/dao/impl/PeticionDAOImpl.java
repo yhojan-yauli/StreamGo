@@ -57,8 +57,9 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
 
         String sql = """
                 INSERT INTO peticiones (
-                    usuario_id, contenido_votable_id, fecha_peticion
-                ) VALUES (?, ?, ?)
+                    usuario_id, contenido_votable_id, titulo,
+                    descripcion, imagen_url, fecha_peticion
+                ) VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
         Long id = executeInsertAndReturnLongId(
@@ -66,7 +67,10 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
                 preparedStatement -> {
                     preparedStatement.setObject(1, idUsuario(peticion));
                     preparedStatement.setObject(2, idContenidoVotable(peticion));
-                    preparedStatement.setObject(3, peticion.getFechaPeticion());
+                    preparedStatement.setString(3, tituloContenidoVotable(peticion));
+                    preparedStatement.setString(4, descripcionContenidoVotable(peticion));
+                    preparedStatement.setString(5, imagenUrlContenidoVotable(peticion));
+                    preparedStatement.setObject(6, peticion.getFechaPeticion());
                 }
         );
 
@@ -79,6 +83,7 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
         String sql = """
                 UPDATE peticiones
                 SET usuario_id = ?, contenido_votable_id = ?,
+                    titulo = ?, descripcion = ?, imagen_url = ?,
                     fecha_peticion = ?
                 WHERE id = ?
                 """;
@@ -88,8 +93,11 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
                 preparedStatement -> {
                     preparedStatement.setObject(1, idUsuario(peticion));
                     preparedStatement.setObject(2, idContenidoVotable(peticion));
-                    preparedStatement.setObject(3, peticion.getFechaPeticion());
-                    preparedStatement.setLong(4, peticion.getId());
+                    preparedStatement.setString(3, tituloContenidoVotable(peticion));
+                    preparedStatement.setString(4, descripcionContenidoVotable(peticion));
+                    preparedStatement.setString(5, imagenUrlContenidoVotable(peticion));
+                    preparedStatement.setObject(6, peticion.getFechaPeticion());
+                    preparedStatement.setLong(7, peticion.getId());
                 }
         );
     }
@@ -209,5 +217,23 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
         return peticion.getContenidoVotable() == null
                 ? null
                 : peticion.getContenidoVotable().getId();
+    }
+
+    private String tituloContenidoVotable(Peticion peticion) {
+        return peticion.getContenidoVotable() == null
+                ? null
+                : peticion.getContenidoVotable().getTitulo();
+    }
+
+    private String descripcionContenidoVotable(Peticion peticion) {
+        return peticion.getContenidoVotable() == null
+                ? null
+                : peticion.getContenidoVotable().getDescripcion();
+    }
+
+    private String imagenUrlContenidoVotable(Peticion peticion) {
+        return peticion.getContenidoVotable() == null
+                ? null
+                : peticion.getContenidoVotable().getImagenUrl();
     }
 }

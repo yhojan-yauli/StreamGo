@@ -5,12 +5,12 @@ import com.StreamGo.dto.request.PeticionRequest;
 import com.StreamGo.dto.response.ContenidoVotableResponse;
 import com.StreamGo.dto.response.PeticionResponse;
 import com.StreamGo.dto.response.VotoResponse;
+import com.StreamGo.dao.ContenidoVotableDAO;
+import com.StreamGo.dao.PeticionDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.ContenidoVotable;
 import com.StreamGo.entity.Peticion;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.ContenidoVotableRepository;
-import com.StreamGo.repository.PeticionRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,13 +34,13 @@ import static org.mockito.Mockito.*;
 class PeticionServiceTest {
 
     @Mock
-    private PeticionRepository peticionRepository;
+    private PeticionDAO peticionDAO;
 
     @Mock
-    private ContenidoVotableRepository contenidoVotableRepository;
+    private ContenidoVotableDAO contenidoVotableDAO;
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioDAO usuarioDAO;
 
     @InjectMocks
     private PeticionService peticionService;
@@ -91,14 +91,17 @@ class PeticionServiceTest {
     @Test
     @DisplayName("Admin: Agregar contenido votable")
     void testAgregarVotable() {
-        when(contenidoVotableRepository.save(any(ContenidoVotable.class)))
-                .thenReturn(contenidoVotable);
+        doAnswer(invocation -> {
+            ContenidoVotable votable = invocation.getArgument(0);
+            votable.setId(1L);
+            return null;
+        }).when(contenidoVotableDAO).save(any(ContenidoVotable.class));
 
         ContenidoVotableResponse response = peticionService.agregarVotable(contenidoVotableRequest);
 
         assertNotNull(response);
         assertEquals("Película de prueba", response.getTitulo());
-        verify(contenidoVotableRepository, times(1)).save(any(ContenidoVotable.class));
+        verify(contenidoVotableDAO, times(1)).save(any(ContenidoVotable.class));
     }
 
     // ============================================================
@@ -113,16 +116,14 @@ class PeticionServiceTest {
         requestEditado.setPosterUrl("nuevo-poster.jpg");
         requestEditado.setImagenUrl("nueva-imagen.jpg");
 
-        when(contenidoVotableRepository.findById(1L))
-                .thenReturn(Optional.of(contenidoVotable));
-        when(contenidoVotableRepository.save(any(ContenidoVotable.class)))
+        when(contenidoVotableDAO.findById(1L))
                 .thenReturn(contenidoVotable);
 
         ContenidoVotableResponse response = peticionService.editarVotable(1L, requestEditado);
 
         assertNotNull(response);
-        verify(contenidoVotableRepository, times(1)).findById(1L);
-        verify(contenidoVotableRepository, times(1)).save(any(ContenidoVotable.class));
+        verify(contenidoVotableDAO, times(1)).findById(1L);
+        verify(contenidoVotableDAO, times(1)).update(any(ContenidoVotable.class));
     }
 
     // ============================================================
@@ -131,15 +132,15 @@ class PeticionServiceTest {
     @Test
     @DisplayName("Admin: Desactivar contenido votable")
     void testDesactivarVotable() {
-        when(contenidoVotableRepository.findById(1L))
-                .thenReturn(Optional.of(contenidoVotable));
-        when(peticionRepository.countByContenidoVotableId(1L))
+        when(contenidoVotableDAO.findById(1L))
+                .thenReturn(contenidoVotable);
+        when(peticionDAO.countByContenidoVotableId(1L))
                 .thenReturn(5L);
 
         peticionService.desactivarVotable(1L);
 
         assertFalse(contenidoVotable.getActivo());
-        verify(contenidoVotableRepository, times(1)).save(contenidoVotable);
+        verify(contenidoVotableDAO, times(1)).update(contenidoVotable);
     }
 
     // ============================================================
@@ -152,7 +153,7 @@ class PeticionServiceTest {
         List<Object[]> mockRanking = new ArrayList<>();
         mockRanking.add(new Object[]{1L, "Película de prueba", 10L});
 
-        when(peticionRepository.contarVotosPorContenido())
+        when(peticionDAO.contarVotosPorContenido())
                 .thenReturn(mockRanking);
 
         List<VotoResponse> ranking = peticionService.verRankingVotos();
@@ -160,7 +161,7 @@ class PeticionServiceTest {
         assertNotNull(ranking);
         assertEquals(1, ranking.size());
         assertEquals(10L, ranking.get(0).getTotalVotos());
-        verify(peticionRepository, times(1)).contarVotosPorContenido();
+        verify(peticionDAO, times(1)).contarVotosPorContenido();
     }
 
     // ============================================================
@@ -170,14 +171,14 @@ class PeticionServiceTest {
     @DisplayName("Cliente: Listar contenidos votables activos")
     void testListarVotables() {
         List<ContenidoVotable> contenidos = Arrays.asList(contenidoVotable);
-        when(contenidoVotableRepository.findByActivoTrue())
+        when(contenidoVotableDAO.findByActivoTrue())
                 .thenReturn(contenidos);
 
         List<ContenidoVotableResponse> lista = peticionService.listarVotables();
 
         assertNotNull(lista);
         assertEquals(1, lista.size());
-        verify(contenidoVotableRepository, times(1)).findByActivoTrue();
+        verify(contenidoVotableDAO, times(1)).findByActivoTrue();
     }
 
     // ============================================================
@@ -186,19 +187,22 @@ class PeticionServiceTest {
     @Test
     @DisplayName("Cliente: Elegir película (votar)")
     void testElegirPelicula() {
-        when(usuarioRepository.findByEmail("test@test.com"))
+        when(usuarioDAO.findByEmail("test@test.com"))
                 .thenReturn(Optional.of(usuario));
-        when(contenidoVotableRepository.findById(1L))
-                .thenReturn(Optional.of(contenidoVotable));
-        when(peticionRepository.findByUsuarioId(1L))
+        when(contenidoVotableDAO.findById(1L))
+                .thenReturn(contenidoVotable);
+        when(peticionDAO.findByUsuarioId(1L))
                 .thenReturn(Optional.empty());
-        when(peticionRepository.save(any(Peticion.class)))
-                .thenReturn(peticion);
+        doAnswer(invocation -> {
+            Peticion nuevaPeticion = invocation.getArgument(0);
+            nuevaPeticion.setId(1L);
+            return null;
+        }).when(peticionDAO).save(any(Peticion.class));
 
         PeticionResponse response = peticionService.elegirPelicula("test@test.com", peticionRequest);
 
         assertNotNull(response);
         assertEquals(1L, response.getId());
-        verify(peticionRepository, times(1)).save(any(Peticion.class));
+        verify(peticionDAO, times(1)).save(any(Peticion.class));
     }
 }
