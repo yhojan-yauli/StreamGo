@@ -1,7 +1,7 @@
 package com.StreamGo.security;
 
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.UsuarioRepository;
 import com.StreamGo.service.AuthService;
 import com.StreamGo.service.JwtService;
 import jakarta.servlet.ServletException;
@@ -22,7 +22,7 @@ import java.util.Optional;
 public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioDAO usuarioDAO;
     private final AuthService authService;
 
     @Override
@@ -43,7 +43,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         // Limpiamos la sesión para que no se quede guardada permanentemente
         request.getSession().removeAttribute("oauth2_action");
 
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
+        Optional<Usuario> usuarioOptional = usuarioDAO.findByEmail(email);
         String targetUrl;
 
         if (esFlujoRegistro) {
@@ -66,7 +66,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
             } else {
                 Usuario usuario = usuarioOptional.get();
                 usuario.setUltimoAcceso(java.time.LocalDateTime.now());
-                usuarioRepository.save(usuario);
+                usuarioDAO.update(usuario);
 
                 String token = jwtService.generateTokenFromOAuth2(usuario.getEmail(), usuario.getRol().name());
                 targetUrl = UriComponentsBuilder.fromUriString("http://localhost:4200/oauth2/redirect")

@@ -1,11 +1,11 @@
 package com.StreamGo.service;
 
+import com.StreamGo.dao.PeticionDAO;
+import com.StreamGo.dao.PeticionUsuarioDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Peticion;
 import com.StreamGo.entity.PeticionUsuario;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.PeticionRepository;
-import com.StreamGo.repository.PeticionUsuarioRepository;
-import com.StreamGo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,9 +16,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PeticionUsuarioService {
 
-    private final PeticionUsuarioRepository repository;
-    private final PeticionRepository peticionRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final PeticionUsuarioDAO peticionUsuarioDAO;
+    private final PeticionDAO peticionDAO;
+    private final UsuarioDAO usuarioDAO;
 
     // SELECCIONAR PELICULA
     public void seleccionar(Long peticionId) {
@@ -30,17 +30,15 @@ public class PeticionUsuarioService {
                 .getName();
 
         // buscar usuario
-        Usuario usuario = usuarioRepository
+        Usuario usuario = usuarioDAO
                 .findByEmail(email)
                 .orElseThrow();
 
         // buscar pelicula
-        Peticion peticion = peticionRepository
-                .findById(peticionId)
-                .orElseThrow();
+        Peticion peticion = peticionDAO.findById(peticionId);
 
         // verificar si ya existe
-        boolean existe = repository
+        boolean existe = peticionUsuarioDAO
                 .existsByUsuarioAndPeticion(usuario, peticion);
 
         if (existe) {
@@ -54,7 +52,7 @@ public class PeticionUsuarioService {
                         .peticion(peticion)
                         .build();
 
-        repository.save(peticionUsuario);
+        peticionUsuarioDAO.save(peticionUsuario);
     }
 
     // QUITAR SELECCION
@@ -67,22 +65,20 @@ public class PeticionUsuarioService {
                 .getName();
 
         // buscar usuario
-        Usuario usuario = usuarioRepository
+        Usuario usuario = usuarioDAO
                 .findByEmail(email)
                 .orElseThrow();
 
         // buscar pelicula
-        Peticion peticion = peticionRepository
-                .findById(peticionId)
-                .orElseThrow();
+        Peticion peticion = peticionDAO.findById(peticionId);
 
         // buscar relacion
         PeticionUsuario peticionUsuario =
-                repository.findByUsuarioAndPeticion(
+                peticionUsuarioDAO.findByUsuarioAndPeticion(
                         usuario,
                         peticion
                 ).orElseThrow();
 
-        repository.delete(peticionUsuario);
+        peticionUsuarioDAO.delete(peticionUsuario.getId());
     }
 }

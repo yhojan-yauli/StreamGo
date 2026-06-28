@@ -1,12 +1,12 @@
 package com.StreamGo.service;
 
+import com.StreamGo.dao.SuscripcionDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Enum.EstadoSuscripcion;
 import com.StreamGo.entity.Enum.EstadoUsuario;
 import com.StreamGo.entity.Plan;
 import com.StreamGo.entity.Suscripcion;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.SuscripcionRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +37,8 @@ public class SuscripcionService {
     private static final Logger logger =
             LoggerFactory.getLogger(SuscripcionService.class);
 
-    private final SuscripcionRepository suscripcionRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final SuscripcionDAO suscripcionDAO;
+    private final UsuarioDAO usuarioDAO;
 
     /**
      * Obtiene el usuario actualmente autenticado mediante JWT.
@@ -54,7 +54,7 @@ public class SuscripcionService {
 
         logger.debug("Usuario autenticado: {}", email);
 
-        return usuarioRepository.findByEmail(email)
+        return usuarioDAO.findByEmail(email)
                 .orElseThrow(() -> {
                     logger.error("Usuario no encontrado con email: {}", email);
                     return new RuntimeException("Usuario no encontrado");
@@ -116,12 +116,12 @@ public class SuscripcionService {
                 .estado(EstadoSuscripcion.ACTIVA)
                 .build();
 
-        Suscripcion guardada = suscripcionRepository.save(nuevaSuscripcion);
+        suscripcionDAO.save(nuevaSuscripcion);
 
         usuario.setEstado(EstadoUsuario.ACTIVO);
-        usuarioRepository.save(usuario);
+        usuarioDAO.update(usuario);
 
-        logger.info("Suscripción creada correctamente ID: {}", guardada.getId());
+        logger.info("Suscripción creada correctamente ID: {}", nuevaSuscripcion.getId());
 
         return construirSuscripcionAcumulada(usuario);
     }
@@ -216,7 +216,7 @@ public class SuscripcionService {
      */
     private Suscripcion construirSuscripcionAcumulada(Usuario usuario) {
 
-        List<Suscripcion> todas = suscripcionRepository.findByUsuarioId(usuario.getId());
+        List<Suscripcion> todas = suscripcionDAO.findByUsuarioId(usuario.getId());
 
         if (todas.isEmpty()) {
             throw new RuntimeException("Suscripción no encontrada");
@@ -268,7 +268,7 @@ public class SuscripcionService {
         LocalDateTime ahora = LocalDateTime.now();
 
         List<Suscripcion> suscripciones =
-                suscripcionRepository.findByUsuarioId(usuario.getId());
+                suscripcionDAO.findByUsuarioId(usuario.getId());
 
         for (Suscripcion suscripcion : suscripciones) {
             if (suscripcion.getEstado() == EstadoSuscripcion.ACTIVA &&
@@ -277,7 +277,7 @@ public class SuscripcionService {
 
                 suscripcion.setEstado(EstadoSuscripcion.VENCIDA);
                 suscripcion.setHorasRestantes(0);
-                suscripcionRepository.save(suscripcion);
+                suscripcionDAO.update(suscripcion);
 
                 logger.warn("Suscripción vencida ID: {}", suscripcion.getId());
             }
@@ -291,7 +291,7 @@ public class SuscripcionService {
             usuario.setEstado(EstadoUsuario.INACTIVO);
         }
 
-        usuarioRepository.save(usuario);
+        usuarioDAO.update(usuario);
     }
 
     /**
@@ -304,7 +304,7 @@ public class SuscripcionService {
 
         LocalDateTime ahora = LocalDateTime.now();
 
-        return suscripcionRepository
+        return suscripcionDAO
                 .findByUsuarioIdAndEstado(usuario.getId(), EstadoSuscripcion.ACTIVA)
                 .stream()
                 .map(Suscripcion::getFechaFin)
@@ -366,7 +366,7 @@ public class SuscripcionService {
 
         logger.info("Ejecutando verificación de suscripciones...");
 
-        List<Suscripcion> suscripciones = suscripcionRepository.findAll();
+        List<Suscripcion> suscripciones = suscripcionDAO.findAll();
         LocalDateTime ahora = LocalDateTime.now();
 
         for (Suscripcion suscripcion : suscripciones) {
@@ -377,14 +377,14 @@ public class SuscripcionService {
 
                 suscripcion.setEstado(EstadoSuscripcion.VENCIDA);
                 suscripcion.setHorasRestantes(0);
-                suscripcionRepository.save(suscripcion);
+                suscripcionDAO.update(suscripcion);
 
                 Usuario usuario = suscripcion.getUsuario();
 
                 if (usuario != null && !usuarioTieneSuscripcionActiva(usuario)) {
                     if (usuario.getEstado() != EstadoUsuario.SUSPENDIDO) {
                         usuario.setEstado(EstadoUsuario.INACTIVO);
-                        usuarioRepository.save(usuario);
+                        usuarioDAO.update(usuario);
                     }
                 }
 

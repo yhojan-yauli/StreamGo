@@ -75,10 +75,10 @@ public abstract class AbstractGenericJdbcDAO<T, ID> implements IGenericDAO<T, ID
         }
     }
 
-    protected List<T> queryForList(
+    protected <R> List<R> queryForList(
             String sql,
             PreparedStatementBinder binder,
-            ResultSetMapper<T> mapper
+            ResultSetMapper<R> mapper
     ) {
 
         Connection connection = getConnection();
@@ -91,7 +91,7 @@ public abstract class AbstractGenericJdbcDAO<T, ID> implements IGenericDAO<T, ID
             try (ResultSet resultSet =
                          preparedStatement.executeQuery()) {
 
-                List<T> resultados = new ArrayList<>();
+                List<R> resultados = new ArrayList<>();
 
                 while (resultSet.next()) {
                     resultados.add(mapper.map(resultSet));
@@ -110,10 +110,10 @@ public abstract class AbstractGenericJdbcDAO<T, ID> implements IGenericDAO<T, ID
         }
     }
 
-    protected Optional<T> queryForOptional(
+    protected <R> Optional<R> queryForOptional(
             String sql,
             PreparedStatementBinder binder,
-            ResultSetMapper<T> mapper
+            ResultSetMapper<R> mapper
     ) {
 
         Connection connection = getConnection();
@@ -245,6 +245,18 @@ public abstract class AbstractGenericJdbcDAO<T, ID> implements IGenericDAO<T, ID
         return resultSet.wasNull() ? null : value;
     }
 
+    protected String getStringOrNull(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        if (!hasColumn(resultSet, columnName)) {
+            return null;
+        }
+
+        return resultSet.getString(columnName);
+    }
+
     protected LocalDate getLocalDateOrNull(
             ResultSet resultSet,
             String columnName
@@ -261,6 +273,22 @@ public abstract class AbstractGenericJdbcDAO<T, ID> implements IGenericDAO<T, ID
 
         Timestamp timestamp = resultSet.getTimestamp(columnName);
         return timestamp == null ? null : timestamp.toLocalDateTime();
+    }
+
+    private boolean hasColumn(
+            ResultSet resultSet,
+            String columnName
+    ) throws SQLException {
+
+        var metadata = resultSet.getMetaData();
+
+        for (int index = 1; index <= metadata.getColumnCount(); index++) {
+            if (columnName.equalsIgnoreCase(metadata.getColumnLabel(index))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private Connection getConnection() {

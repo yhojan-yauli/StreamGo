@@ -2,12 +2,12 @@ package com.StreamGo.service;
 
 import com.StreamGo.dto.request.CalificacionRequest;
 import com.StreamGo.dto.response.CalificacionResponse;
+import com.StreamGo.dao.CalificacionDAO;
+import com.StreamGo.dao.ContenidoDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.CalificacionContenido;
 import com.StreamGo.entity.Contenido;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.CalificacionRepository;
-import com.StreamGo.repository.ContenidoRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,9 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CalificacionService {
 
-    private final CalificacionRepository calificacionRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final ContenidoRepository contenidoRepository;
+    private final CalificacionDAO calificacionDAO;
+    private final UsuarioDAO usuarioDAO;
+    private final ContenidoDAO contenidoDAO;
 
     public CalificacionResponse calificarContenido(
             Long contenidoId,
@@ -38,24 +38,22 @@ public class CalificacionService {
         log.debug("Iniciando proceso de calificación. Usuario: {}, Contenido ID: {}, Puntaje: {}", 
                 email, contenidoId, request.getPuntaje());
 
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        Usuario usuario = usuarioDAO.findByEmail(email)
                 .orElseThrow(() -> {
                     log.error("Usuario no encontrado con email: {}", email);
                     return new RuntimeException("Usuario no encontrado");
                 });
 
-        Contenido contenido = contenidoRepository.findById(contenidoId)
-                .orElseThrow(() -> {
-                    log.error("Contenido no encontrado con ID: {}", contenidoId);
-                    return new RuntimeException("Contenido no encontrado");
-                });
+        Contenido contenido = contenidoDAO.findById(contenidoId);
 
         log.debug("Usuario y contenido encontrados correctamente. Usuario: {}, Contenido: {}", 
                 usuario.getEmail(), contenido.getTitulo());
 
-        CalificacionContenido calificacion = calificacionRepository
+        CalificacionContenido calificacion = calificacionDAO
                 .findByUsuarioAndContenido(usuario, contenido)
                 .orElse(null);
+
+        boolean nuevaCalificacion = calificacion == null;
 
         if (calificacion == null) {
 
@@ -79,7 +77,11 @@ public class CalificacionService {
             calificacion.setComentario(request.getComentario());
         }
 
-        calificacionRepository.save(calificacion);
+        if (nuevaCalificacion) {
+            calificacionDAO.save(calificacion);
+        } else {
+            calificacionDAO.update(calificacion);
+        }
         log.debug("Calificación guardada en base de datos");
 
         actualizarPromedio(contenido);
@@ -115,7 +117,7 @@ public class CalificacionService {
         log.debug("Actualizando promedio de calificaciones para contenido: {}", contenido.getTitulo());
 
         List<CalificacionContenido> calificaciones =
-                calificacionRepository.findByContenido(contenido);
+                calificacionDAO.findByContenido(contenido);
 
         int totalCalificaciones = calificaciones.size();
         double promedio = calificaciones.stream()
@@ -133,7 +135,7 @@ public class CalificacionService {
         contenido.setPromedioCalificacion(promedio);
         contenido.setTotalCalificaciones(totalCalificaciones);
 
-        contenidoRepository.save(contenido);
+        contenidoDAO.update(contenido);
         
         log.info("Promedio actualizado para '{}': {} estrellas ({} calificaciones)", 
                 contenido.getTitulo(), promedio, totalCalificaciones);

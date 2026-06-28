@@ -2,10 +2,10 @@ package com.StreamGo.service;
 
 import com.StreamGo.dto.request.NoticiaRequest;
 import com.StreamGo.dto.response.NoticiaResponse;
+import com.StreamGo.dao.NoticiaDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Noticia;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.NoticiaRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,8 +22,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NoticiaService {
 
-    private final NoticiaRepository noticiaRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final NoticiaDAO noticiaDAO;
+    private final UsuarioDAO usuarioDAO;
 
     /**
      * Crea una nueva noticia en el sistema.
@@ -50,10 +50,10 @@ public class NoticiaService {
                 // .fijado(false) es el valor por defecto gracias a @Builder.Default en la entidad
                 .build();
 
-        Noticia noticiaGuardada = noticiaRepository.save(noticia);
-        log.info("Noticia creada exitosamente con ID: {}", noticiaGuardada.getIdPost());
+        noticiaDAO.save(noticia);
+        log.info("Noticia creada exitosamente con ID: {}", noticia.getIdPost());
 
-        return convertirAResponse(noticiaGuardada);
+        return convertirAResponse(noticia);
     }
 
     /**
@@ -64,7 +64,7 @@ public class NoticiaService {
     @Transactional(readOnly = true)
     public List<NoticiaResponse> listarNoticias() {
         log.info("Consultando la lista completa de noticias");
-        return noticiaRepository.findAll()
+        return noticiaDAO.findAll()
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
@@ -91,7 +91,7 @@ public class NoticiaService {
     @Transactional(readOnly = true)
     public List<NoticiaResponse> listarPorAutor(Long idAutor) {
         log.info("Consultando noticias filtradas por el autor ID: {}", idAutor);
-        return noticiaRepository.findByAutorId(idAutor)
+        return noticiaDAO.findByAutorId(idAutor)
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
@@ -106,7 +106,7 @@ public class NoticiaService {
     @Transactional(readOnly = true)
     public List<NoticiaResponse> listarPorUsuario(Long idUsuario) {
         log.info("Consultando noticias filtradas por el usuario ID: {}", idUsuario);
-        return noticiaRepository.findByUsuarioId(idUsuario)
+        return noticiaDAO.findByUsuarioId(idUsuario)
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
@@ -136,10 +136,10 @@ public class NoticiaService {
         noticia.setTrailer(normalizarTextoOpcional(request.getTrailer()));
         noticia.setContenido(request.getContenido().trim());
 
-        Noticia noticiaActualizada = noticiaRepository.save(noticia);
+        noticiaDAO.update(noticia);
         log.info("Noticia con ID: {} actualizada correctamente", idPost);
 
-        return convertirAResponse(noticiaActualizada);
+        return convertirAResponse(noticia);
     }
 
     /**
@@ -156,7 +156,8 @@ public class NoticiaService {
         int reaccionesActuales = noticia.getReacciones() == null ? 0 : noticia.getReacciones();
         noticia.setReacciones(reaccionesActuales + 1);
 
-        return convertirAResponse(noticiaRepository.save(noticia));
+        noticiaDAO.update(noticia);
+        return convertirAResponse(noticia);
     }
 
     /**
@@ -167,8 +168,8 @@ public class NoticiaService {
     @Transactional
     public void eliminarNoticia(Long idPost) {
         log.info("Iniciando proceso de eliminación para la noticia con ID: {}", idPost);
-        Noticia noticia = buscarNoticia(idPost);
-        noticiaRepository.delete(noticia);
+        buscarNoticia(idPost);
+        noticiaDAO.delete(idPost);
         log.info("Noticia con ID: {} eliminada exitosamente", idPost);
     }
 
@@ -181,7 +182,7 @@ public class NoticiaService {
     @Transactional(readOnly = true)
     public List<NoticiaResponse> listarNoticiasOrdenadas() {
         log.info("Consultando noticias ordenadas (Fijadas primero, luego por reacciones)");
-        return noticiaRepository.findAllByOrderByFijadoDescReaccionesDesc()
+        return noticiaDAO.findAllByOrderByFijadoDescReaccionesDesc()
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
@@ -201,7 +202,8 @@ public class NoticiaService {
         noticia.setFijado(!noticia.isFijado());
 
         log.info("Noticia ID: {} actualizada. Estado fijado: {}", idPost, noticia.isFijado());
-        return convertirAResponse(noticiaRepository.save(noticia));
+        noticiaDAO.update(noticia);
+        return convertirAResponse(noticia);
     }
 
     /**
@@ -212,11 +214,12 @@ public class NoticiaService {
      * @throws RuntimeException si la noticia no es encontrada.
      */
     private Noticia buscarNoticia(Long idPost) {
-        return noticiaRepository.findById(idPost)
-                .orElseThrow(() -> {
-                    log.warn("No se encontró la noticia solicitada con ID: {}", idPost);
-                    return new RuntimeException("Noticia no encontrada");
-                });
+        try {
+            return noticiaDAO.findById(idPost);
+        } catch (RuntimeException exception) {
+            log.warn("No se encontró la noticia solicitada con ID: {}", idPost);
+            throw new RuntimeException("Noticia no encontrada");
+        }
     }
 
     /**
@@ -228,11 +231,12 @@ public class NoticiaService {
      * @throws RuntimeException si el usuario no es encontrado.
      */
     private Usuario obtenerUsuario(Long idUsuario, String mensajeError) {
-        return usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> {
-                    log.error("Fallo de búsqueda de entidad: ID {}, Motivo: {}", idUsuario, mensajeError);
-                    return new RuntimeException(mensajeError);
-                });
+        try {
+            return usuarioDAO.findById(idUsuario);
+        } catch (RuntimeException exception) {
+            log.error("Fallo de búsqueda de entidad: ID {}, Motivo: {}", idUsuario, mensajeError);
+            throw new RuntimeException(mensajeError);
+        }
     }
 
     /**

@@ -85,9 +85,15 @@ public class HistorialReproduccionDAOImpl
 
         return queryForList(
                 """
-                        SELECT * FROM historial_reproducciones
-                        WHERE usuario_id = ?
-                        ORDER BY fecha_reproduccion DESC
+                        SELECT h.id, h.usuario_id, h.contenido_id,
+                               h.fecha_reproduccion, h.progreso_segundos,
+                               h.completado, c.titulo AS contenido_titulo,
+                               c.imagen_url AS contenido_imagen_url,
+                               c.categoria AS contenido_categoria
+                        FROM historial_reproducciones h
+                        LEFT JOIN contenidos c ON c.id = h.contenido_id
+                        WHERE h.usuario_id = ?
+                        ORDER BY h.fecha_reproduccion DESC
                         """,
                 preparedStatement -> preparedStatement.setLong(
                         1,
@@ -108,6 +114,18 @@ public class HistorialReproduccionDAOImpl
                         .build())
                 .contenido(Contenido.builder()
                         .id(getLongOrNull(resultSet, "contenido_id"))
+                        .titulo(getStringOrNull(
+                                resultSet,
+                                "contenido_titulo"
+                        ))
+                        .imagenUrl(getStringOrNull(
+                                resultSet,
+                                "contenido_imagen_url"
+                        ))
+                        .categoria(getStringOrNull(
+                                resultSet,
+                                "contenido_categoria"
+                        ))
                         .build())
                 .fechaReproduccion(getLocalDateTimeOrNull(
                         resultSet,

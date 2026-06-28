@@ -3,15 +3,15 @@ package com.StreamGo.service;
 import com.StreamGo.dto.request.CrearPagoRequest;
 import com.StreamGo.dto.response.PagoResponse;
 
+import com.StreamGo.dao.PagoDAO;
+import com.StreamGo.dao.PlanDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Enum.EstadoPago;
 import com.StreamGo.entity.Enum.EstadoUsuario;
 import com.StreamGo.entity.Pago;
 import com.StreamGo.entity.Plan;
 import com.StreamGo.entity.Suscripcion;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.PagoRepository;
-import com.StreamGo.repository.PlanRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +34,9 @@ public class PaymentService {
     private static final Logger log =
             LoggerFactory.getLogger(PaymentService.class);
 
-    private final PagoRepository pagoRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final PlanRepository planRepository;
+    private final PagoDAO pagoDAO;
+    private final UsuarioDAO usuarioDAO;
+    private final PlanDAO planDAO;
     private final SuscripcionService suscripcionService;
 
     /**
@@ -54,7 +54,7 @@ public class PaymentService {
 
         log.info("Iniciando proceso de pago para email: {}", email);
 
-        Usuario usuario = usuarioRepository
+        Usuario usuario = usuarioDAO
                 .findByEmail(email)
                 .orElseThrow(() -> {
                     log.error("Usuario no encontrado: {}", email);
@@ -63,12 +63,7 @@ public class PaymentService {
 
         log.debug("Usuario encontrado: {}", usuario.getEmail());
 
-        Plan plan = planRepository.findById(
-                request.getPlanId()
-        ).orElseThrow(() -> {
-            log.error("Plan no encontrado ID: {}", request.getPlanId());
-            return new RuntimeException("Plan no encontrado");
-        });
+        Plan plan = planDAO.findById(request.getPlanId());
 
         log.debug("Plan seleccionado: {} - S/{}", plan.getNombre(), plan.getPrecio());
 
@@ -87,12 +82,12 @@ public class PaymentService {
                 .mercadoPagoPaymentId("SIMULATED")
                 .build();
 
-        Pago pagoGuardado = pagoRepository.save(pago);
+        pagoDAO.save(pago);
 
-        log.info("Pago guardado con ID: {}", pagoGuardado.getId());
+        log.info("Pago guardado con ID: {}", pago.getId());
 
         usuario.setEstado(EstadoUsuario.ACTIVO);
-        usuarioRepository.save(usuario);
+        usuarioDAO.update(usuario);
 
         log.info("Usuario activado: {}", usuario.getEmail());
 
@@ -102,8 +97,8 @@ public class PaymentService {
         log.info("Suscripción creada ID: {}", suscripcion.getId());
 
         return PagoResponse.builder()
-                .pagoId(pagoGuardado.getId())
-                .estadoPago(pagoGuardado.getEstadoPago().name())
+                .pagoId(pago.getId())
+                .estadoPago(pago.getEstadoPago().name())
                 .transactionId(transactionId)
                 .suscripcionId(suscripcion.getId())
                 .plan(plan.getNombre())

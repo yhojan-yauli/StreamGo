@@ -30,6 +30,27 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
     }
 
     @Override
+    public List<Noticia> findAll() {
+
+        return queryForList(
+                selectNoticiasConUsuarios(),
+                preparedStatement -> {
+                },
+                this::mapResultSet
+        );
+    }
+
+    @Override
+    public Noticia findById(Long idPost) {
+
+        return queryForOptional(
+                selectNoticiasConUsuarios() + " WHERE n.id_post = ?",
+                preparedStatement -> preparedStatement.setLong(1, idPost),
+                this::mapResultSet
+        ).orElseThrow(() -> new RuntimeException("noticias no encontrado"));
+    }
+
+    @Override
     public void save(Noticia noticia) {
 
         String sql = """
@@ -83,7 +104,7 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
     public List<Noticia> findByAutorId(Long idAutor) {
 
         return queryForList(
-                "SELECT * FROM noticias WHERE id_autor = ?",
+                selectNoticiasConUsuarios() + " WHERE n.id_autor = ?",
                 preparedStatement -> preparedStatement.setLong(1, idAutor),
                 this::mapResultSet
         );
@@ -92,7 +113,7 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
     public List<Noticia> findByUsuarioId(Long idUsuario) {
 
         return queryForList(
-                "SELECT * FROM noticias WHERE id_usuario = ?",
+                selectNoticiasConUsuarios() + " WHERE n.id_usuario = ?",
                 preparedStatement -> preparedStatement.setLong(1, idUsuario),
                 this::mapResultSet
         );
@@ -102,9 +123,9 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
 
         return queryForList(
                 """
-                        SELECT * FROM noticias
-                        ORDER BY fijado DESC, reacciones DESC
-                        """,
+                        %s
+                        ORDER BY n.fijado DESC, n.reacciones DESC
+                        """.formatted(selectNoticiasConUsuarios()),
                 preparedStatement -> {
                 },
                 this::mapResultSet
@@ -118,9 +139,11 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
                 .idPost(resultSet.getLong("id_post"))
                 .autor(Usuario.builder()
                         .id(getLongOrNull(resultSet, "id_autor"))
+                        .nombre(resultSet.getString("autor_nombre"))
                         .build())
                 .usuario(Usuario.builder()
                         .id(getLongOrNull(resultSet, "id_usuario"))
+                        .nombre(resultSet.getString("usuario_nombre"))
                         .build())
                 .titulo(resultSet.getString("titulo"))
                 .reacciones(getIntegerOrNull(resultSet, "reacciones"))
@@ -128,6 +151,19 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
                 .contenido(resultSet.getString("contenido"))
                 .fijado(resultSet.getBoolean("fijado"))
                 .build();
+    }
+
+    private String selectNoticiasConUsuarios() {
+
+        return """
+                SELECT n.id_post, n.id_autor, n.id_usuario, n.titulo,
+                       n.reacciones, n.trailer, n.contenido, n.fijado,
+                       autor.nombre AS autor_nombre,
+                       usuario.nombre AS usuario_nombre
+                FROM noticias n
+                LEFT JOIN usuarios autor ON autor.id = n.id_autor
+                LEFT JOIN usuarios usuario ON usuario.id = n.id_usuario
+                """;
     }
 
     private Long idAutor(Noticia noticia) {

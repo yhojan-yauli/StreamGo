@@ -1,7 +1,7 @@
 package com.StreamGo.controller;
 
+import com.StreamGo.dao.SuscripcionDAO;
 import com.StreamGo.entity.Suscripcion;
-import com.StreamGo.repository.SuscripcionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SuscripcionAdminController {
 
-    private final SuscripcionRepository suscripcionRepository;
+    private final SuscripcionDAO suscripcionDAO;
 
     /**
      * Lista todas las suscripciones registradas.
@@ -30,7 +30,7 @@ public class SuscripcionAdminController {
      */
     @GetMapping("/todos")
     public ResponseEntity<List<Suscripcion>> listarTodas() {
-        return ResponseEntity.ok(suscripcionRepository.findAll());
+        return ResponseEntity.ok(suscripcionDAO.findAll());
     }
 
     /**
@@ -41,7 +41,7 @@ public class SuscripcionAdminController {
     @GetMapping("/activas")
     public ResponseEntity<List<Suscripcion>> activas() {
         return ResponseEntity.ok(
-                suscripcionRepository.findAll()
+                suscripcionDAO.findAll()
                         .stream()
                         .filter(s -> s.getEstado().name().equals("ACTIVA"))
                         .collect(Collectors.toList())
@@ -56,7 +56,7 @@ public class SuscripcionAdminController {
     @GetMapping("/vencidas")
     public ResponseEntity<List<Suscripcion>> vencidas() {
         return ResponseEntity.ok(
-                suscripcionRepository.findAll()
+                suscripcionDAO.findAll()
                         .stream()
                         .filter(s -> s.getEstado().name().equals("VENCIDA"))
                         .collect(Collectors.toList())
@@ -71,7 +71,7 @@ public class SuscripcionAdminController {
     @GetMapping("/ordenadas")
     public ResponseEntity<List<Suscripcion>> ordenadas() {
 
-        List<Suscripcion> lista = suscripcionRepository.findAll();
+        List<Suscripcion> lista = suscripcionDAO.findAll();
 
         List<Suscripcion> ordenada = lista.stream()
                 .sorted(Comparator.comparing(

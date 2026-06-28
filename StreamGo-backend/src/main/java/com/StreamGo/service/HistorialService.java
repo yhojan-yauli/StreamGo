@@ -1,10 +1,10 @@
 package com.StreamGo.service;
 
 import com.StreamGo.dto.response.HistorialResponse;
+import com.StreamGo.dao.HistorialReproduccionDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.HistorialReproduccion;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.HistorialReproduccionRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,8 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HistorialService {
 
-    private final HistorialReproduccionRepository historialRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final HistorialReproduccionDAO historialDAO;
+    private final UsuarioDAO usuarioDAO;
 
     /**
      * Obtiene el historial de reproducción para un usuario específico.
@@ -34,7 +34,7 @@ public class HistorialService {
 
         log.debug("Intentando obtener historial para el usuario: {}", email);
 
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        Usuario usuario = usuarioDAO.findByEmail(email)
                 .orElseThrow(() -> {
                     log.error("Usuario no encontrado con email: {}", email);
                     return new RuntimeException("Usuario no encontrado");
@@ -42,7 +42,7 @@ public class HistorialService {
 
         log.info("Consultando historial de reproducción del usuario {}", email);
 
-        List<HistorialResponse> historial = historialRepository.findByUsuarioOrderByFechaReproduccionDesc(usuario)
+        List<HistorialResponse> historial = historialDAO.findByUsuarioOrderByFechaReproduccionDesc(usuario)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

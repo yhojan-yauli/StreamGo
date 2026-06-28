@@ -5,12 +5,12 @@ import com.StreamGo.dto.request.PeticionRequest;
 import com.StreamGo.dto.response.ContenidoVotableResponse;
 import com.StreamGo.dto.response.PeticionResponse;
 import com.StreamGo.dto.response.VotoResponse;
+import com.StreamGo.dao.ContenidoVotableDAO;
+import com.StreamGo.dao.PeticionDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.ContenidoVotable;
 import com.StreamGo.entity.Peticion;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.ContenidoVotableRepository;
-import com.StreamGo.repository.PeticionRepository;
-import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +43,9 @@ public class PeticionService {
 
     private static final Logger log = LoggerFactory.getLogger(PeticionService.class);
 
-    private final PeticionRepository peticionRepository;
-    private final ContenidoVotableRepository contenidoVotableRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final PeticionDAO peticionDAO;
+    private final ContenidoVotableDAO contenidoVotableDAO;
+    private final UsuarioDAO usuarioDAO;
 
     // ── ADMIN ──────────────────────────────────────────
 
@@ -68,7 +68,8 @@ public class PeticionService {
                 .imagenUrl(request.getImagenUrl())
                 .activo(true)
                 .build();
-        ContenidoVotableResponse response = mapVotableToResponse(contenidoVotableRepository.save(votable));
+        contenidoVotableDAO.save(votable);
+        ContenidoVotableResponse response = mapVotableToResponse(votable);
         log.info("Contenido votable creado exitosamente: id={}, titulo={}", response.getId(), response.getTitulo());
         return response;
     }
@@ -86,11 +87,7 @@ public class PeticionService {
      */
     public ContenidoVotableResponse editarVotable(Long id, ContenidoVotableRequest request) {
         log.debug("Editando contenido votable: id={}", id);
-        ContenidoVotable votable = contenidoVotableRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Contenido votable no encontrado para editar: id={}", id);
-                    return new RuntimeException("Contenido votable no encontrado");
-                });
+        ContenidoVotable votable = contenidoVotableDAO.findById(id);
 
         if (!votable.getActivo()) {
             log.warn("Se está editando un contenido votable inactivo: id={}, titulo={}", id, votable.getTitulo());
@@ -100,7 +97,8 @@ public class PeticionService {
         votable.setDescripcion(request.getDescripcion());
         votable.setPosterUrl(request.getPosterUrl());
         votable.setImagenUrl(request.getImagenUrl());
-        ContenidoVotableResponse response = mapVotableToResponse(contenidoVotableRepository.save(votable));
+        contenidoVotableDAO.update(votable);
+        ContenidoVotableResponse response = mapVotableToResponse(votable);
         log.info("Contenido votable editado exitosamente: id={}, titulo={}", response.getId(), response.getTitulo());
         return response;
     }
@@ -116,19 +114,15 @@ public class PeticionService {
      */
     public void desactivarVotable(Long id) {
         log.debug("Desactivando contenido votable: id={}", id);
-        ContenidoVotable votable = contenidoVotableRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Contenido votable no encontrado para desactivar: id={}", id);
-                    return new RuntimeException("Contenido votable no encontrado");
-                });
+        ContenidoVotable votable = contenidoVotableDAO.findById(id);
 
-        long votos = peticionRepository.countByContenidoVotableId(id);
+        long votos = peticionDAO.countByContenidoVotableId(id);
         if (votos > 0) {
             log.warn("Se está desactivando un contenido votable con {} votos: id={}, titulo={}", votos, id, votable.getTitulo());
         }
 
         votable.setActivo(false);
-        contenidoVotableRepository.save(votable);
+        contenidoVotableDAO.update(votable);
         log.info("Contenido votable desactivado: id={}, titulo={}", id, votable.getTitulo());
     }
 
@@ -142,7 +136,7 @@ public class PeticionService {
      */
     public List<VotoResponse> verRankingVotos() {
         log.debug("Consultando ranking de votos");
-        List<VotoResponse> ranking = peticionRepository.contarVotosPorContenido()
+        List<VotoResponse> ranking = peticionDAO.contarVotosPorContenido()
                 .stream()
                 .map(row -> VotoResponse.builder()
                         .contenidoVotableId((Long) row[0])
@@ -173,7 +167,7 @@ public class PeticionService {
      */
     public List<ContenidoVotableResponse> listarVotables() {
         log.debug("Listando contenidos votables activos");
-        List<ContenidoVotableResponse> lista = contenidoVotableRepository.findByActivoTrue()
+        List<ContenidoVotableResponse> lista = contenidoVotableDAO.findByActivoTrue()
                 .stream()
                 .map(this::mapVotableToResponse)
                 .toList();
@@ -201,24 +195,20 @@ public class PeticionService {
     public PeticionResponse elegirPelicula(String email, PeticionRequest request) {
         log.debug("Usuario {} intentando elegir contenido votable id={}", email, request.getContenidoVotableId());
 
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        Usuario usuario = usuarioDAO.findByEmail(email)
                 .orElseThrow(() -> {
                     log.error("Usuario no encontrado: email={}", email);
                     return new RuntimeException("Usuario no encontrado");
                 });
 
-        ContenidoVotable votable = contenidoVotableRepository.findById(request.getContenidoVotableId())
-                .orElseThrow(() -> {
-                    log.error("Contenido votable no encontrado: id={}", request.getContenidoVotableId());
-                    return new RuntimeException("Contenido votable no encontrado");
-                });
+        ContenidoVotable votable = contenidoVotableDAO.findById(request.getContenidoVotableId());
 
         if (!votable.getActivo()) {
             log.warn("Usuario {} intentó votar por un contenido votable inactivo: id={}, titulo={}",
                     email, votable.getId(), votable.getTitulo());
         }
 
-        Optional<Peticion> existente = peticionRepository.findByUsuarioId(usuario.getId());
+        Optional<Peticion> existente = peticionDAO.findByUsuarioId(usuario.getId());
 
         Peticion peticion;
         if (existente.isPresent()) {
@@ -236,7 +226,13 @@ public class PeticionService {
                     .build();
         }
 
-        PeticionResponse response = mapPeticionToResponse(peticionRepository.save(peticion));
+        if (existente.isPresent()) {
+            peticionDAO.update(peticion);
+        } else {
+            peticionDAO.save(peticion);
+        }
+
+        PeticionResponse response = mapPeticionToResponse(peticion);
         log.info("Petición guardada: usuarioId={}, contenidoVotableId={}, titulo={}",
                 usuario.getId(), votable.getId(), votable.getTitulo());
         return response;
@@ -252,7 +248,12 @@ public class PeticionService {
      */
     public Peticion guardar(Peticion peticion) {
         log.debug("Guardando petición en administración: id={}", peticion.getId());
-        return peticionRepository.save(peticion);
+        if (peticion.getId() == null) {
+            peticionDAO.save(peticion);
+        } else {
+            peticionDAO.update(peticion);
+        }
+        return peticion;
     }
 
     /**
@@ -262,7 +263,7 @@ public class PeticionService {
      */
     public void eliminar(Long id) {
         log.info("Eliminando petición con ID: {}", id);
-        peticionRepository.deleteById(id);
+        peticionDAO.delete(id);
     }
 
     /**
@@ -272,7 +273,7 @@ public class PeticionService {
      */
     public List<PeticionResponse> listarTodas() {
         log.debug("Listando todas las peticiones para administración");
-        return peticionRepository.findAll()
+        return peticionDAO.findAll()
                 .stream()
                 .map(this::mapPeticionToResponse)
                 .toList();
@@ -287,11 +288,7 @@ public class PeticionService {
      */
     public PeticionResponse obtenerPorId(Long id) {
         log.debug("Obteniendo petición por ID: {}", id);
-        Peticion peticion = peticionRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Petición no encontrada con ID: {}", id);
-                    return new RuntimeException("Petición no encontrada con ID: " + id);
-                });
+        Peticion peticion = peticionDAO.findById(id);
         return mapPeticionToResponse(peticion);
     }
 

@@ -32,6 +32,27 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
     }
 
     @Override
+    public List<Peticion> findAll() {
+
+        return queryForList(
+                selectPeticionesConVotable(),
+                preparedStatement -> {
+                },
+                this::mapResultSet
+        );
+    }
+
+    @Override
+    public Peticion findById(Long id) {
+
+        return queryForOptional(
+                selectPeticionesConVotable() + " WHERE p.id = ?",
+                preparedStatement -> preparedStatement.setLong(1, id),
+                this::mapResultSet
+        ).orElseThrow(() -> new RuntimeException("peticiones no encontrado"));
+    }
+
+    @Override
     public void save(Peticion peticion) {
 
         String sql = """
@@ -76,7 +97,7 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
     public Optional<Peticion> findByUsuarioId(Long usuarioId) {
 
         return queryForOptional(
-                "SELECT * FROM peticiones WHERE usuario_id = ?",
+                selectPeticionesConVotable() + " WHERE p.usuario_id = ?",
                 preparedStatement -> preparedStatement.setLong(1, usuarioId),
                 this::mapResultSet
         );
@@ -134,12 +155,48 @@ public class PeticionDAOImpl extends AbstractGenericJdbcDAO<Peticion, Long>
                                 resultSet,
                                 "contenido_votable_id"
                         ))
+                        .titulo(getStringOrNull(
+                                resultSet,
+                                "contenido_votable_titulo"
+                        ))
+                        .descripcion(getStringOrNull(
+                                resultSet,
+                                "contenido_votable_descripcion"
+                        ))
+                        .posterUrl(getStringOrNull(
+                                resultSet,
+                                "contenido_votable_poster_url"
+                        ))
+                        .imagenUrl(getStringOrNull(
+                                resultSet,
+                                "contenido_votable_imagen_url"
+                        ))
+                        .activo(getBooleanOrNull(
+                                resultSet,
+                                "contenido_votable_activo"
+                        ))
                         .build())
                 .fechaPeticion(getLocalDateTimeOrNull(
                         resultSet,
                         "fecha_peticion"
                 ))
                 .build();
+    }
+
+    private String selectPeticionesConVotable() {
+
+        return """
+                SELECT p.id, p.usuario_id, p.contenido_votable_id,
+                       p.fecha_peticion,
+                       cv.titulo AS contenido_votable_titulo,
+                       cv.descripcion AS contenido_votable_descripcion,
+                       cv.poster_url AS contenido_votable_poster_url,
+                       cv.imagen_url AS contenido_votable_imagen_url,
+                       cv.activo AS contenido_votable_activo
+                FROM peticiones p
+                LEFT JOIN contenidos_votables cv
+                       ON cv.id = p.contenido_votable_id
+                """;
     }
 
     private Long idUsuario(Peticion peticion) {

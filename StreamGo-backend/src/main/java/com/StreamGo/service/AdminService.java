@@ -1,9 +1,9 @@
 package com.StreamGo.service;
 
 import com.StreamGo.dto.response.ClienteAdminResponse;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Enum.Rol;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioDAO usuarioDAO;
     private final SuscripcionService suscripcionService;
 
     /**
@@ -30,7 +30,7 @@ public class AdminService {
      */
     public List<ClienteAdminResponse> obtenerClientes() {
 
-        List<Usuario> clientes = usuarioRepository.findByRol(Rol.CLIENTE);
+        List<Usuario> clientes = usuarioDAO.findByRol(Rol.CLIENTE);
 
         return clientes.stream().map(usuario -> {
 

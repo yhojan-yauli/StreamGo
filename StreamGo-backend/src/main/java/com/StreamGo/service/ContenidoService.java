@@ -3,16 +3,12 @@ package com.StreamGo.service;
 import com.StreamGo.dto.request.ActualizarContenidoRequest;
 import com.StreamGo.dto.request.CrearContenidoRequest;
 import com.StreamGo.dto.response.ContenidoResponse;
+import com.StreamGo.dao.ContenidoDAO;
+import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Contenido;
 import com.StreamGo.entity.Enum.EstadoContenido;
-import com.StreamGo.repository.ContenidoRepository;
-import com.StreamGo.repository.UsuarioRepository;
-import com.StreamGo.repository.SuscripcionRepository;
 import com.StreamGo.entity.Usuario;
-import com.StreamGo.entity.Suscripcion;
 import com.StreamGo.entity.Enum.EstadoUsuario;
-import com.StreamGo.entity.Enum.EstadoSuscripcion;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,8 +26,8 @@ import java.util.List;
 @Slf4j
 public class ContenidoService {
 
-    private final ContenidoRepository contenidoRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final ContenidoDAO contenidoDAO;
+    private final UsuarioDAO usuarioDAO;
     private final SuscripcionService suscripcionService;
 
     /**
@@ -63,7 +59,8 @@ public class ContenidoService {
                 .estado(request.getEstado() != null ? request.getEstado() : EstadoContenido.ACTIVO)
                 .build();
 
-        ContenidoResponse response = mapToResponse(contenidoRepository.save(contenido));
+        contenidoDAO.save(contenido);
+        ContenidoResponse response = mapToResponse(contenido);
         
         log.info("Contenido creado exitosamente. ID: {}, Título: {}, Estado: {}", 
                 response.getId(), response.getTitulo(), response.getEstado());
@@ -79,7 +76,7 @@ public class ContenidoService {
     public List<ContenidoResponse> listarAdmin() {
         log.debug("Listando todos los contenidos para administrador");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoDAO.findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -96,7 +93,7 @@ public class ContenidoService {
     public List<ContenidoResponse> listarSinLogin() {
         log.debug("Listando contenidos públicos (SINLOGIN)");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findByEstado(EstadoContenido.SINLOGIN)
+        List<ContenidoResponse> contenidos = contenidoDAO.findByEstado(EstadoContenido.SINLOGIN)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -115,7 +112,7 @@ public class ContenidoService {
     public List<ContenidoResponse> listarParaClienteSinSuscripcion() {
         log.debug("Listando contenidos para cliente sin suscripción (INACTIVO y SINLOGIN)");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoDAO.findAll()
                 .stream()
                 .filter(c ->
                         c.getEstado() == EstadoContenido.INACTIVO ||
@@ -136,7 +133,7 @@ public class ContenidoService {
     public List<ContenidoResponse> listarParaClienteConSuscripcion() {
         log.debug("Listando todos los contenidos para cliente con suscripción");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoDAO.findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -158,7 +155,7 @@ public class ContenidoService {
      * @return lista de contenidos permitidos para el usuario.
      */
     public List<ContenidoResponse> listarParaUsuario(String email) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        Usuario usuario = usuarioDAO.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (usuario.getEstado() == EstadoUsuario.SUSPENDIDO) {
@@ -198,11 +195,7 @@ public class ContenidoService {
     ) {
         log.info("Intentando actualizar contenido con ID: {}", id);
         
-        Contenido contenido = contenidoRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Contenido no encontrado con ID: {}", id);
-                    return new RuntimeException("Contenido no encontrado");
-                });
+        Contenido contenido = contenidoDAO.findById(id);
 
         String tituloAnterior = contenido.getTitulo();
         
@@ -223,7 +216,8 @@ public class ContenidoService {
             contenido.setEstado(request.getEstado());
         }
 
-        ContenidoResponse response = mapToResponse(contenidoRepository.save(contenido));
+        contenidoDAO.update(contenido);
+        ContenidoResponse response = mapToResponse(contenido);
         
         log.info("Contenido actualizado. ID: {}, Título anterior: '{}', Título nuevo: '{}', Estado: {}", 
                 id, tituloAnterior, response.getTitulo(), response.getEstado());
@@ -240,15 +234,11 @@ public class ContenidoService {
     public void cambiarEstadoContenido(Long id, EstadoContenido estado) {
         log.info("Cambiando estado del contenido ID: {} al estado: {}", id, estado);
         
-        Contenido contenido = contenidoRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Contenido no encontrado con ID: {}", id);
-                    return new RuntimeException("Contenido no encontrado");
-                });
+        Contenido contenido = contenidoDAO.findById(id);
 
         EstadoContenido estadoAnterior = contenido.getEstado();
         contenido.setEstado(estado);
-        contenidoRepository.save(contenido);
+        contenidoDAO.update(contenido);
         
         log.info("Estado cambiado exitosamente. Contenido ID: {}, Título: '{}', Estado anterior: {}, Estado nuevo: {}", 
                 id, contenido.getTitulo(), estadoAnterior, estado);
@@ -274,7 +264,7 @@ public class ContenidoService {
     public List<ContenidoResponse> listarPorCategoria(String categoria) {
         log.debug("Buscando contenidos por categoría: {}", categoria);
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoDAO.findAll()
                 .stream()
                 .filter(c -> c.getCategoria() != null &&
                         c.getCategoria().equalsIgnoreCase(categoria))
@@ -293,7 +283,7 @@ public class ContenidoService {
     public List<ContenidoResponse> listarRecomendados() {
         log.debug("Listando contenidos recomendados");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoDAO.findAll()
                 .stream()
                 .filter(c -> Boolean.TRUE.equals(c.getRecomendado()))
                 .map(this::mapToResponse)
@@ -311,7 +301,7 @@ public class ContenidoService {
     public List<ContenidoResponse> listarTendencias() {
         log.debug("Listando contenidos en tendencia");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoDAO.findAll()
                 .stream()
                 .filter(c -> Boolean.TRUE.equals(c.getTendencia()))
                 .map(this::mapToResponse)
@@ -330,7 +320,7 @@ public class ContenidoService {
     public List<ContenidoResponse> buscarPorTitulo(String titulo) {
         log.debug("Buscando contenidos por título: {}", titulo);
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoDAO.findAll()
                 .stream()
                 .filter(c -> c.getTitulo() != null &&
                         c.getTitulo().toLowerCase().contains(titulo.toLowerCase()))
@@ -371,14 +361,10 @@ public class ContenidoService {
     public void eliminarContenido(Long id) {
         log.warn("Intentando eliminar contenido con ID: {}", id);
         
-        Contenido contenido = contenidoRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Intento de eliminar contenido no existente con ID: {}", id);
-                    return new RuntimeException("Contenido no encontrado");
-                });
+        Contenido contenido = contenidoDAO.findById(id);
 
         String titulo = contenido.getTitulo();
-        contenidoRepository.delete(contenido);
+        contenidoDAO.delete(id);
         
         log.warn("Contenido eliminado permanentemente. ID: {}, Título: '{}'", id, titulo);
     }

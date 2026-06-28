@@ -1,7 +1,7 @@
 package com.StreamGo.service;
 
+import com.StreamGo.dao.PlanDAO;
 import com.StreamGo.entity.Plan;
-import com.StreamGo.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class PlanService {
     private static final Logger log =
             LoggerFactory.getLogger(PlanService.class);
 
-    private final PlanRepository planRepository;
+    private final PlanDAO planDAO;
 
     /**
      * Crea un nuevo plan en el sistema.
@@ -38,11 +38,11 @@ public class PlanService {
         plan.setActivo(true);
         plan.setId(null);
 
-        Plan saved = planRepository.save(plan);
+        planDAO.save(plan);
 
-        log.info("Plan creado con ID: {}", saved.getId());
+        log.info("Plan creado con ID: {}", plan.getId());
 
-        return saved;
+        return plan;
     }
 
     /**
@@ -54,7 +54,7 @@ public class PlanService {
 
         log.debug("Listando todos los planes");
 
-        return planRepository.findAll();
+        return planDAO.findAll();
     }
 
     /**
@@ -67,11 +67,7 @@ public class PlanService {
 
         log.debug("Buscando plan con ID: {}", id);
 
-        Plan plan = planRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Plan no encontrado con ID: {}", id);
-                    return new RuntimeException("Plan no encontrado");
-                });
+        Plan plan = planDAO.findById(id);
 
         log.info("Plan encontrado: {}", plan.getNombre());
 
@@ -97,11 +93,11 @@ public class PlanService {
         plan.setDescripcion(nuevoPlan.getDescripcion());
         plan.setActivo(nuevoPlan.getActivo());
 
-        Plan updated = planRepository.save(plan);
+        planDAO.update(plan);
 
         log.info("Plan actualizado ID: {}", id);
 
-        return updated;
+        return plan;
     }
 
     /**
@@ -113,8 +109,8 @@ public class PlanService {
 
         log.warn("Eliminando plan ID: {}", id);
 
-        Plan plan = obtenerPlan(id);
-        planRepository.delete(plan);
+        obtenerPlan(id);
+        planDAO.delete(id);
 
         log.info("Plan eliminado correctamente ID: {}", id);
     }
@@ -138,7 +134,7 @@ public class PlanService {
             );
         }
 
-        Plan plan = planRepository
+        Plan plan = planDAO
                 .findByPrecioAndPersonalizadoTrue(monto)
                 .orElseThrow(() -> {
 
