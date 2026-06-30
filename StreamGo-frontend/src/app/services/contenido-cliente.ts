@@ -14,6 +14,18 @@ export class ContenidoClienteService {
     return this.http.get<any[]>(`${this.apiUrl}/contenidos`);
   }
 
+  listarPublico(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/public/contenidos`);
+  }
+
+  porCategoriaPublico(categoria: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/public/contenidos/categoria/${encodeURIComponent(categoria)}`);
+  }
+
+  buscarPublico(titulo: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/public/contenidos/buscar?titulo=${encodeURIComponent(titulo)}`);
+  }
+
   listarSuscriptor(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/contenidos/suscriptor`);
   }

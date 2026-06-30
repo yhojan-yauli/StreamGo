@@ -19,7 +19,7 @@ export class ClientePlanesService {
   }
 
   obtenerPlanPersonalizado(horas: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/cliente/planes/personalizado?arg0=${horas}`);
+    return this.http.get<any>(`${this.apiUrl}/cliente/planes/personalizado?monto=${horas}`);
   }
 
   miSuscripcion(): Observable<any> {

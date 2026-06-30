@@ -1,35 +1,55 @@
-<main class="landing-page">
-  <section class="landing-floating">
-    <div class="landing-s-shape"></div>
+<div class="landing-wrap">
+  <main class="landing-page">
+    <div class="landing-glow"></div>
+    <div class="landing-particles"></div>
 
-    <div class="landing-posters">
-      <img *ngFor="let item of posters" [src]="imagen(item)" [alt]="item.titulo || 'poster'">
-    </div>
-  </section>
+    <section class="landing-floating">
+      <div class="landing-s-shape"></div>
 
-  <section class="landing-center">
-    <img src="/logo.png" class="landing-logo" alt="StreamGO">
+      <div class="landing-posters">
+        <img *ngFor="let item of posters" [src]="imagen(item)" [alt]="item.titulo || 'poster'">
+      </div>
+    </section>
 
-    <button type="button" class="landing-ver-btn" (click)="irPeliculas()">Ver Ahora</button>
-  </section>
+    <section class="landing-center">
+      <div class="logo-wrapper">
+        <img src="/logo.png" class="landing-logo" alt="StreamGO">
+        <div class="logo-glow-ring"></div>
+      </div>
 
-  <section class="landing-right">
-    <img class="landing-banner" [src]="imagen(banner)" [alt]="banner?.titulo || 'StreamGO banner'" (click)="irPeliculas()">
+      <p class="landing-tagline">Tu cine en casa</p>
 
-    <div class="landing-go-box">
-      <span class="landing-g">G</span>
-      <span class="landing-o">O</span>
-      <span class="landing-q">?</span>
-    </div>
+      <button type="button" class="landing-ver-btn" (click)="irPeliculas()">Ver Ahora</button>
 
-    <div class="landing-buttons">
-      <button type="button" routerLink="/login" class="landing-login">Iniciar Sesión</button>
-      <button type="button" routerLink="/register" class="landing-register">Registrarse</button>
-    </div>
+      <div class="landing-scroll-indicator">
+        <span></span>
+      </div>
+    </section>
 
-    <p class="landing-text">
-      Películas, series y documentales al alcance <br>
-      de tu mano. Empieza a ver hoy.
-    </p>
-  </section>
-</main>
+    <section class="landing-right">
+      <div class="landing-go-box">
+        <span class="landing-g">G</span>
+        <span class="landing-o">O</span>
+        <span class="landing-q">?</span>
+      </div>
+
+      <div class="landing-buttons">
+        <button type="button" routerLink="/login" class="landing-login">Iniciar Sesion</button>
+        <button type="button" routerLink="/register" class="landing-register">Registrarse</button>
+      </div>
+
+      <p class="landing-text">
+        Peliculas, series y documentales al alcance <br>
+        de tu mano. Empieza a ver hoy.
+      </p>
+
+      <div class="landing-features">
+        <span><i></i> Sin limites</span>
+        <span><i></i> HD quality</span>
+        <span><i></i> Sin publicidad</span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<app-footer-public></app-footer-public>

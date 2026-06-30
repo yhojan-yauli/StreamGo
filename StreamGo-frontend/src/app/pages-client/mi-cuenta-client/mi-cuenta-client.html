@@ -1,1 +1,91 @@
-<app-navbar-client></app-navbar-client><main class="cuenta-page"><section class="cuenta-box"><div class="avatar-grande">{{ inicial() }}</div><h1>Mi cuenta</h1><section class="alert-box success" *ngIf="mensaje">{{ mensaje }}</section><section class="alert-box error" *ngIf="error">{{ error }}</section><div class="cuenta-datos"><p><span>Nombre</span><strong>{{ nombre() }}</strong></p><p><span>Email</span><strong>{{ email() }}</strong></p><p><span>Rol</span><strong>{{ rol() }}</strong></p><p><span>Plan actual</span><strong>{{ suscripcion?.plan?.nombre || 'Sin plan activo' }}</strong></p><p><span>Estado</span><strong>{{ suscripcion?.estado || 'SIN SUSCRIPCIÓN' }}</strong></p><p><span>Horas restantes</span><strong>{{ suscripcion?.horasRestantes || 0 }}</strong></p><p><span>Fecha inicio</span><strong>{{ suscripcion?.fechaInicio ? (suscripcion.fechaInicio | date:'dd/MM/yyyy') : '---' }}</strong></p><p><span>Fecha fin</span><strong>{{ suscripcion?.fechaFin ? (suscripcion.fechaFin | date:'dd/MM/yyyy') : '---' }}</strong></p><button type="button" routerLink="/client/planes">Ver planes</button><button type="button" (click)="verificarSuscripcion()">Verificar suscripción</button><button type="button" class="btn-salir" (click)="cerrarSesion()">Cerrar sesión</button></div></section></main>
+<app-navbar-client></app-navbar-client>
+<main class="cuenta-page">
+  <div class="cuenta-layout">
+    <aside class="profile-sidebar">
+      <div class="profile-avatar">
+        @if (usuario?.avatar) {
+          <img [src]="usuario.avatar" alt="avatar" class="avatar-img">
+        } @else if (inicial()) {
+          <span>{{ inicial() }}</span>
+        } @else {
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        }
+      </div>
+      <h1>{{ nombre() || email() || 'Usuario' }}</h1>
+      <p class="profile-email">{{ email() }}</p>
+      <span class="profile-rol">{{ rol() }}</span>
+    </aside>
+
+    <section class="cuenta-main">
+      <div class="alert-box" *ngIf="mensaje">{{ mensaje }}</div>
+      <div class="alert-box error" *ngIf="error">{{ error }}</div>
+
+      <div class="section-block">
+        <div class="section-heading">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Información personal
+        </div>
+        <div class="section-body">
+          <div class="field">
+            <span class="field-label">Nombre</span>
+            <strong class="field-value">{{ nombre() }}</strong>
+          </div>
+          <div class="field">
+            <span class="field-label">Email</span>
+            <strong class="field-value">{{ email() }}</strong>
+          </div>
+          <div class="field">
+            <span class="field-label">Rol</span>
+            <strong class="field-value">{{ rol() }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-heading">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Suscripción
+        </div>
+        <div class="section-body">
+          <div class="field">
+            <span class="field-label">Plan</span>
+            <strong class="field-value">{{ suscripcion?.plan?.nombre || 'Sin plan activo' }}</strong>
+          </div>
+          <div class="field">
+            <span class="field-label">Estado</span>
+            <span class="badge-estado" [class.activo]="suscripcion?.estado === 'ACTIVA'" [class.vencida]="suscripcion?.estado === 'VENCIDA'">{{ suscripcion?.estado || 'SIN SUSCRIPCIÓN' }}</span>
+          </div>
+          <div class="field">
+            <span class="field-label">Horas restantes</span>
+            <strong class="field-value">{{ suscripcion?.horasRestantes || 0 }}</strong>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <span class="field-label">Inicio</span>
+              <strong class="field-value">{{ suscripcion?.fechaInicio ? (suscripcion.fechaInicio | date:'dd/MM/yyyy') : '---' }}</strong>
+            </div>
+            <div class="field">
+              <span class="field-label">Fin</span>
+              <strong class="field-value">{{ suscripcion?.fechaFin ? (suscripcion.fechaFin | date:'dd/MM/yyyy') : '---' }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-actions">
+        <button type="button" class="action-btn" routerLink="/client/planes">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Ver planes
+        </button>
+        <button type="button" class="action-btn" (click)="verificarSuscripcion()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Verificar suscripción
+        </button>
+        <button type="button" class="action-btn danger" (click)="cerrarSesion()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </section>
+  </div>
+</main>

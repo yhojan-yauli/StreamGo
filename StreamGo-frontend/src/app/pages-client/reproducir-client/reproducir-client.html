@@ -1,11 +1,7 @@
 <app-navbar-client></app-navbar-client>
 <main class="repro-page">
   <section class="repro-grid">
-    <div class="video-player">
-      <iframe *ngIf="videoSeguro" [src]="videoSeguro" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      <div class="video-empty" *ngIf="!videoSeguro && cargando">Cargando reproducción...</div>
-      <div class="video-empty" *ngIf="!videoSeguro && !cargando">{{ error || 'Video no disponible.' }}</div>
-    </div>
+    <app-video-player [videoUrl]="videoUrl" [titulo]="titulo()"></app-video-player>
     <aside class="info-video">
       <h2>{{ titulo() }}</h2><small>{{ contenido?.categoria || 'StreamGO' }}</small><p>{{ descripcion() }}</p>
       <div class="meta-video"><span>{{ contenido?.tipoContenido || 'Contenido' }}</span><span>⭐ {{ contenido?.promedioCalificacion || 0 }}</span><span>▶ {{ contenido?.totalReproducciones || 0 }}</span></div>

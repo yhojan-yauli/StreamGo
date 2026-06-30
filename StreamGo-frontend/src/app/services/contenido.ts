@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -19,11 +19,25 @@ export class ContenidoService {
     return this.http.post<any>(this.apiUrl, contenido);
   }
 
+  crearConArchivos(formData: FormData): Observable<HttpEvent<any>> {
+    return this.http.post<any>(`${this.apiUrl}/crear-con-archivos`, formData, {
+      reportProgress: true,
+      observe: 'events',
+    });
+  }
+
   editar(id: number, contenido: any): Observable<any> {
     return this.http.put<any>(
       `${this.apiUrl}/${id}/editar`,
       contenido
     );
+  }
+
+  editarConArchivos(id: number, formData: FormData): Observable<HttpEvent<any>> {
+    return this.http.put<any>(`${this.apiUrl}/${id}/editar-con-archivos`, formData, {
+      reportProgress: true,
+      observe: 'events',
+    });
   }
 
   eliminar(id: number): Observable<any> {

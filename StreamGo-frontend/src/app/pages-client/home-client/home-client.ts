@@ -3,6 +3,16 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { NavbarClient } from '../../componentes/navbar-client/navbar-client';
 import { ContenidoClienteService } from '../../services/contenido-cliente';
+import { urlCompleta } from '../../services/api';
+
+interface CarouselData {
+  categoria: string;
+  items: any[];
+  itemsFiltrados: any[];
+  indiceCentro: number;
+  autoTimer: any;
+  sinTransicion: boolean;
+}
 
 @Component({
   selector: 'app-home-client',
@@ -16,57 +26,136 @@ export class HomeClient implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   contenidos: any[] = [];
-  recomendados: any[] = [];
-  tendencias: any[] = [];
   historial: any[] = [];
-  carouselLista: any[] = [];
-  categorias: string[] = ['Todas'];
-  categoriaActual = 'Todas';
-  tipoActual: 'recomendados' | 'tendencias' = 'recomendados';
+  carousels: CarouselData[] = [];
   tituloPagina = 'Inicio';
-  tituloCentro = '';
-  indiceCentro = 0;
   cargando = false;
-  autoCarousel: any;
+  buscando = false;
 
   ngOnInit(): void { this.cargarContenidoCliente(); this.cargarHistorial(); }
-  ngOnDestroy(): void { clearInterval(this.autoCarousel); }
+  ngOnDestroy(): void { this.carousels.forEach(c => clearInterval(c.autoTimer)); }
 
   cargarContenidoCliente(): void {
     this.cargando = true;
     this.contenidoService.listarSuscriptor().subscribe({
-      next: (data) => { this.contenidos = Array.isArray(data) ? [...data] : []; this.configurarCategorias(); this.cargarRecomendados(); },
+      next: (data) => { this.contenidos = Array.isArray(data) ? [...data] : []; this.construirCarousels(); },
       error: () => {
         this.contenidoService.listar().subscribe({
-          next: (data) => { this.contenidos = Array.isArray(data) ? [...data] : []; this.configurarCategorias(); this.cargarRecomendados(); },
-          error: (err) => { console.error('Error cargando contenidos cliente:', err); this.contenidos = []; this.carouselLista = []; this.cargando = false; this.cdr.detectChanges(); }
+          next: (data) => { this.contenidos = Array.isArray(data) ? [...data] : []; this.construirCarousels(); },
+          error: (err) => { console.error('Error cargando contenidos:', err); this.contenidos = []; this.cargando = false; this.cdr.detectChanges(); }
         });
       }
     });
   }
 
-  cargarRecomendados(): void {
-    this.contenidoService.recomendados().subscribe({
-      next: (data) => { this.recomendados = Array.isArray(data) && data.length > 0 ? [...data] : [...this.contenidos]; this.cargarTendencias(); },
-      error: () => { this.recomendados = [...this.contenidos]; this.cargarTendencias(); }
-    });
-  }
-
-  cargarTendencias(): void {
-    this.contenidoService.tendencias().subscribe({
-      next: (data) => this.finalizarCarga(data),
-      error: () => this.finalizarCarga(this.contenidos)
-    });
-  }
-
-  finalizarCarga(data: any[]): void {
-    this.tendencias = Array.isArray(data) && data.length > 0 ? [...data] : [...this.contenidos];
-    this.tipoActual = 'recomendados';
-    this.carouselLista = [...this.recomendados];
-    this.indiceCentro = this.carouselLista.length >= 3 ? 2 : 0;
-    this.actualizarTituloCentro();
+  construirCarousels(): void {
+    const grupos = new Map<string, any[]>();
+    for (const item of this.contenidos) {
+      const cats = (item.categoria || 'General').split(',').map((c: string) => c.trim()).filter(Boolean);
+      for (const cat of cats) {
+        if (!grupos.has(cat)) grupos.set(cat, []);
+        grupos.get(cat)!.push(item);
+      }
+    }
+    this.carousels = [];
+    for (const [categoria, items] of grupos) {
+      const itemsBase = [...items];
+      const itemsConClones = itemsBase.length > 4 ? [...itemsBase, ...itemsBase.slice(0, 4)] : [...itemsBase];
+      this.carousels.push({
+        categoria,
+        items: itemsBase,
+        itemsFiltrados: itemsConClones,
+        indiceCentro: 0,
+        autoTimer: null as any,
+        sinTransicion: false,
+      });
+    }
     this.cargando = false;
-    this.iniciarAutoCarousel();
+    this.iniciarAutoCarousels();
+    this.cdr.detectChanges();
+  }
+
+  iniciarAutoCarousels(): void {
+    for (const carousel of this.carousels) {
+      this.iniciarAutoCarousel(carousel);
+    }
+  }
+
+  iniciarAutoCarousel(carousel: CarouselData): void {
+    clearInterval(carousel.autoTimer);
+    carousel.autoTimer = setInterval(() => {
+      if (!carousel.itemsFiltrados.length) return;
+      carousel.indiceCentro++;
+      this.normalizarIndice(carousel);
+      this.cdr.detectChanges();
+    }, 9000);
+  }
+
+  getTransform(carousel: CarouselData): string {
+    const len = carousel.itemsFiltrados.length;
+    if (len <= 4) return 'translateX(0)';
+    return `translateX(-${carousel.indiceCentro * 25}%)`;
+  }
+
+  moverManual(direccion: number, carousel: CarouselData): void {
+    if (!carousel.itemsFiltrados.length) return;
+    carousel.indiceCentro += direccion;
+    this.normalizarIndice(carousel);
+    this.iniciarAutoCarousel(carousel);
+  }
+
+  contenidoAleatorio(): void {
+    const conItems = this.carousels.filter(c => c.items.length > 4);
+    if (!conItems.length) return;
+    const rand = conItems[Math.floor(Math.random() * conItems.length)];
+    const maxIndex = rand.items.length - 4;
+    rand.indiceCentro = Math.floor(Math.random() * (maxIndex + 1));
+    this.iniciarAutoCarousel(rand);
+  }
+
+  normalizarIndice(carousel: CarouselData): void {
+    const len = carousel.itemsFiltrados.length;
+    if (len <= 4) { carousel.indiceCentro = 0; return; }
+    const maxIndex = len - 4;
+    if (carousel.indiceCentro > maxIndex) {
+      carousel.sinTransicion = true;
+      carousel.indiceCentro = 0;
+      setTimeout(() => { carousel.sinTransicion = false; this.cdr.detectChanges(); }, 30);
+    }
+    if (carousel.indiceCentro < 0) {
+      carousel.sinTransicion = true;
+      carousel.indiceCentro = maxIndex;
+      setTimeout(() => { carousel.sinTransicion = false; this.cdr.detectChanges(); }, 30);
+    }
+  }
+
+  imagen(item: any): string { return urlCompleta(item?.bannerUrl || item?.imagenUrl); }
+
+  verContenido(item: any): void {
+    if (!item?.id) return;
+    localStorage.setItem('clientContenido', JSON.stringify(item));
+    this.router.navigate(['/client/reproducir', item.id]);
+  }
+
+  buscar(event: Event): void {
+    const texto = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.buscando = !!texto;
+    this.tituloPagina = texto ? 'Resultados' : 'Inicio';
+    for (const carousel of this.carousels) {
+      clearInterval(carousel.autoTimer);
+      carousel.sinTransicion = false;
+      if (!texto) {
+        const base = [...carousel.items];
+        carousel.itemsFiltrados = base.length > 4 ? [...base, ...base.slice(0, 4)] : base;
+      } else {
+        const filtrados = carousel.items.filter(item =>
+          item.titulo?.toLowerCase().includes(texto)
+        );
+        carousel.itemsFiltrados = filtrados.length > 4 ? [...filtrados, ...filtrados.slice(0, 4)] : filtrados;
+      }
+      this.normalizarIndice(carousel);
+    }
+    if (!texto) this.iniciarAutoCarousels();
     this.cdr.detectChanges();
   }
 
@@ -76,64 +165,4 @@ export class HomeClient implements OnInit, OnDestroy {
       error: () => { this.historial = []; this.cdr.detectChanges(); }
     });
   }
-
-  configurarCategorias(): void {
-    const categoriasBackend = this.contenidos.map(item => item.categoria).filter(categoria => !!categoria);
-    this.categorias = ['Todas', ...Array.from(new Set(categoriasBackend))];
-  }
-
-  seleccionarTipo(tipo: 'recomendados' | 'tendencias'): void {
-    this.tipoActual = tipo;
-    this.categoriaActual = 'Todas';
-    this.tituloPagina = 'Inicio';
-    this.carouselLista = tipo === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
-    this.indiceCentro = this.carouselLista.length >= 3 ? 2 : 0;
-    this.actualizarTituloCentro(); this.iniciarAutoCarousel(); this.cdr.detectChanges();
-  }
-
-  seleccionarCategoria(categoria: string): void {
-    this.categoriaActual = categoria;
-    this.tituloPagina = categoria === 'Todas' ? 'Inicio' : 'Categorías';
-    this.cargando = true;
-    if (categoria === 'Todas') {
-      this.carouselLista = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
-      this.indiceCentro = this.carouselLista.length >= 3 ? 2 : 0;
-      this.actualizarTituloCentro(); this.cargando = false; this.iniciarAutoCarousel(); this.cdr.detectChanges(); return;
-    }
-    this.contenidoService.porCategoria(categoria).subscribe({
-      next: (data) => { this.carouselLista = Array.isArray(data) ? [...data] : []; this.indiceCentro = this.carouselLista.length >= 3 ? 2 : 0; this.actualizarTituloCentro(); this.cargando = false; this.iniciarAutoCarousel(); this.cdr.detectChanges(); },
-      error: (err) => { console.error('Error por categoría:', err); this.carouselLista = []; this.tituloCentro = 'Sin contenido'; this.cargando = false; this.cdr.detectChanges(); }
-    });
-  }
-
-  buscar(event: Event): void {
-    const texto = (event.target as HTMLInputElement).value.trim();
-    if (!texto) { this.seleccionarCategoria(this.categoriaActual); return; }
-    clearInterval(this.autoCarousel); this.cargando = true;
-    this.contenidoService.buscar(texto).subscribe({
-      next: (data) => { this.carouselLista = Array.isArray(data) ? [...data] : []; this.indiceCentro = this.carouselLista.length >= 3 ? 2 : 0; this.actualizarTituloCentro(); this.cargando = false; this.cdr.detectChanges(); },
-      error: (err) => { console.error('Error buscando:', err); this.carouselLista = []; this.tituloCentro = 'Sin resultados'; this.cargando = false; this.cdr.detectChanges(); }
-    });
-  }
-
-  obtenerVisibles(): any[] {
-    if (!this.carouselLista || this.carouselLista.length === 0) return [];
-    const visibles: any[] = [];
-    for (let i = -2; i <= 2; i++) {
-      let index = this.indiceCentro + i;
-      while (index < 0) index += this.carouselLista.length;
-      while (index >= this.carouselLista.length) index -= this.carouselLista.length;
-      visibles.push(this.carouselLista[index]);
-    }
-    return visibles;
-  }
-
-  moverConScroll(event: WheelEvent): void { event.preventDefault(); if (!this.carouselLista.length) return; this.indiceCentro += event.deltaY > 0 ? 1 : -1; this.normalizarIndice(); this.actualizarTituloCentro(); this.iniciarAutoCarousel(); this.cdr.detectChanges(); }
-  moverManual(direccion: number): void { if (!this.carouselLista.length) return; this.indiceCentro += direccion; this.normalizarIndice(); this.actualizarTituloCentro(); this.iniciarAutoCarousel(); this.cdr.detectChanges(); }
-  contenidoAleatorio(): void { if (!this.carouselLista.length) return; this.indiceCentro = Math.floor(Math.random() * this.carouselLista.length); this.actualizarTituloCentro(); this.iniciarAutoCarousel(); this.cdr.detectChanges(); }
-  iniciarAutoCarousel(): void { clearInterval(this.autoCarousel); this.autoCarousel = setInterval(() => { if (!this.carouselLista.length) return; this.indiceCentro++; this.normalizarIndice(); this.actualizarTituloCentro(); this.cdr.detectChanges(); }, 3500); }
-  normalizarIndice(): void { if (!this.carouselLista.length) { this.indiceCentro = 0; return; } if (this.indiceCentro >= this.carouselLista.length) this.indiceCentro = 0; if (this.indiceCentro < 0) this.indiceCentro = this.carouselLista.length - 1; }
-  actualizarTituloCentro(): void { this.tituloCentro = this.carouselLista.length ? (this.carouselLista[this.indiceCentro]?.titulo || '') : 'Sin contenido'; }
-  imagen(item: any): string { return item?.bannerUrl || item?.imagenUrl || '/background.png'; }
-  verContenido(item: any): void { if (!item?.id) return; localStorage.setItem('clientContenido', JSON.stringify(item)); this.router.navigate(['/client/reproducir', item.id]); }
 }

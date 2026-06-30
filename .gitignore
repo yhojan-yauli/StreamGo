@@ -1,0 +1,20 @@
+# Uploads
+uploads/
+
+# Node
+StreamGo-frontend/node_modules/
+StreamGo-frontend/dist/
+
+# Java / Gradle
+StreamGo-backend/.gradle/
+StreamGo-backend/build/
+StreamGo-backend/bin/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

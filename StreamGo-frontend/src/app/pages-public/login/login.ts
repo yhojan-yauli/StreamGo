@@ -56,7 +56,7 @@ export class Login implements OnInit { // 4. Implementamos OnInit
 
         console.log("ROL:", role);
 
-        // 3. redirigir según rol
+        // 4. redirigir según rol
         if (role === 'ADMIN') {
           this.router.navigate(['/admin/home']);
         } else {

@@ -18,6 +18,7 @@ import { MiCuentaClient } from './pages-client/mi-cuenta-client/mi-cuenta-client
 import { NoticiasClient } from './pages-client/noticias-client/noticias-client';
 
 // ADMIN
+import { LayoutAdmin } from './componentes/layout-admin/layout-admin';
 import { HomeAdmin } from './pages-admin/home-admin/home-admin';
 import { planes } from './pages-admin/planes/planes';
 import { Contenido } from './pages-admin/contenido/contenido';
@@ -50,13 +51,22 @@ export const routes: Routes = [
   { path: 'client/noticias', component: NoticiasClient, canActivate: [AuthGuard, RoleGuard], data: { role: 'CLIENTE' } },
 
   // ADMIN
-  { path: 'admin/home', component: HomeAdmin, canActivate: [AuthGuard, RoleGuard], data: { role: 'ADMIN' } },
-  { path: 'admin/usuarios', component: Usuarios, canActivate: [AuthGuard, RoleGuard], data: { role: 'ADMIN' } },
-  { path: 'admin/contenido', component: Contenido, canActivate: [AuthGuard, RoleGuard], data: { role: 'ADMIN' } },
-  { path: 'admin/noticias', component: NoticiasAdmin, canActivate: [AuthGuard, RoleGuard], data: { role: 'ADMIN' } },
-  { path: 'admin/peticiones', component: PeticionesAdmin, canActivate: [AuthGuard, RoleGuard], data: { role: 'ADMIN' } },
-  { path: 'admin/planes', component: planes, canActivate: [AuthGuard, RoleGuard], data: { role: 'ADMIN' } },
-  { path: 'admin/suscripciones', component: Suscripciones, canActivate: [AuthGuard, RoleGuard], data: { role: 'ADMIN' } },
+  {
+    path: 'admin',
+    component: LayoutAdmin,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { role: 'ADMIN' },
+    children: [
+      { path: 'home', component: HomeAdmin },
+      { path: 'usuarios', component: Usuarios },
+      { path: 'contenido', component: Contenido },
+      { path: 'noticias', component: NoticiasAdmin },
+      { path: 'peticiones', component: PeticionesAdmin },
+      { path: 'planes', component: planes },
+      { path: 'suscripciones', component: Suscripciones },
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
+    ],
+  },
 
   // FALLBACK
   { path: '**', redirectTo: '' }

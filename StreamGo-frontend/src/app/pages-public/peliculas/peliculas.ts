@@ -3,6 +3,7 @@ import { NavbarPublic } from '../../componentes/navbar-public/navbar-public';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ContenidoClienteService } from '../../services/contenido-cliente';
+import { urlCompleta } from '../../services/api';
 
 @Component({
   selector: 'app-peliculas',
@@ -24,7 +25,7 @@ export class Peliculas implements OnInit {
 
   cargarPeliculas(): void {
     this.cargando = true;
-    this.contenidoService.listar().subscribe({
+    this.contenidoService.listarPublico().subscribe({
       next: (data) => {
         this.peliculas = Array.isArray(data) ? [...data] : [];
         const categoriasBackend = this.peliculas.map(item => item.categoria).filter(c => !!c);
@@ -47,7 +48,7 @@ export class Peliculas implements OnInit {
     this.cargando = true;
     if (categoria === 'Todas') { this.cargarPeliculas(); return; }
 
-    this.contenidoService.porCategoria(categoria).subscribe({
+    this.contenidoService.porCategoriaPublico(categoria).subscribe({
       next: (data) => {
         this.peliculas = Array.isArray(data) ? [...data] : [];
         this.cargando = false;
@@ -66,7 +67,7 @@ export class Peliculas implements OnInit {
     const texto = (event.target as HTMLInputElement).value.trim();
     if (!texto) { this.cargarPeliculas(); return; }
     this.cargando = true;
-    this.contenidoService.buscar(texto).subscribe({
+    this.contenidoService.buscarPublico(texto).subscribe({
       next: (data) => {
         this.peliculas = Array.isArray(data) ? [...data] : [];
         this.cargando = false;
@@ -81,7 +82,7 @@ export class Peliculas implements OnInit {
     });
   }
 
-  imagen(item: any): string { return item?.imagenUrl || item?.bannerUrl || '/background.png'; }
+  imagen(item: any): string { return urlCompleta(item?.imagenUrl || item?.bannerUrl); }
   posters(): any[] { return this.peliculas.slice(0, 4); }
 
   verPelicula(item: any): void {
