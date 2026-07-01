@@ -6,14 +6,17 @@ StreamGo-frontend/node_modules/
 StreamGo-frontend/dist/
 
 # Java / Gradle
+StreamGo-backend/
 StreamGo-backend/.gradle/
 StreamGo-backend/build/
 StreamGo-backend/bin/
-
+StreamGo-backend/src/
 # IDE
 .idea/
 *.iml
 .vscode/
+docs/
+logs/
 
 # OS
 .DS_Store
