@@ -10,5 +10,6 @@ public class NoticiaRequest {
     private String titulo;
     private Integer reacciones;
     private String trailer;
+    private String portadaUrl;
     private String contenido;
 }

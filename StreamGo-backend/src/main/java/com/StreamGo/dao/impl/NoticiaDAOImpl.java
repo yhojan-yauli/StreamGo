@@ -86,8 +86,8 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
         String sql = """
                 INSERT INTO noticias (
                     id_autor, id_usuario, titulo, reacciones,
-                    trailer, contenido, fijado
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    trailer, portada_url, contenido, fecha_creacion, fijado
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         Long id = executeInsertAndReturnLongId(
@@ -98,8 +98,10 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
                     preparedStatement.setString(3, noticia.getTitulo());
                     preparedStatement.setObject(4, noticia.getReacciones());
                     preparedStatement.setString(5, noticia.getTrailer());
-                    preparedStatement.setString(6, noticia.getContenido());
-                    preparedStatement.setBoolean(7, noticia.isFijado());
+                    preparedStatement.setString(6, noticia.getPortadaUrl());
+                    preparedStatement.setString(7, noticia.getContenido());
+                    preparedStatement.setObject(8, noticia.getFechaCreacion());
+                    preparedStatement.setBoolean(9, noticia.isFijado());
                 }
         );
 
@@ -112,7 +114,8 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
         String sql = """
                 UPDATE noticias
                 SET id_autor = ?, id_usuario = ?, titulo = ?,
-                    reacciones = ?, trailer = ?, contenido = ?, fijado = ?
+                    reacciones = ?, trailer = ?, portada_url = ?,
+                    contenido = ?, fijado = ?
                 WHERE id_post = ?
                 """;
 
@@ -124,9 +127,10 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
                     preparedStatement.setString(3, noticia.getTitulo());
                     preparedStatement.setObject(4, noticia.getReacciones());
                     preparedStatement.setString(5, noticia.getTrailer());
-                    preparedStatement.setString(6, noticia.getContenido());
-                    preparedStatement.setBoolean(7, noticia.isFijado());
-                    preparedStatement.setLong(8, noticia.getIdPost());
+                    preparedStatement.setString(6, noticia.getPortadaUrl());
+                    preparedStatement.setString(7, noticia.getContenido());
+                    preparedStatement.setBoolean(8, noticia.isFijado());
+                    preparedStatement.setLong(9, noticia.getIdPost());
                 }
         );
     }
@@ -178,7 +182,9 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
                 .titulo(resultSet.getString("titulo"))
                 .reacciones(getIntegerOrNull(resultSet, "reacciones"))
                 .trailer(resultSet.getString("trailer"))
+                .portadaUrl(resultSet.getString("portada_url"))
                 .contenido(resultSet.getString("contenido"))
+                .fechaCreacion(getLocalDateTimeOrNull(resultSet, "fecha_creacion"))
                 .fijado(resultSet.getBoolean("fijado"))
                 .build();
     }
@@ -187,7 +193,8 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
 
         return """
                 SELECT n.id_post, n.id_autor, n.id_usuario, n.titulo,
-                       n.reacciones, n.trailer, n.contenido, n.fijado,
+                       n.reacciones, n.trailer, n.portada_url,
+                       n.contenido, n.fecha_creacion, n.fijado,
                        autor.nombre AS autor_nombre,
                        usuario.nombre AS usuario_nombre
                 FROM noticias n
@@ -267,7 +274,7 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
         return switch (query.getSort()) {
             case NoticiaQuery.SORT_REACCIONES -> "ORDER BY n.reacciones DESC, n.id_post DESC";
             case NoticiaQuery.SORT_TITULO -> "ORDER BY n.titulo ASC";
-            default -> "ORDER BY n.id_post DESC";
+            default -> "ORDER BY n.fecha_creacion DESC, n.id_post DESC";
         };
     }
 

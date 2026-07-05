@@ -2,6 +2,8 @@ package com.StreamGo.entity;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,7 +23,11 @@ public class Noticia {
 
     private String trailer;
 
+    private String portadaUrl;
+
     private String contenido;
+
+    private LocalDateTime fechaCreacion;
 
     @Builder.Default
     private boolean fijado = false;

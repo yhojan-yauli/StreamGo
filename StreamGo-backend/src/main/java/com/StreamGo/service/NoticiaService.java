@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -48,7 +49,9 @@ public class NoticiaService {
                 .titulo(request.getTitulo().trim())
                 .reacciones(request.getReacciones() == null ? 0 : request.getReacciones())
                 .trailer(normalizarTextoOpcional(request.getTrailer()))
+                .portadaUrl(normalizarTextoOpcional(request.getPortadaUrl()))
                 .contenido(request.getContenido().trim())
+                .fechaCreacion(LocalDateTime.now())
                 // .fijado(false) es el valor por defecto gracias a @Builder.Default en la entidad
                 .build();
 
@@ -72,7 +75,9 @@ public class NoticiaService {
                 .titulo(request.getTitulo().trim())
                 .reacciones(request.getReacciones() == null ? 0 : request.getReacciones())
                 .trailer(normalizarTextoOpcional(request.getTrailer()))
+                .portadaUrl(normalizarTextoOpcional(request.getPortadaUrl()))
                 .contenido(request.getContenido().trim())
+                .fechaCreacion(LocalDateTime.now())
                 .build();
 
         noticiaDAO.save(noticia);
@@ -200,6 +205,9 @@ public class NoticiaService {
         noticia.setTitulo(request.getTitulo().trim());
         noticia.setReacciones(request.getReacciones() == null ? noticia.getReacciones() : request.getReacciones());
         noticia.setTrailer(normalizarTextoOpcional(request.getTrailer()));
+        if (request.getPortadaUrl() != null) {
+            noticia.setPortadaUrl(normalizarTextoOpcional(request.getPortadaUrl()));
+        }
         noticia.setContenido(request.getContenido().trim());
 
         noticiaDAO.update(noticia);
@@ -398,7 +406,9 @@ public class NoticiaService {
                 .titulo(noticia.getTitulo())
                 .reacciones(noticia.getReacciones())
                 .trailer(noticia.getTrailer())
+                .portadaUrl(noticia.getPortadaUrl())
                 .contenido(noticia.getContenido())
+                .fechaCreacion(noticia.getFechaCreacion())
                 .fijado(noticia.isFijado())
                 .build();
     }
