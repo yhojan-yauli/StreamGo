@@ -56,6 +56,29 @@ public class NoticiaService {
         return convertirAResponse(noticia);
     }
 
+    @Transactional
+    public NoticiaResponse crearNoticia(NoticiaRequest request, String emailAutor) {
+        log.info("Iniciando la creación de una nueva noticia con título: {}", request.getTitulo());
+
+        validarContenidoRequest(request);
+
+        Usuario autor = obtenerUsuarioPorEmail(emailAutor);
+
+        Noticia noticia = Noticia.builder()
+                .autor(autor)
+                .usuario(autor)
+                .titulo(request.getTitulo().trim())
+                .reacciones(request.getReacciones() == null ? 0 : request.getReacciones())
+                .trailer(normalizarTextoOpcional(request.getTrailer()))
+                .contenido(request.getContenido().trim())
+                .build();
+
+        noticiaDAO.save(noticia);
+        log.info("Noticia creada exitosamente con ID: {}", noticia.getIdPost());
+
+        return convertirAResponse(noticia);
+    }
+
     /**
      * Obtiene una lista de todas las noticias registradas sin un orden específico.
      *
@@ -239,6 +262,19 @@ public class NoticiaService {
         }
     }
 
+    private Usuario obtenerUsuarioPorEmail(String email) {
+        if (esTextoVacio(email)) {
+            log.error("No se recibió email del usuario autenticado para crear la noticia");
+            throw new RuntimeException("Usuario autenticado no encontrado");
+        }
+
+        return usuarioDAO.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("No se encontró el usuario autenticado con email: {}", email);
+                    return new RuntimeException("Usuario autenticado no encontrado");
+                });
+    }
+
     /**
      * Valida que los datos obligatorios dentro del DTO request estén presentes y sean correctos.
      *
@@ -254,6 +290,21 @@ public class NoticiaService {
             log.warn("Intento fallido de operación: El ID de usuario es nulo");
             throw new RuntimeException("El usuario es obligatorio");
         }
+        if (esTextoVacio(request.getTitulo())) {
+            log.warn("Intento fallido de operación: El título está vacío");
+            throw new RuntimeException("El título es obligatorio");
+        }
+        if (esTextoVacio(request.getContenido())) {
+            log.warn("Intento fallido de operación: El contenido está vacío");
+            throw new RuntimeException("El contenido es obligatorio");
+        }
+        if (request.getReacciones() != null && request.getReacciones() < 0) {
+            log.warn("Intento fallido de operación: Se enviaron reacciones negativas ({})", request.getReacciones());
+            throw new RuntimeException("Las reacciones no pueden ser negativas");
+        }
+    }
+
+    private void validarContenidoRequest(NoticiaRequest request) {
         if (esTextoVacio(request.getTitulo())) {
             log.warn("Intento fallido de operación: El título está vacío");
             throw new RuntimeException("El título es obligatorio");

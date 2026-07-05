@@ -46,15 +46,30 @@ public class JwtService {
 
         return Jwts.builder()
                 .subject(usuario.getEmail())
-                .claim("id", usuario.getId())
-                .claim("idUsuario", usuario.getId())
-                .claim("nombre", usuario.getNombre())
                 .claim("rol", usuario.getRol().name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
     }
+    /**
+     * Genera un token JWT para un usuario autenticado mediante OAuth2 (Google).
+     * (ESTE ES EL QUE NECESITA TU CUSTOMOAUTH2SUCCESSHANDLER)
+     *
+     * @param email email del usuario obtenido del proveedor
+     * @param rol rol asignado en formato String (ej: "CLIENTE")
+     * @return token JWT generado
+     */
+    public String generateTokenFromOAuth2(String email, String rol) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("rol", rol)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
     /**
      * Extrae todos los claims del token JWT.
      *

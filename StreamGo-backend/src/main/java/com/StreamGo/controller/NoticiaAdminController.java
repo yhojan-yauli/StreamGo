@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -31,11 +33,16 @@ public class NoticiaAdminController {
      */
     @PostMapping
     public ResponseEntity<NoticiaResponse> crearNoticia(
-            @RequestBody NoticiaRequest request
+            @RequestBody NoticiaRequest request,
+            Authentication authentication
     ) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Administrador autenticado no identificado");
+        }
+
         log.info("Petición REST administrativa recibida para CREAR noticia");
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(noticiaService.crearNoticia(request));
+                .body(noticiaService.crearNoticia(request, authentication.getName()));
     }
 
     /**
