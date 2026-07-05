@@ -2,6 +2,8 @@ package com.StreamGo.dao.impl;
 
 import com.StreamGo.dao.NoticiaDAO;
 import com.StreamGo.dao.base.AbstractGenericJdbcDAO;
+import com.StreamGo.dto.query.NoticiaQuery;
+import com.StreamGo.dto.response.PageResponse;
 import com.StreamGo.entity.Noticia;
 import com.StreamGo.entity.Usuario;
 import org.springframework.stereotype.Repository;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -48,6 +51,33 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
                 preparedStatement -> preparedStatement.setLong(1, idPost),
                 this::mapResultSet
         ).orElseThrow(() -> new RuntimeException("noticias no encontrado"));
+    }
+
+    @Override
+    public PageResponse<Noticia> findAll(NoticiaQuery query) {
+        return buscarPaginado(query);
+    }
+
+    @Override
+    public PageResponse<Noticia> findAdminAll(NoticiaQuery query) {
+        return buscarPaginado(query);
+    }
+
+    @Override
+    public long count(NoticiaQuery query) {
+        SqlFiltros filtros = construirFiltros(query);
+        String sql = """
+                SELECT COUNT(*)
+                FROM noticias n
+                LEFT JOIN usuarios autor ON autor.id = n.id_autor
+                %s
+                """.formatted(filtros.where());
+
+        return queryForOptional(
+                sql,
+                preparedStatement -> asignarParametros(preparedStatement, filtros.parametros()),
+                resultSet -> resultSet.getLong(1)
+        ).orElse(0L);
     }
 
     @Override
@@ -164,6 +194,97 @@ public class NoticiaDAOImpl extends AbstractGenericJdbcDAO<Noticia, Long>
                 LEFT JOIN usuarios autor ON autor.id = n.id_autor
                 LEFT JOIN usuarios usuario ON usuario.id = n.id_usuario
                 """;
+    }
+
+    private PageResponse<Noticia> buscarPaginado(NoticiaQuery query) {
+        SqlFiltros filtros = construirFiltros(query);
+        List<Object> parametros = new ArrayList<>(filtros.parametros());
+        parametros.add(query.getSize());
+        parametros.add(query.getOffset());
+
+        String sql = """
+                %s
+                %s
+                %s
+                LIMIT ? OFFSET ?
+                """.formatted(
+                selectNoticiasConUsuarios(),
+                filtros.where(),
+                construirOrderBy(query)
+        );
+
+        List<Noticia> noticias = queryForList(
+                sql,
+                preparedStatement -> asignarParametros(preparedStatement, parametros),
+                this::mapResultSet
+        );
+
+        return PageResponse.of(
+                noticias,
+                query.getPage(),
+                query.getSize(),
+                count(query)
+        );
+    }
+
+    private SqlFiltros construirFiltros(NoticiaQuery query) {
+        List<String> condiciones = new ArrayList<>();
+        List<Object> parametros = new ArrayList<>();
+
+        if (query.tieneBusqueda()) {
+            condiciones.add("""
+                    (
+                        LOWER(n.titulo) LIKE ?
+                        OR LOWER(n.contenido) LIKE ?
+                        OR LOWER(autor.nombre) LIKE ?
+                    )
+                    """);
+
+            String busqueda = "%" + query.getSearch().toLowerCase() + "%";
+            parametros.add(busqueda);
+            parametros.add(busqueda);
+            parametros.add(busqueda);
+        }
+
+        if (query.esEstadoFijadas()) {
+            condiciones.add("n.fijado = ?");
+            parametros.add(true);
+        }
+
+        if (query.esEstadoNormales()) {
+            condiciones.add("n.fijado = ?");
+            parametros.add(false);
+        }
+
+        String where = condiciones.isEmpty()
+                ? ""
+                : "WHERE " + String.join(" AND ", condiciones);
+
+        return new SqlFiltros(where, parametros);
+    }
+
+    private String construirOrderBy(NoticiaQuery query) {
+        return switch (query.getSort()) {
+            case NoticiaQuery.SORT_REACCIONES -> "ORDER BY n.reacciones DESC, n.id_post DESC";
+            case NoticiaQuery.SORT_TITULO -> "ORDER BY n.titulo ASC";
+            default -> "ORDER BY n.id_post DESC";
+        };
+    }
+
+    private void asignarParametros(
+            java.sql.PreparedStatement preparedStatement,
+            List<Object> parametros
+    ) throws SQLException {
+
+        for (int index = 0; index < parametros.size(); index++) {
+            preparedStatement.setObject(index + 1, parametros.get(index));
+        }
+    }
+
+    private record SqlFiltros(
+            String where,
+            List<Object> parametros
+    ) {
     }
 
     private Long idAutor(Noticia noticia) {
