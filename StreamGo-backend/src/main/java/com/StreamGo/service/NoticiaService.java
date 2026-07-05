@@ -1,7 +1,9 @@
 package com.StreamGo.service;
 
 import com.StreamGo.dto.request.NoticiaRequest;
+import com.StreamGo.dto.query.NoticiaQuery;
 import com.StreamGo.dto.response.NoticiaResponse;
+import com.StreamGo.dto.response.PageResponse;
 import com.StreamGo.dao.NoticiaDAO;
 import com.StreamGo.dao.UsuarioDAO;
 import com.StreamGo.entity.Noticia;
@@ -94,6 +96,46 @@ public class NoticiaService {
     }
 
     /**
+     * Consulta noticias publicas aplicando busqueda, filtros, ordenamiento y paginacion.
+     *
+     * @param query Parametros normalizados de consulta.
+     * @return Pagina de {@link NoticiaResponse}.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<NoticiaResponse> buscarNoticias(NoticiaQuery query) {
+        log.info(
+                "Consultando noticias paginadas. search={}, estado={}, sort={}, page={}, size={}",
+                query.getSearch(),
+                query.getEstado(),
+                query.getSort(),
+                query.getPage(),
+                query.getSize()
+        );
+
+        return convertirAPaginaResponse(noticiaDAO.findAll(query));
+    }
+
+    /**
+     * Consulta noticias para administracion aplicando busqueda, filtros, ordenamiento y paginacion.
+     *
+     * @param query Parametros normalizados de consulta.
+     * @return Pagina de {@link NoticiaResponse}.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<NoticiaResponse> buscarNoticiasAdmin(NoticiaQuery query) {
+        log.info(
+                "Consultando noticias admin paginadas. search={}, estado={}, sort={}, page={}, size={}",
+                query.getSearch(),
+                query.getEstado(),
+                query.getSort(),
+                query.getPage(),
+                query.getSize()
+        );
+
+        return convertirAPaginaResponse(noticiaDAO.findAdminAll(query));
+    }
+
+    /**
      * Obtiene una noticia específica a partir de su identificador.
      *
      * @param idPost Identificador único de la noticia.
@@ -145,15 +187,16 @@ public class NoticiaService {
     @Transactional
     public NoticiaResponse actualizarNoticia(Long idPost, NoticiaRequest request) {
         log.info("Iniciando actualización de la noticia con ID: {}", idPost);
-        validarRequest(request);
+        validarContenidoRequest(request);
 
         Noticia noticia = buscarNoticia(idPost);
 
-        Usuario autor = obtenerUsuario(request.getIdAutor(), "Autor no encontrado");
-        Usuario usuario = obtenerUsuario(request.getIdUsuario(), "Usuario no encontrado");
-
-        noticia.setAutor(autor);
-        noticia.setUsuario(usuario);
+        if (request.getIdAutor() != null) {
+            noticia.setAutor(obtenerUsuario(request.getIdAutor(), "Autor no encontrado"));
+        }
+        if (request.getIdUsuario() != null) {
+            noticia.setUsuario(obtenerUsuario(request.getIdUsuario(), "Usuario no encontrado"));
+        }
         noticia.setTitulo(request.getTitulo().trim());
         noticia.setReacciones(request.getReacciones() == null ? noticia.getReacciones() : request.getReacciones());
         noticia.setTrailer(normalizarTextoOpcional(request.getTrailer()));
@@ -350,13 +393,28 @@ public class NoticiaService {
                 .idPost(noticia.getIdPost())
                 .idAutor(noticia.getAutor().getId())
                 .autorNombre(noticia.getAutor().getNombre())
-                .idUsuario(noticia.getUsuario().getId())
-                .usuarioNombre(noticia.getUsuario().getNombre())
+                .idUsuario(noticia.getUsuario() == null ? null : noticia.getUsuario().getId())
+                .usuarioNombre(noticia.getUsuario() == null ? null : noticia.getUsuario().getNombre())
                 .titulo(noticia.getTitulo())
                 .reacciones(noticia.getReacciones())
                 .trailer(noticia.getTrailer())
                 .contenido(noticia.getContenido())
                 .fijado(noticia.isFijado())
+                .build();
+    }
+
+    private PageResponse<NoticiaResponse> convertirAPaginaResponse(
+            PageResponse<Noticia> pagina
+    ) {
+        return PageResponse.<NoticiaResponse>builder()
+                .content(pagina.getContent()
+                        .stream()
+                        .map(this::convertirAResponse)
+                        .toList())
+                .page(pagina.getPage())
+                .size(pagina.getSize())
+                .totalElements(pagina.getTotalElements())
+                .totalPages(pagina.getTotalPages())
                 .build();
     }
 }

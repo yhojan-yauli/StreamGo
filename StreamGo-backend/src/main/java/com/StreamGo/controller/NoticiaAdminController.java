@@ -1,7 +1,9 @@
 package com.StreamGo.controller;
 
+import com.StreamGo.dto.query.NoticiaQuery;
 import com.StreamGo.dto.request.NoticiaRequest;
 import com.StreamGo.dto.response.NoticiaResponse;
+import com.StreamGo.dto.response.PageResponse;
 import com.StreamGo.service.NoticiaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,60 @@ import java.util.List;
 public class NoticiaAdminController {
 
     private final NoticiaService noticiaService;
+
+    /**
+     * Recibe una petición HTTP GET para listar noticias administrativas
+     * aplicando filtros, ordenamiento y paginación.
+     *
+     * @param search Texto de búsqueda.
+     * @param estado Estado visual de noticia: todos, fijadas o normales.
+     * @param sort Orden: recientes, reacciones o titulo.
+     * @param page Número de página base 0.
+     * @param size Cantidad de registros por página.
+     * @return {@link ResponseEntity} con una página de {@link NoticiaResponse}.
+     */
+    @GetMapping
+    public ResponseEntity<PageResponse<NoticiaResponse>> listarNoticiasAdmin(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        log.info("Petición REST administrativa recibida para LISTAR noticias paginadas");
+        return ResponseEntity.ok(
+                noticiaService.buscarNoticiasAdmin(
+                        NoticiaQuery.of(search, estado, sort, page, size)
+                )
+        );
+    }
+
+    /**
+     * Alias administrativo para buscar noticias sin romper clientes que prefieran
+     * una ruta explícita de búsqueda.
+     *
+     * @param search Texto de búsqueda.
+     * @param estado Estado visual de noticia: todos, fijadas o normales.
+     * @param sort Orden: recientes, reacciones o titulo.
+     * @param page Número de página base 0.
+     * @param size Cantidad de registros por página.
+     * @return {@link ResponseEntity} con una página de {@link NoticiaResponse}.
+     */
+    @GetMapping("/buscar")
+    public ResponseEntity<PageResponse<NoticiaResponse>> buscarNoticiasAdmin(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        log.info("Petición REST administrativa recibida para BUSCAR noticias");
+        return ResponseEntity.ok(
+                noticiaService.buscarNoticiasAdmin(
+                        NoticiaQuery.of(search, estado, sort, page, size)
+                )
+        );
+    }
 
     /**
      * Recibe una petición HTTP POST para crear una nueva noticia.
