@@ -64,6 +64,7 @@ public class SecurityConfig {
 
                         // Rutas públicas del frontend: contenidos y reproducción SINLOGIN
                         .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
 
                         // Planes públicos
                         .requestMatchers(HttpMethod.GET, "/planes/**").permitAll()

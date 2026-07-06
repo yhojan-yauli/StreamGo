@@ -8,9 +8,11 @@ import com.StreamGo.service.NoticiaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -62,7 +64,7 @@ public class NoticiaAdminController {
      * @param request Cuerpo de la petición que contiene los datos de la noticia.
      * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} creado y un estado HTTP 201 (CREATED).
      */
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NoticiaResponse> crearNoticia(
             @RequestBody NoticiaRequest request,
             Authentication authentication
@@ -73,6 +75,18 @@ public class NoticiaAdminController {
                 .body(noticiaService.crearNoticia(request, authentication.getName()));
     }
 
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<NoticiaResponse> crearNoticiaMultipart(
+            @RequestPart("noticia") NoticiaRequest request,
+            @RequestPart(value = "portada", required = false) MultipartFile portada,
+            Authentication authentication
+    ) {
+        log.info("Petición REST administrativa recibida para CREAR noticia con multipart");
+        validarAdministradorAutenticado(authentication);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(noticiaService.crearNoticia(request, authentication.getName(), portada));
+    }
+
     /**
      * Recibe una petición HTTP PUT para actualizar completamente los datos de una noticia.
      *
@@ -80,7 +94,7 @@ public class NoticiaAdminController {
      * @param request Cuerpo de la petición que contiene los nuevos datos de la noticia.
      * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} actualizado y un estado HTTP 200 (OK).
      */
-    @PutMapping("/{idPost}")
+    @PutMapping(value = "/{idPost}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NoticiaResponse> actualizarNoticia(
             @PathVariable Long idPost,
             @RequestBody NoticiaRequest request
@@ -88,6 +102,18 @@ public class NoticiaAdminController {
         log.info("Petición REST administrativa recibida para ACTUALIZAR la noticia con ID: {}", idPost);
         return ResponseEntity.ok(
                 noticiaService.actualizarNoticia(idPost, request)
+        );
+    }
+
+    @PutMapping(value = "/{idPost}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<NoticiaResponse> actualizarNoticiaMultipart(
+            @PathVariable Long idPost,
+            @RequestPart("noticia") NoticiaRequest request,
+            @RequestPart(value = "portada", required = false) MultipartFile portada
+    ) {
+        log.info("Petición REST administrativa recibida para ACTUALIZAR la noticia con multipart ID: {}", idPost);
+        return ResponseEntity.ok(
+                noticiaService.actualizarNoticia(idPost, request, portada)
         );
     }
 

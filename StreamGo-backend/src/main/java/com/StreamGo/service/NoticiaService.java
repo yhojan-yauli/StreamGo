@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class NoticiaService {
 
     private final NoticiaRepository noticiaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NoticiaPortadaStorageService portadaStorageService;
 
     @Transactional
     public NoticiaResponse crearNoticia(NoticiaRequest request) {
@@ -50,6 +52,15 @@ public class NoticiaService {
         Noticia noticia = construirNoticia(request, administrador, administrador);
 
         return convertirAResponse(noticiaRepository.save(noticia));
+    }
+
+    @Transactional
+    public NoticiaResponse crearNoticia(NoticiaRequest request, String emailAutor, MultipartFile portada) {
+        if (tieneArchivo(portada)) {
+            request.setPortadaUrl(portadaStorageService.guardar(portada));
+        }
+
+        return crearNoticia(request, emailAutor);
     }
 
     @Transactional(readOnly = true)
@@ -142,6 +153,15 @@ public class NoticiaService {
         noticia.setContenido(request.getContenido().trim());
 
         return convertirAResponse(noticiaRepository.save(noticia));
+    }
+
+    @Transactional
+    public NoticiaResponse actualizarNoticia(Long idPost, NoticiaRequest request, MultipartFile portada) {
+        if (tieneArchivo(portada)) {
+            request.setPortadaUrl(portadaStorageService.guardar(portada));
+        }
+
+        return actualizarNoticia(idPost, request);
     }
 
     @Transactional
@@ -292,6 +312,10 @@ public class NoticiaService {
 
     private boolean esTextoVacio(String valor) {
         return valor == null || valor.trim().isEmpty();
+    }
+
+    private boolean tieneArchivo(MultipartFile archivo) {
+        return archivo != null && !archivo.isEmpty();
     }
 
     private String normalizarTextoOpcional(String valor) {
