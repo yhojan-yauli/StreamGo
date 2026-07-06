@@ -29,59 +29,40 @@ export class NoticiasClient implements OnInit {
     this.cargarNoticias();
   }
 
-  get noticiasFiltradas(): Noticia[] {
-    const termino = this.busqueda.trim().toLowerCase();
-    const filtradas = termino
-      ? this.noticias.filter((noticia) => this.coincideBusqueda(noticia, termino))
-      : [...this.noticias];
-
-    if (this.filtroActivo === 'destacadas') {
-      return filtradas.filter((noticia) => noticia.fijado);
-    }
-
-    if (this.filtroActivo === 'populares') {
-      return filtradas.sort((a, b) => (b.reacciones ?? 0) - (a.reacciones ?? 0));
-    }
-
-    if (this.filtroActivo === 'recientes') {
-      return filtradas.sort((a, b) => b.idPost - a.idPost);
-    }
-
-    return filtradas;
-  }
-
   cargarNoticias(): void {
     this.cargando = true;
     this.error = '';
     this.mensaje = '';
 
-    this.noticiasService.listarOrdenadas().subscribe({
-      next: (data) => {
-        this.noticias = Array.isArray(data) ? [...data] : [];
+    this.noticiasService.buscarPublicas({
+      search: this.busqueda.trim(),
+      estado: this.estadoBackend(),
+      sort: this.ordenBackend(),
+      page: 0,
+      size: 50,
+    }).subscribe({
+      next: (response) => {
+        this.noticias = response.content ?? [];
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.noticiasService.listar().subscribe({
-          next: (data) => {
-            this.noticias = Array.isArray(data) ? [...data] : [];
-            this.cargando = false;
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error(err);
-            this.noticias = [];
-            this.cargando = false;
-            this.error = 'No se pudieron cargar las noticias.';
-            this.cdr.detectChanges();
-          },
-        });
+      error: (err) => {
+        console.error(err);
+        this.noticias = [];
+        this.cargando = false;
+        this.error = 'No se pudieron cargar las noticias.';
+        this.cdr.detectChanges();
       },
     });
   }
 
   seleccionarFiltro(filtro: NoticiaFiltro): void {
     this.filtroActivo = filtro;
+    this.cargarNoticias();
+  }
+
+  buscarNoticias(): void {
+    this.cargarNoticias();
   }
 
   reaccionar(noticia: Noticia): void {
@@ -135,19 +116,32 @@ export class NoticiasClient implements OnInit {
   }
 
   autor(noticia: Noticia): string {
-    return noticia?.autorNombre || noticia?.usuarioNombre || 'Comunidad StreamGO';
+    return noticia?.autorNombre || 'Comunidad StreamGO';
+  }
+
+  portada(noticia: Noticia): string | null {
+    return this.noticiasService.mediaUrl(noticia.portadaUrl);
+  }
+
+  fecha(noticia: Noticia): string {
+    return noticia.fechaCreacion
+      ? new Date(noticia.fechaCreacion).toLocaleDateString('es-PE')
+      : '';
   }
 
   trackByNoticia(_: number, noticia: Noticia): number {
     return noticia.idPost;
   }
 
-  private coincideBusqueda(noticia: Noticia, termino: string): boolean {
-    return [
-      noticia.titulo,
-      noticia.contenido,
-      noticia.autorNombre,
-      noticia.usuarioNombre,
-    ].some((valor) => (valor ?? '').toLowerCase().includes(termino));
+  private estadoBackend(): 'todos' | 'fijadas' | 'normales' {
+    return this.filtroActivo === 'destacadas' ? 'fijadas' : 'todos';
+  }
+
+  private ordenBackend(): 'recientes' | 'reacciones' | 'titulo' {
+    if (this.filtroActivo === 'populares') {
+      return 'reacciones';
+    }
+
+    return 'recientes';
   }
 }

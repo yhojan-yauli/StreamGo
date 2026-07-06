@@ -2,22 +2,16 @@ import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NoticiasService } from '../../services/noticias';
-import { Auth } from '../../services/auth';
 import { Noticia, NoticiaAdminFiltros, NoticiaRequest } from '../../models/noticia.model';
 
 interface NoticiaAdminForm {
   titulo: string;
   contenido: string;
   trailer: string;
+  portadaUrl: string;
   reacciones: number;
   idUsuario?: number | null;
   idAutor?: number | null;
-}
-
-interface UsuarioToken {
-  id?: number | string;
-  userId?: number | string;
-  idUsuario?: number | string;
 }
 
 @Component({
@@ -28,7 +22,6 @@ interface UsuarioToken {
 })
 export class NoticiasAdmin implements OnInit {
   private noticiasService = inject(NoticiasService);
-  private auth = inject(Auth);
   private cdr = inject(ChangeDetectorRef);
 
   noticias: Noticia[] = [];
@@ -39,6 +32,8 @@ export class NoticiasAdmin implements OnInit {
   noticiaId: number | null = null;
   paginaActual = 1;
   elementosPorPagina = 6;
+  totalElementos = 0;
+  portadaArchivo: File | null = null;
   mensaje = '';
   error = '';
 
@@ -52,6 +47,7 @@ export class NoticiasAdmin implements OnInit {
     titulo: '',
     contenido: '',
     trailer: '',
+    portadaUrl: '',
     reacciones: 0,
   };
 
@@ -59,30 +55,12 @@ export class NoticiasAdmin implements OnInit {
     this.cargarNoticias();
   }
 
-  get noticiasFiltradas(): Noticia[] {
-    const termino = this.filtros.busqueda.trim().toLowerCase();
-    let resultado = termino
-      ? this.noticias.filter((noticia) => this.coincideBusqueda(noticia, termino))
-      : [...this.noticias];
-
-    if (this.filtros.estado === 'fijadas') {
-      resultado = resultado.filter((noticia) => noticia.fijado);
-    }
-
-    if (this.filtros.estado === 'normales') {
-      resultado = resultado.filter((noticia) => !noticia.fijado);
-    }
-
-    return this.ordenarNoticias(resultado);
-  }
-
   get noticiasPaginadas(): Noticia[] {
-    const inicio = (this.paginaActual - 1) * this.elementosPorPagina;
-    return this.noticiasFiltradas.slice(inicio, inicio + this.elementosPorPagina);
+    return this.noticias;
   }
 
   get totalPaginas(): number {
-    return Math.max(1, Math.ceil(this.noticiasFiltradas.length / this.elementosPorPagina));
+    return Math.max(1, Math.ceil(this.totalElementos / this.elementosPorPagina));
   }
 
   get paginas(): number[] {
@@ -90,70 +68,72 @@ export class NoticiasAdmin implements OnInit {
   }
 
   get inicioResultado(): number {
-    if (this.noticiasFiltradas.length === 0) return 0;
+    if (this.totalElementos === 0) return 0;
     return (this.paginaActual - 1) * this.elementosPorPagina + 1;
   }
 
   get finResultado(): number {
-    return Math.min(this.paginaActual * this.elementosPorPagina, this.noticiasFiltradas.length);
+    return Math.min(this.paginaActual * this.elementosPorPagina, this.totalElementos);
   }
 
   cargarNoticias(): void {
     this.cargando = true;
     this.error = '';
 
-    this.noticiasService.listarOrdenadas().subscribe({
-      next: (data) => {
-        this.noticias = Array.isArray(data) ? [...data] : [];
-        this.paginaActual = 1;
+    this.noticiasService.buscarAdmin({
+      search: this.filtros.busqueda.trim(),
+      estado: this.filtros.estado,
+      sort: this.filtros.orden,
+      page: this.paginaActual - 1,
+      size: this.elementosPorPagina,
+    }).subscribe({
+      next: (response) => {
+        this.noticias = response.content ?? [];
+        this.totalElementos = response.totalElements ?? 0;
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.noticiasService.listar().subscribe({
-          next: (data) => {
-            this.noticias = Array.isArray(data) ? [...data] : [];
-            this.paginaActual = 1;
-            this.cargando = false;
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error(err);
-            this.noticias = [];
-            this.cargando = false;
-            this.error = 'No se pudieron cargar las noticias.';
-            this.cdr.detectChanges();
-          },
-        });
+      error: (err) => {
+        console.error(err);
+        this.noticias = [];
+        this.totalElementos = 0;
+        this.cargando = false;
+        this.error = 'No se pudieron cargar las noticias.';
+        this.cdr.detectChanges();
       },
     });
   }
 
   aplicarFiltros(): void {
     this.paginaActual = 1;
+    this.cargarNoticias();
   }
 
   cambiarPagina(pagina: number): void {
     if (pagina < 1 || pagina > this.totalPaginas) return;
     this.paginaActual = pagina;
+    this.cargarNoticias();
   }
 
   nuevaNoticia(): void {
     this.modoEdicion = false;
     this.noticiaId = null;
+    this.portadaArchivo = null;
     this.modalVisible = true;
-    this.noticiaForm = { titulo: '', contenido: '', trailer: '', reacciones: 0 };
+    this.noticiaForm = { titulo: '', contenido: '', trailer: '', portadaUrl: '', reacciones: 0 };
     this.cdr.detectChanges();
   }
 
   editarNoticia(noticia: Noticia): void {
     this.modoEdicion = true;
     this.noticiaId = noticia.idPost;
+    this.portadaArchivo = null;
     this.modalVisible = true;
     this.noticiaForm = {
       titulo: noticia.titulo || '',
       contenido: noticia.contenido || '',
       trailer: noticia.trailer || '',
+      portadaUrl: noticia.portadaUrl || '',
       reacciones: noticia.reacciones || 0,
       idUsuario: noticia.idUsuario || null,
       idAutor: noticia.idAutor || null,
@@ -165,6 +145,35 @@ export class NoticiasAdmin implements OnInit {
     this.modalVisible = false;
     this.modoEdicion = false;
     this.noticiaId = null;
+    this.portadaArchivo = null;
+    this.cdr.detectChanges();
+  }
+
+  seleccionarPortada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0] ?? null;
+
+    this.error = '';
+    this.portadaArchivo = null;
+
+    if (!archivo) return;
+
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!tiposPermitidos.includes(archivo.type)) {
+      this.error = 'La portada debe ser JPG, PNG o WEBP.';
+      input.value = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (archivo.size > 2 * 1024 * 1024) {
+      this.error = 'La portada no puede superar 2MB.';
+      input.value = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.portadaArchivo = archivo;
     this.cdr.detectChanges();
   }
 
@@ -174,32 +183,28 @@ export class NoticiasAdmin implements OnInit {
       return;
     }
 
-    const idAdmin = this.obtenerIdAdmin();
-
-    if (!idAdmin && !this.noticiaForm.idAutor) {
-      this.error = 'No se pudo identificar el ID del administrador autenticado.';
-      return;
-    }
-
-    const idAutor = Number(this.noticiaForm.idAutor || idAdmin);
     const request: NoticiaRequest = {
-      idUsuario: Number(this.noticiaForm.idUsuario || idAutor),
-      idAutor,
       titulo: this.noticiaForm.titulo.trim(),
       contenido: this.noticiaForm.contenido.trim(),
       trailer: this.noticiaForm.trailer?.trim() || '',
+      portadaUrl: this.noticiaForm.portadaUrl?.trim() || null,
       reacciones: Number(this.noticiaForm.reacciones || 0),
     };
 
     this.guardando = true;
     const obs = this.modoEdicion && this.noticiaId
-      ? this.noticiasService.actualizar(this.noticiaId, request)
-      : this.noticiasService.crear(request);
+      ? this.portadaArchivo
+        ? this.noticiasService.actualizarConPortada(this.noticiaId, request, this.portadaArchivo)
+        : this.noticiasService.actualizar(this.noticiaId, request)
+      : this.portadaArchivo
+        ? this.noticiasService.crearConPortada(request, this.portadaArchivo)
+        : this.noticiasService.crear(request);
 
     obs.subscribe({
       next: () => {
         this.guardando = false;
         this.modalVisible = false;
+        this.portadaArchivo = null;
         this.mensaje = this.modoEdicion
           ? 'Noticia actualizada correctamente.'
           : 'Noticia creada correctamente.';
@@ -260,34 +265,18 @@ export class NoticiasAdmin implements OnInit {
     return noticia?.autorNombre || 'Administrador';
   }
 
+  portada(noticia: Noticia): string | null {
+    return this.noticiasService.mediaUrl(noticia.portadaUrl);
+  }
+
+  fecha(noticia: Noticia): string {
+    return noticia.fechaCreacion
+      ? new Date(noticia.fechaCreacion).toLocaleDateString('es-PE')
+      : 'Sin fecha';
+  }
+
   trackByNoticia(_: number, noticia: Noticia): number {
     return noticia.idPost;
   }
 
-  private coincideBusqueda(noticia: Noticia, termino: string): boolean {
-    return [
-      noticia.titulo,
-      noticia.contenido,
-      noticia.autorNombre,
-    ].some((valor) => (valor ?? '').toLowerCase().includes(termino));
-  }
-
-  private obtenerIdAdmin(): number | null {
-    const usuario = this.auth.getUser() as UsuarioToken | null;
-    const posibleId = usuario?.id ?? usuario?.userId ?? usuario?.idUsuario;
-    const id = Number(posibleId);
-    return Number.isFinite(id) && id > 0 ? id : null;
-  }
-
-  private ordenarNoticias(noticias: Noticia[]): Noticia[] {
-    if (this.filtros.orden === 'reacciones') {
-      return noticias.sort((a, b) => (b.reacciones ?? 0) - (a.reacciones ?? 0));
-    }
-
-    if (this.filtros.orden === 'titulo') {
-      return noticias.sort((a, b) => a.titulo.localeCompare(b.titulo));
-    }
-
-    return noticias.sort((a, b) => b.idPost - a.idPost);
-  }
 }
