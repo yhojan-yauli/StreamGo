@@ -1,6 +1,8 @@
 package com.StreamGo.controller;
 
+import com.StreamGo.dto.query.NoticiaQuery;
 import com.StreamGo.dto.response.NoticiaResponse;
+import com.StreamGo.dto.response.PageResponse;
 import com.StreamGo.service.NoticiaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,21 @@ public class NoticiaPublicController {
         log.info("Petición REST pública recibida para LISTAR todas las noticias");
         return ResponseEntity.ok(
                 noticiaService.listarNoticias()
+        );
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<PageResponse<NoticiaResponse>> buscarNoticias(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        log.info("Petición REST pública recibida para BUSCAR noticias");
+        NoticiaQuery query = NoticiaQuery.of(search, estado, sort, page, size);
+        return ResponseEntity.ok(
+                noticiaService.buscarNoticias(query)
         );
     }
 

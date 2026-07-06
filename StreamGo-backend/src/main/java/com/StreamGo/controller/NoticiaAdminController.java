@@ -1,12 +1,15 @@
 package com.StreamGo.controller;
 
+import com.StreamGo.dto.query.NoticiaQuery;
 import com.StreamGo.dto.request.NoticiaRequest;
 import com.StreamGo.dto.response.NoticiaResponse;
+import com.StreamGo.dto.response.PageResponse;
 import com.StreamGo.service.NoticiaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +26,36 @@ public class NoticiaAdminController {
 
     private final NoticiaService noticiaService;
 
+    @GetMapping
+    public ResponseEntity<PageResponse<NoticiaResponse>> buscarNoticiasAdmin(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        log.info("Petición REST administrativa recibida para BUSCAR noticias");
+        NoticiaQuery query = NoticiaQuery.of(search, estado, sort, page, size);
+        return ResponseEntity.ok(
+                noticiaService.buscarNoticiasAdmin(query)
+        );
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<PageResponse<NoticiaResponse>> buscarNoticiasAdminAlias(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        log.info("Petición REST administrativa recibida para BUSCAR noticias por alias");
+        NoticiaQuery query = NoticiaQuery.of(search, estado, sort, page, size);
+        return ResponseEntity.ok(
+                noticiaService.buscarNoticiasAdmin(query)
+        );
+    }
+
     /**
      * Recibe una petición HTTP POST para crear una nueva noticia.
      *
@@ -31,11 +64,13 @@ public class NoticiaAdminController {
      */
     @PostMapping
     public ResponseEntity<NoticiaResponse> crearNoticia(
-            @RequestBody NoticiaRequest request
+            @RequestBody NoticiaRequest request,
+            Authentication authentication
     ) {
         log.info("Petición REST administrativa recibida para CREAR noticia");
+        validarAdministradorAutenticado(authentication);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(noticiaService.crearNoticia(request));
+                .body(noticiaService.crearNoticia(request, authentication.getName()));
     }
 
     /**
@@ -117,5 +152,11 @@ public class NoticiaAdminController {
         return ResponseEntity.ok(
                 noticiaService.listarPorUsuario(idUsuario)
         );
+    }
+
+    private void validarAdministradorAutenticado(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new RuntimeException("No se pudo identificar el administrador autenticado");
+        }
     }
 }
