@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ public class NoticiaService {
 
     private final NoticiaDAO noticiaDAO;
     private final UsuarioDAO usuarioDAO;
+    private final NoticiaPortadaStorageService portadaStorageService;
 
     /**
      * Crea una nueva noticia en el sistema.
@@ -84,6 +86,16 @@ public class NoticiaService {
         log.info("Noticia creada exitosamente con ID: {}", noticia.getIdPost());
 
         return convertirAResponse(noticia);
+    }
+
+    @Transactional
+    public NoticiaResponse crearNoticia(
+            NoticiaRequest request,
+            String emailAutor,
+            MultipartFile portada
+    ) {
+        asignarPortadaSubida(request, portada);
+        return crearNoticia(request, emailAutor);
     }
 
     /**
@@ -214,6 +226,16 @@ public class NoticiaService {
         log.info("Noticia con ID: {} actualizada correctamente", idPost);
 
         return convertirAResponse(noticia);
+    }
+
+    @Transactional
+    public NoticiaResponse actualizarNoticia(
+            Long idPost,
+            NoticiaRequest request,
+            MultipartFile portada
+    ) {
+        asignarPortadaSubida(request, portada);
+        return actualizarNoticia(idPost, request);
     }
 
     /**
@@ -388,6 +410,16 @@ public class NoticiaService {
      */
     private String normalizarTextoOpcional(String valor) {
         return esTextoVacio(valor) ? null : valor.trim();
+    }
+
+    private void asignarPortadaSubida(
+            NoticiaRequest request,
+            MultipartFile portada
+    ) {
+        String portadaUrl = portadaStorageService.guardarPortada(portada);
+        if (portadaUrl != null) {
+            request.setPortadaUrl(portadaUrl);
+        }
     }
 
     /**

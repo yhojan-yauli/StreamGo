@@ -39,3 +39,6 @@ out/
 # Logs ignora los loggs realizados en local, no se suben al repositorio
 logs/
 *.log
+
+# Archivos subidos localmente
+uploads/

@@ -59,7 +59,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/login/oauth2/**", // <- CRUCIAL: Permite el flujo de login de Spring con Google
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/uploads/**"
                         ).permitAll()
 
                         // Rutas públicas del frontend: contenidos y reproducción SINLOGIN
