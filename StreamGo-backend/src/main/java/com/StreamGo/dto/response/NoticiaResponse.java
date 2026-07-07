@@ -3,6 +3,8 @@ package com.StreamGo.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 public class NoticiaResponse {
@@ -15,6 +17,8 @@ public class NoticiaResponse {
     private String titulo;
     private Integer reacciones;
     private String trailer;
+    private String portadaUrl;
     private String contenido;
+    private LocalDateTime fechaCreacion;
     private boolean fijado;
 }
