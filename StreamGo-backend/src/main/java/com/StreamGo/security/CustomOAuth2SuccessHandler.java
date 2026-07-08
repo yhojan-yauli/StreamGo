@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -24,6 +25,9 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
     private final AuthService authService;
+
+    @Value("${FRONTEND_URL:http://localhost:4200}")
+    private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(
@@ -49,27 +53,27 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         if (esFlujoRegistro) {
             // === FLUJO DE REGISTRO ===
             if (usuarioOptional.isPresent()) {
-                targetUrl = "http://localhost:4200/register?error=ya_existe";
+                targetUrl = frontendUrl + "/register?error=ya_existe";
             } else {
                 // Registramos al usuario en MySQL con tu método tradicional
                 authService.registerFromGoogle(email, name);
 
                 // NO GENERAMOS TOKEN AQUÍ.
                 // Redirigimos directo al Login de Angular con un parámetro de éxito
-                targetUrl = "http://localhost:4200/login?registro=exitoso";
+                targetUrl = frontendUrl + "/login?registro=exitoso";
             }
         } else {
             // === FLUJO DE LOGIN ===
             // (Este bloque se queda exactamente igual como ya lo tienes)
             if (usuarioOptional.isEmpty()) {
-                targetUrl = "http://localhost:4200/login?error=usuario_no_registrado";
+                targetUrl = frontendUrl + "/login?error=usuario_no_registrado";
             } else {
                 Usuario usuario = usuarioOptional.get();
                 usuario.setUltimoAcceso(java.time.LocalDateTime.now());
                 usuarioRepository.save(usuario);
 
                 String token = jwtService.generateTokenFromOAuth2(usuario.getEmail(), usuario.getRol().name());
-                targetUrl = UriComponentsBuilder.fromUriString("http://localhost:4200/oauth2/redirect")
+                targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/redirect")
                         .queryParam("token", token)
                         .build().toUriString();
             }
