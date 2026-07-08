@@ -1,13 +1,18 @@
 package com.StreamGo.controller;
 
+import com.StreamGo.dto.query.NoticiaQuery;
 import com.StreamGo.dto.request.NoticiaRequest;
 import com.StreamGo.dto.response.NoticiaResponse;
+import com.StreamGo.dto.response.PageResponse;
 import com.StreamGo.service.NoticiaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,19 +28,63 @@ public class NoticiaAdminController {
 
     private final NoticiaService noticiaService;
 
+    @GetMapping
+    public ResponseEntity<PageResponse<NoticiaResponse>> buscarNoticiasAdmin(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        log.info("Petición REST administrativa recibida para BUSCAR noticias");
+        NoticiaQuery query = NoticiaQuery.of(search, estado, sort, page, size);
+        return ResponseEntity.ok(
+                noticiaService.buscarNoticiasAdmin(query)
+        );
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<PageResponse<NoticiaResponse>> buscarNoticiasAdminAlias(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size
+    ) {
+        log.info("Petición REST administrativa recibida para BUSCAR noticias por alias");
+        NoticiaQuery query = NoticiaQuery.of(search, estado, sort, page, size);
+        return ResponseEntity.ok(
+                noticiaService.buscarNoticiasAdmin(query)
+        );
+    }
+
     /**
      * Recibe una petición HTTP POST para crear una nueva noticia.
      *
      * @param request Cuerpo de la petición que contiene los datos de la noticia.
      * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} creado y un estado HTTP 201 (CREATED).
      */
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NoticiaResponse> crearNoticia(
-            @RequestBody NoticiaRequest request
+            @RequestBody NoticiaRequest request,
+            Authentication authentication
     ) {
         log.info("Petición REST administrativa recibida para CREAR noticia");
+        validarAdministradorAutenticado(authentication);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(noticiaService.crearNoticia(request));
+                .body(noticiaService.crearNoticia(request, authentication.getName()));
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<NoticiaResponse> crearNoticiaMultipart(
+            @RequestPart("noticia") NoticiaRequest request,
+            @RequestPart(value = "portada", required = false) MultipartFile portada,
+            Authentication authentication
+    ) {
+        log.info("Petición REST administrativa recibida para CREAR noticia con multipart");
+        validarAdministradorAutenticado(authentication);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(noticiaService.crearNoticia(request, authentication.getName(), portada));
     }
 
     /**
@@ -45,7 +94,7 @@ public class NoticiaAdminController {
      * @param request Cuerpo de la petición que contiene los nuevos datos de la noticia.
      * @return {@link ResponseEntity} con el objeto {@link NoticiaResponse} actualizado y un estado HTTP 200 (OK).
      */
-    @PutMapping("/{idPost}")
+    @PutMapping(value = "/{idPost}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NoticiaResponse> actualizarNoticia(
             @PathVariable Long idPost,
             @RequestBody NoticiaRequest request
@@ -53,6 +102,18 @@ public class NoticiaAdminController {
         log.info("Petición REST administrativa recibida para ACTUALIZAR la noticia con ID: {}", idPost);
         return ResponseEntity.ok(
                 noticiaService.actualizarNoticia(idPost, request)
+        );
+    }
+
+    @PutMapping(value = "/{idPost}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<NoticiaResponse> actualizarNoticiaMultipart(
+            @PathVariable Long idPost,
+            @RequestPart("noticia") NoticiaRequest request,
+            @RequestPart(value = "portada", required = false) MultipartFile portada
+    ) {
+        log.info("Petición REST administrativa recibida para ACTUALIZAR la noticia con multipart ID: {}", idPost);
+        return ResponseEntity.ok(
+                noticiaService.actualizarNoticia(idPost, request, portada)
         );
     }
 
@@ -117,5 +178,11 @@ public class NoticiaAdminController {
         return ResponseEntity.ok(
                 noticiaService.listarPorUsuario(idUsuario)
         );
+    }
+
+    private void validarAdministradorAutenticado(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            throw new RuntimeException("No se pudo identificar el administrador autenticado");
+        }
     }
 }

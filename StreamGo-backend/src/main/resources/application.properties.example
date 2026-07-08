@@ -29,6 +29,11 @@ logging.level.org.springframework.security=INFO
 logging.pattern.console=%n============================================================%n%d{yyyy-MM-dd HH:mm:ss} | %clr(%-5level) | %logger{30} | %msg%n
 logging.file.name=logs/streamgo.log
 
+# UPLOADS
+app.upload.dir=../uploads
+spring.servlet.multipart.max-file-size=2MB
+spring.servlet.multipart.max-request-size=3MB
+
 # GOOGLE OAUTH2
 spring.security.oauth2.client.registration.google.client-id={{GOOGLE_CLIENT_ID}}
 spring.security.oauth2.client.registration.google.client-secret={{GOOGLE_CLIENT_SECRET}}

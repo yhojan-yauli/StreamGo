@@ -37,6 +37,9 @@ out/
 .vscode/
 
 logs/
+docs/
+StreamGo-frontend/
+uploads/
 
 # Credenciales locales - no subir
 StreamGo-backend/src/main/resources/application.properties

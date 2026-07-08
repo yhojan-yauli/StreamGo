@@ -3,6 +3,8 @@ package com.StreamGo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "noticias")
 @Getter
@@ -33,10 +35,23 @@ public class Noticia {
 
     private String trailer;
 
+    @Column(name = "portada_url", length = 500)
+    private String portadaUrl;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String contenido;
+
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
 
     @Column(nullable = false)
     @Builder.Default
     private boolean fijado = false;
+
+    @PrePersist
+    void prePersist() {
+        if (fechaCreacion == null) {
+            fechaCreacion = LocalDateTime.now();
+        }
+    }
 }
