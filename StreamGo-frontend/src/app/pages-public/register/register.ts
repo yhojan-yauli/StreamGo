@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core'; // 1. Importamos OnInit
+import { Component, OnInit } from '@angular/core';
 import { NavbarPublic } from '../../componentes/navbar-public/navbar-public';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router'; // 2. Importamos ActivatedRoute
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common'; // 3. Importamos NgIf para la alerta
+import { NgIf } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -55,6 +56,6 @@ export class Register implements OnInit { // 5. Implementamos OnInit
   }
 
   registerConGoogle(): void {
-    window.location.href = 'http://localhost:8080/auth/google-init?action=register';
+    window.location.href = `${environment.apiUrl}/auth/google-init?action=register`;
   }
 }

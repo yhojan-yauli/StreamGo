@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { NavbarPublic } from "../../componentes/navbar-public/navbar-public";
-import { Router, RouterLink, ActivatedRoute } from '@angular/router'; // 1. Importamos ActivatedRoute
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common'; // 2. Importamos NgIf para las alertas del HTML
+import { NgIf } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -70,6 +71,6 @@ export class Login implements OnInit { // 4. Implementamos OnInit
   }
 
   loginConGoogle(): void {
-    window.location.href = 'http://localhost:8080/auth/google-init?action=login';
+    window.location.href = `${environment.apiUrl}/auth/google-init?action=login`;
   }
 }
