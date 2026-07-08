@@ -26,94 +26,215 @@ export class HomeClient implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   contenidos: any[] = [];
+  recomendados: any[] = [];
+  tendencias: any[] = [];
   historial: any[] = [];
-  carousels: CarouselData[] = [];
+  carouselCurvoLista: any[] = [];
+  categorias: string[] = ['Todas'];
+  categoriaActual = 'Todas';
+  tipoActual: 'recomendados' | 'tendencias' = 'recomendados';
   tituloPagina = 'Inicio';
+  tituloCentro = '';
+  indiceCentro = 0;
   cargando = false;
   buscando = false;
+  autoCarousel: any;
 
-  ngOnInit(): void { this.cargarContenidoCliente(); this.cargarHistorial(); }
-  ngOnDestroy(): void { this.carousels.forEach(c => clearInterval(c.autoTimer)); }
+  carousels: CarouselData[] = [];
+
+  ngOnInit(): void {
+    this.cargarContenidoCliente();
+    this.cargarHistorial();
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.autoCarousel);
+    this.carousels.forEach(c => clearInterval(c.autoTimer));
+  }
 
   cargarContenidoCliente(): void {
     this.cargando = true;
     this.contenidoService.listarSuscriptor().subscribe({
-      next: (data) => { this.contenidos = Array.isArray(data) ? [...data] : []; this.construirCarousels(); },
+      next: (data) => {
+        this.contenidos = Array.isArray(data) ? [...data] : [];
+        this.procesarContenidos();
+      },
       error: () => {
         this.contenidoService.listar().subscribe({
-          next: (data) => { this.contenidos = Array.isArray(data) ? [...data] : []; this.construirCarousels(); },
-          error: (err) => { console.error('Error cargando contenidos:', err); this.contenidos = []; this.cargando = false; this.cdr.detectChanges(); }
+          next: (data) => {
+            this.contenidos = Array.isArray(data) ? [...data] : [];
+            this.procesarContenidos();
+          },
+          error: (err) => {
+            console.error('Error cargando contenidos:', err);
+            this.contenidos = [];
+            this.cargando = false;
+            this.cdr.detectChanges();
+          }
         });
       }
     });
   }
 
+  procesarContenidos(): void {
+    const cats = this.contenidos.map(item => item.categoria).filter(c => c);
+    this.categorias = ['Todas', ...Array.from(new Set(cats))];
+
+    this.recomendados = [...this.contenidos];
+    this.tendencias = [...this.contenidos].reverse();
+
+    this.tipoActual = 'recomendados';
+    this.carouselCurvoLista = [...this.recomendados];
+    this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
+    this.actualizarTituloCentro();
+
+    this.construirCarousels();
+
+    this.cargando = false;
+    this.iniciarAutoCarousel();
+    this.cdr.detectChanges();
+  }
+
   construirCarousels(): void {
     const grupos = new Map<string, any[]>();
     for (const item of this.contenidos) {
-      const cats = (item.categoria || 'General').split(',').map((c: string) => c.trim()).filter(Boolean);
-      for (const cat of cats) {
-        if (!grupos.has(cat)) grupos.set(cat, []);
-        grupos.get(cat)!.push(item);
-      }
+      const cat = item.categoria || 'General';
+      if (!grupos.has(cat)) grupos.set(cat, []);
+      grupos.get(cat)!.push(item);
     }
     this.carousels = [];
     for (const [categoria, items] of grupos) {
-      const itemsBase = [...items];
-      const itemsConClones = itemsBase.length > 4 ? [...itemsBase, ...itemsBase.slice(0, 4)] : [...itemsBase];
+      const base = [...items];
+      const conClones = base.length > 4 ? [...base, ...base.slice(0, 4)] : [...base];
       this.carousels.push({
         categoria,
-        items: itemsBase,
-        itemsFiltrados: itemsConClones,
+        items: base,
+        itemsFiltrados: conClones,
         indiceCentro: 0,
         autoTimer: null as any,
         sinTransicion: false,
       });
     }
-    this.cargando = false;
-    this.iniciarAutoCarousels();
-    this.cdr.detectChanges();
-  }
-
-  iniciarAutoCarousels(): void {
     for (const carousel of this.carousels) {
-      this.iniciarAutoCarousel(carousel);
+      this.iniciarAutoCategoria(carousel);
     }
   }
 
-  iniciarAutoCarousel(carousel: CarouselData): void {
-    clearInterval(carousel.autoTimer);
-    carousel.autoTimer = setInterval(() => {
-      if (!carousel.itemsFiltrados.length) return;
-      carousel.indiceCentro++;
-      this.normalizarIndice(carousel);
-      this.cdr.detectChanges();
-    }, 9000);
+  // === CARRUSEL CURVO ===
+  seleccionarTipo(tipo: 'recomendados' | 'tendencias'): void {
+    this.tipoActual = tipo;
+    this.categoriaActual = 'Todas';
+    this.tituloPagina = 'Inicio';
+    this.carouselCurvoLista = tipo === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+    this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
+    this.actualizarTituloCentro();
+    this.iniciarAutoCarousel();
+    this.cdr.detectChanges();
   }
 
+  seleccionarCategoria(categoria: string): void {
+    this.categoriaActual = categoria;
+    this.tituloPagina = categoria === 'Todas' ? 'Inicio' : 'Categorías';
+    this.cargando = true;
+
+    if (categoria === 'Todas') {
+      this.carouselCurvoLista = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+      this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
+      this.actualizarTituloCentro();
+      this.cargando = false;
+      this.iniciarAutoCarousel();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.contenidoService.porCategoria(categoria).subscribe({
+      next: (data) => {
+        this.carouselCurvoLista = Array.isArray(data) ? [...data] : [];
+        this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
+        this.actualizarTituloCentro();
+        this.cargando = false;
+        this.iniciarAutoCarousel();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error por categoría:', err);
+        this.carouselCurvoLista = [];
+        this.tituloCentro = 'Sin contenido';
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  obtenerVisibles(): any[] {
+    if (!this.carouselCurvoLista || this.carouselCurvoLista.length === 0) return [];
+    const visibles: any[] = [];
+    for (let i = -2; i <= 2; i++) {
+      let index = this.indiceCentro + i;
+      while (index < 0) index += this.carouselCurvoLista.length;
+      while (index >= this.carouselCurvoLista.length) index -= this.carouselCurvoLista.length;
+      visibles.push(this.carouselCurvoLista[index]);
+    }
+    return visibles;
+  }
+
+  moverConScroll(event: WheelEvent): void {
+    event.preventDefault();
+    if (!this.carouselCurvoLista.length) return;
+    this.indiceCentro += event.deltaY > 0 ? 1 : -1;
+    this.normalizarIndiceCurvo();
+    this.actualizarTituloCentro();
+    this.iniciarAutoCarousel();
+    this.cdr.detectChanges();
+  }
+
+  moverManual(direccion: number): void {
+    if (!this.carouselCurvoLista.length) return;
+    this.indiceCentro += direccion;
+    this.normalizarIndiceCurvo();
+    this.actualizarTituloCentro();
+    this.iniciarAutoCarousel();
+    this.cdr.detectChanges();
+  }
+
+  normalizarIndiceCurvo(): void {
+    if (!this.carouselCurvoLista.length) { this.indiceCentro = 0; return; }
+    if (this.indiceCentro >= this.carouselCurvoLista.length) this.indiceCentro = 0;
+    if (this.indiceCentro < 0) this.indiceCentro = this.carouselCurvoLista.length - 1;
+  }
+
+  actualizarTituloCentro(): void {
+    this.tituloCentro = this.carouselCurvoLista.length
+      ? (this.carouselCurvoLista[this.indiceCentro]?.titulo || '')
+      : 'Sin contenido';
+  }
+
+  iniciarAutoCarousel(): void {
+    clearInterval(this.autoCarousel);
+    if (!this.carouselCurvoLista.length) return;
+    this.autoCarousel = setInterval(() => {
+      this.indiceCentro++;
+      this.normalizarIndiceCurvo();
+      this.actualizarTituloCentro();
+      this.cdr.detectChanges();
+    }, 5000);
+  }
+
+  // === CARRUSELES POR CATEGORÍA ===
   getTransform(carousel: CarouselData): string {
     const len = carousel.itemsFiltrados.length;
     if (len <= 4) return 'translateX(0)';
     return `translateX(-${carousel.indiceCentro * 25}%)`;
   }
 
-  moverManual(direccion: number, carousel: CarouselData): void {
+  moverManualCategoria(direccion: number, carousel: CarouselData): void {
     if (!carousel.itemsFiltrados.length) return;
     carousel.indiceCentro += direccion;
-    this.normalizarIndice(carousel);
-    this.iniciarAutoCarousel(carousel);
+    this.normalizarIndiceCategoria(carousel);
+    this.iniciarAutoCategoria(carousel);
   }
 
-  contenidoAleatorio(): void {
-    const conItems = this.carousels.filter(c => c.items.length > 4);
-    if (!conItems.length) return;
-    const rand = conItems[Math.floor(Math.random() * conItems.length)];
-    const maxIndex = rand.items.length - 4;
-    rand.indiceCentro = Math.floor(Math.random() * (maxIndex + 1));
-    this.iniciarAutoCarousel(rand);
-  }
-
-  normalizarIndice(carousel: CarouselData): void {
+  normalizarIndiceCategoria(carousel: CarouselData): void {
     const len = carousel.itemsFiltrados.length;
     if (len <= 4) { carousel.indiceCentro = 0; return; }
     const maxIndex = len - 4;
@@ -129,7 +250,20 @@ export class HomeClient implements OnInit, OnDestroy {
     }
   }
 
-  imagen(item: any): string { return urlCompleta(item?.bannerUrl || item?.imagenUrl); }
+  iniciarAutoCategoria(carousel: CarouselData): void {
+    clearInterval(carousel.autoTimer);
+    if (carousel.itemsFiltrados.length <= 4) return;
+    carousel.autoTimer = setInterval(() => {
+      carousel.indiceCentro++;
+      this.normalizarIndiceCategoria(carousel);
+      this.cdr.detectChanges();
+    }, 9000);
+  }
+
+  // === UTILIDADES ===
+  imagen(item: any): string {
+    return urlCompleta(item?.bannerUrl || item?.imagenUrl);
+  }
 
   verContenido(item: any): void {
     if (!item?.id) return;
@@ -141,9 +275,21 @@ export class HomeClient implements OnInit, OnDestroy {
     const texto = (event.target as HTMLInputElement).value.trim().toLowerCase();
     this.buscando = !!texto;
     this.tituloPagina = texto ? 'Resultados' : 'Inicio';
+
+    clearInterval(this.autoCarousel);
+    if (!texto) {
+      this.carouselCurvoLista = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+      this.iniciarAutoCarousel();
+    } else {
+      this.carouselCurvoLista = this.contenidos.filter(item =>
+        item.titulo?.toLowerCase().includes(texto)
+      );
+    }
+    this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
+    this.actualizarTituloCentro();
+
     for (const carousel of this.carousels) {
       clearInterval(carousel.autoTimer);
-      carousel.sinTransicion = false;
       if (!texto) {
         const base = [...carousel.items];
         carousel.itemsFiltrados = base.length > 4 ? [...base, ...base.slice(0, 4)] : base;
@@ -153,16 +299,34 @@ export class HomeClient implements OnInit, OnDestroy {
         );
         carousel.itemsFiltrados = filtrados.length > 4 ? [...filtrados, ...filtrados.slice(0, 4)] : filtrados;
       }
-      this.normalizarIndice(carousel);
+      this.normalizarIndiceCategoria(carousel);
     }
-    if (!texto) this.iniciarAutoCarousels();
+    if (!texto) {
+      for (const carousel of this.carousels) {
+        this.iniciarAutoCategoria(carousel);
+      }
+    }
+    this.cdr.detectChanges();
+  }
+
+  contenidoAleatorio(): void {
+    if (!this.carouselCurvoLista.length) return;
+    this.indiceCentro = Math.floor(Math.random() * this.carouselCurvoLista.length);
+    this.actualizarTituloCentro();
+    this.iniciarAutoCarousel();
     this.cdr.detectChanges();
   }
 
   cargarHistorial(): void {
     this.contenidoService.historial().subscribe({
-      next: (data) => { this.historial = Array.isArray(data) ? [...data].slice(0, 4) : []; this.cdr.detectChanges(); },
-      error: () => { this.historial = []; this.cdr.detectChanges(); }
+      next: (data) => {
+        this.historial = Array.isArray(data) ? [...data].slice(0, 4) : [];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.historial = [];
+        this.cdr.detectChanges();
+      }
     });
   }
 }
