@@ -1,0 +1,3 @@
+# Credenciales locales - no subir
+StreamGo-backend/src/main/resources/application.properties
+StreamGo-backend/src/main/resources/application-prod.properties
