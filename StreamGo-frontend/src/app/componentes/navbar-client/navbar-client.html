@@ -1,6 +1,6 @@
 <header class="navbar-cliente">
   <a routerLink="/client/home" class="logo-box">
-    <img src="/logo.png" class="logo-cliente" alt="StreamGO">
+    <div class="logo-cliente-wrap"><img src="/logo.png" class="logo-cliente" alt="StreamGO"></div>
   </a>
 
   <nav>
@@ -10,10 +10,30 @@
     <a routerLink="/client/peticiones" routerLinkActive="active">Peticiones</a>
     <a routerLink="/client/historial" routerLinkActive="active">Historial</a>
     <a routerLink="/client/planes" routerLinkActive="active">Planes</a>
-    <a routerLink="/client/mi-cuenta" routerLinkActive="active">Mi cuenta</a>
-
-    <span class="avatar-navbar">👤</span>
-
-    <button type="button" class="logout-client" (click)="logout()">Salir</button>
+    <div class="avatar-dropdown">
+      <div class="avatar-navbar" (click)="toggleMenu()">
+        <img *ngIf="usuario?.avatar" [src]="usuario.avatar" alt="avatar" class="avatar-img">
+        <span *ngIf="!usuario?.avatar && inicial()">{{ inicial() }}</span>
+        <svg *ngIf="!usuario?.avatar && !inicial()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="dropdown-menu" [class.show]="menuVisible">
+        <div class="dropdown-header" (click)="irAMiCuenta()">
+          <div class="dropdown-avatar">
+            <img *ngIf="usuario?.avatar" [src]="usuario.avatar" alt="avatar">
+            <span *ngIf="!usuario?.avatar && inicial()">{{ inicial() }}</span>
+            <svg *ngIf="!usuario?.avatar && !inicial()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="dropdown-userinfo">
+            <span class="dropdown-name">{{ nombre() }}</span>
+            <span class="dropdown-email">{{ email() }}</span>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item danger" (click)="logout()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </div>
+      </div>
+    </div>
   </nav>
 </header>

@@ -26,4 +26,7 @@ export class PeticionesAdminService {
   desactivar(id: number): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/admin/peticiones/desactivar/${id}`, {});
   }
+  lista(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/admin/peticiones/lista`);
+  }
 }

@@ -1,9 +1,282 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SidebarAdmin } from '../../componentes/sidebar-admin/sidebar-admin';
 import { NoticiasService } from '../../services/noticias';
-import { Auth } from '../../services/auth';
+import { Noticia, NoticiaAdminFiltros, NoticiaRequest } from '../../models/noticia.model';
 
-@Component({ selector: 'app-noticias-admin', imports: [CommonModule, FormsModule, SidebarAdmin], templateUrl: './noticias-admin.html', styleUrl: './noticias-admin.scss' })
-export class NoticiasAdmin implements OnInit { private noticiasService = inject(NoticiasService); private auth = inject(Auth); private cdr = inject(ChangeDetectorRef); noticias: any[] = []; cargando = false; guardando = false; modalVisible = false; modoEdicion = false; noticiaId: number | null = null; mensaje = ''; error = ''; noticiaForm: any = { titulo: '', contenido: '', trailer: '', reacciones: 0 }; ngOnInit(): void { this.cargarNoticias(); } cargarNoticias(): void { this.cargando = true; this.noticiasService.listarOrdenadas().subscribe({ next: data => { this.noticias = Array.isArray(data) ? [...data] : []; this.cargando = false; this.cdr.detectChanges(); }, error: () => { this.noticiasService.listar().subscribe({ next: data => { this.noticias = Array.isArray(data) ? [...data] : []; this.cargando = false; this.cdr.detectChanges(); }, error: err => { console.error(err); this.noticias = []; this.cargando = false; this.error = 'No se pudieron cargar las noticias.'; this.cdr.detectChanges(); } }); } }); } nuevaNoticia(): void { this.modoEdicion = false; this.noticiaId = null; this.modalVisible = true; this.noticiaForm = { titulo: '', contenido: '', trailer: '', reacciones: 0 }; this.cdr.detectChanges(); } editarNoticia(noticia: any): void { this.modoEdicion = true; this.noticiaId = noticia.idPost; this.modalVisible = true; this.noticiaForm = { titulo: noticia.titulo || '', contenido: noticia.contenido || '', trailer: noticia.trailer || '', reacciones: noticia.reacciones || 0, idUsuario: noticia.idUsuario || null, idAutor: noticia.idAutor || null }; this.cdr.detectChanges(); } cerrarModal(): void { this.modalVisible = false; this.modoEdicion = false; this.noticiaId = null; this.cdr.detectChanges(); } guardarNoticia(): void { if (!this.noticiaForm.titulo.trim() || !this.noticiaForm.contenido.trim()) { this.error = 'Completa el título y el contenido.'; return; } const usuario = this.auth.getUser(); const idAdmin = usuario?.id || usuario?.userId || usuario?.idUsuario || usuario?.sub || 1; const request = { idUsuario: Number(this.noticiaForm.idUsuario || idAdmin) || 1, idAutor: Number(this.noticiaForm.idAutor || idAdmin) || 1, titulo: this.noticiaForm.titulo.trim(), contenido: this.noticiaForm.contenido.trim(), trailer: this.noticiaForm.trailer?.trim() || '', reacciones: Number(this.noticiaForm.reacciones || 0) }; this.guardando = true; const obs = this.modoEdicion && this.noticiaId ? this.noticiasService.actualizar(this.noticiaId, request) : this.noticiasService.crear(request); obs.subscribe({ next: () => { this.guardando = false; this.modalVisible = false; this.mensaje = this.modoEdicion ? 'Noticia actualizada correctamente.' : 'Noticia creada correctamente.'; this.cargarNoticias(); this.cdr.detectChanges(); }, error: err => { console.error(err); this.guardando = false; this.error = 'No se pudo guardar la noticia.'; this.cdr.detectChanges(); } }); } fijarNoticia(noticia: any): void { if (!noticia?.idPost) return; this.noticiasService.fijar(noticia.idPost).subscribe({ next: () => { this.mensaje = 'Estado de fijado actualizado.'; this.cargarNoticias(); }, error: err => { console.error(err); this.error = 'No se pudo fijar la noticia.'; this.cdr.detectChanges(); } }); } eliminarNoticia(noticia: any): void { if (!noticia?.idPost || !confirm(`¿Eliminar la noticia "${noticia.titulo}"?`)) return; this.noticiasService.eliminar(noticia.idPost).subscribe({ next: () => { this.mensaje = 'Noticia eliminada correctamente.'; this.cargarNoticias(); }, error: err => { console.error(err); this.error = 'No se pudo eliminar la noticia.'; this.cdr.detectChanges(); } }); } abrirTrailer(url: string): void { if (!url) { this.error = 'Esta noticia no tiene tráiler.'; return; } window.open(url, '_blank'); } autor(noticia: any): string { return noticia?.autorNombre || noticia?.usuarioNombre || 'Administrador'; } }
+interface NoticiaAdminForm {
+  titulo: string;
+  contenido: string;
+  trailer: string;
+  portadaUrl: string;
+  reacciones: number;
+  idUsuario?: number | null;
+  idAutor?: number | null;
+}
+
+@Component({
+  selector: 'app-noticias-admin',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './noticias-admin.html',
+  styleUrl: './noticias-admin.scss',
+})
+export class NoticiasAdmin implements OnInit {
+  private noticiasService = inject(NoticiasService);
+  private cdr = inject(ChangeDetectorRef);
+
+  noticias: Noticia[] = [];
+  cargando = false;
+  guardando = false;
+  modalVisible = false;
+  modoEdicion = false;
+  noticiaId: number | null = null;
+  paginaActual = 1;
+  elementosPorPagina = 6;
+  totalElementos = 0;
+  portadaArchivo: File | null = null;
+  mensaje = '';
+  error = '';
+
+  filtros: NoticiaAdminFiltros = {
+    busqueda: '',
+    estado: 'todos',
+    orden: 'recientes',
+  };
+
+  noticiaForm: NoticiaAdminForm = {
+    titulo: '',
+    contenido: '',
+    trailer: '',
+    portadaUrl: '',
+    reacciones: 0,
+  };
+
+  ngOnInit(): void {
+    this.cargarNoticias();
+  }
+
+  get noticiasPaginadas(): Noticia[] {
+    return this.noticias;
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.totalElementos / this.elementosPorPagina));
+  }
+
+  get paginas(): number[] {
+    return Array.from({ length: this.totalPaginas }, (_, index) => index + 1);
+  }
+
+  get inicioResultado(): number {
+    if (this.totalElementos === 0) return 0;
+    return (this.paginaActual - 1) * this.elementosPorPagina + 1;
+  }
+
+  get finResultado(): number {
+    return Math.min(this.paginaActual * this.elementosPorPagina, this.totalElementos);
+  }
+
+  cargarNoticias(): void {
+    this.cargando = true;
+    this.error = '';
+
+    this.noticiasService.buscarAdmin({
+      search: this.filtros.busqueda.trim(),
+      estado: this.filtros.estado,
+      sort: this.filtros.orden,
+      page: this.paginaActual - 1,
+      size: this.elementosPorPagina,
+    }).subscribe({
+      next: (response) => {
+        this.noticias = response.content ?? [];
+        this.totalElementos = response.totalElements ?? 0;
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.noticias = [];
+        this.totalElementos = 0;
+        this.cargando = false;
+        this.error = 'No se pudieron cargar las noticias.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  aplicarFiltros(): void {
+    this.paginaActual = 1;
+    this.cargarNoticias();
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPaginas) return;
+    this.paginaActual = pagina;
+    this.cargarNoticias();
+  }
+
+  nuevaNoticia(): void {
+    this.modoEdicion = false;
+    this.noticiaId = null;
+    this.portadaArchivo = null;
+    this.modalVisible = true;
+    this.noticiaForm = { titulo: '', contenido: '', trailer: '', portadaUrl: '', reacciones: 0 };
+    this.cdr.detectChanges();
+  }
+
+  editarNoticia(noticia: Noticia): void {
+    this.modoEdicion = true;
+    this.noticiaId = noticia.idPost;
+    this.portadaArchivo = null;
+    this.modalVisible = true;
+    this.noticiaForm = {
+      titulo: noticia.titulo || '',
+      contenido: noticia.contenido || '',
+      trailer: noticia.trailer || '',
+      portadaUrl: noticia.portadaUrl || '',
+      reacciones: noticia.reacciones || 0,
+      idUsuario: noticia.idUsuario || null,
+      idAutor: noticia.idAutor || null,
+    };
+    this.cdr.detectChanges();
+  }
+
+  cerrarModal(): void {
+    this.modalVisible = false;
+    this.modoEdicion = false;
+    this.noticiaId = null;
+    this.portadaArchivo = null;
+    this.cdr.detectChanges();
+  }
+
+  seleccionarPortada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0] ?? null;
+
+    this.error = '';
+    this.portadaArchivo = null;
+
+    if (!archivo) return;
+
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!tiposPermitidos.includes(archivo.type)) {
+      this.error = 'La portada debe ser JPG, PNG o WEBP.';
+      input.value = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (archivo.size > 2 * 1024 * 1024) {
+      this.error = 'La portada no puede superar 2MB.';
+      input.value = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.portadaArchivo = archivo;
+    this.cdr.detectChanges();
+  }
+
+  guardarNoticia(): void {
+    if (!this.noticiaForm.titulo.trim() || !this.noticiaForm.contenido.trim()) {
+      this.error = 'Completa el título y el contenido.';
+      return;
+    }
+
+    const request: NoticiaRequest = {
+      titulo: this.noticiaForm.titulo.trim(),
+      contenido: this.noticiaForm.contenido.trim(),
+      trailer: this.noticiaForm.trailer?.trim() || '',
+      portadaUrl: this.noticiaForm.portadaUrl?.trim() || null,
+      reacciones: Number(this.noticiaForm.reacciones || 0),
+    };
+
+    this.guardando = true;
+    const obs = this.modoEdicion && this.noticiaId
+      ? this.portadaArchivo
+        ? this.noticiasService.actualizarConPortada(this.noticiaId, request, this.portadaArchivo)
+        : this.noticiasService.actualizar(this.noticiaId, request)
+      : this.portadaArchivo
+        ? this.noticiasService.crearConPortada(request, this.portadaArchivo)
+        : this.noticiasService.crear(request);
+
+    obs.subscribe({
+      next: () => {
+        this.guardando = false;
+        this.modalVisible = false;
+        this.portadaArchivo = null;
+        this.mensaje = this.modoEdicion
+          ? 'Noticia actualizada correctamente.'
+          : 'Noticia creada correctamente.';
+        this.cargarNoticias();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.guardando = false;
+        this.error = 'No se pudo guardar la noticia.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  fijarNoticia(noticia: Noticia): void {
+    if (!noticia?.idPost) return;
+
+    this.noticiasService.fijar(noticia.idPost).subscribe({
+      next: () => {
+        this.mensaje = 'Estado de fijado actualizado.';
+        this.cargarNoticias();
+      },
+      error: (err) => {
+        console.error(err);
+        this.error = 'No se pudo fijar la noticia.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  eliminarNoticia(noticia: Noticia): void {
+    if (!noticia?.idPost || !confirm(`¿Eliminar la noticia "${noticia.titulo}"?`)) return;
+
+    this.noticiasService.eliminar(noticia.idPost).subscribe({
+      next: () => {
+        this.mensaje = 'Noticia eliminada correctamente.';
+        this.cargarNoticias();
+      },
+      error: (err) => {
+        console.error(err);
+        this.error = 'No se pudo eliminar la noticia.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  abrirTrailer(url: string | null): void {
+    if (!url) {
+      this.error = 'Esta noticia no tiene tráiler.';
+      return;
+    }
+
+    window.open(url, '_blank');
+  }
+
+  autor(noticia: Noticia): string {
+    return noticia?.autorNombre || 'Administrador';
+  }
+
+  portada(noticia: Noticia): string | null {
+    return this.noticiasService.mediaUrl(noticia.portadaUrl);
+  }
+
+  fecha(noticia: Noticia): string {
+    return noticia.fechaCreacion
+      ? new Date(noticia.fechaCreacion).toLocaleDateString('es-PE')
+      : 'Sin fecha';
+  }
+
+  trackByNoticia(_: number, noticia: Noticia): number {
+    return noticia.idPost;
+  }
+
+}

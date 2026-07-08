@@ -1,42 +1,61 @@
 <app-navbar-public></app-navbar-public>
 
-<main class="public-explore">
-  <section class="floating-posters explore-posters">
-    <div class="poster-track">
+<main class="explore-page">
+  <div class="explore-bg">
+    <div class="explore-decor-shape"></div>
+    <div class="explore-posters">
       <img *ngFor="let item of posters()" [src]="imagen(item)" [alt]="item.titulo || 'poster'">
     </div>
-  </section>
+  </div>
 
-  <section class="public-list-area">
-    <div class="public-search">
-      <input type="text" placeholder="busca tu película favorita" (input)="buscar($event)">
-      <span>⌕</span>
+  <section class="explore-content">
+    <div class="explore-header">
+      <h1>Explora nuestro catalogo</h1>
+      <p>Peliculas, series y documentales para ti</p>
     </div>
 
-    <div class="categorias-publicas">
-      <button type="button" *ngFor="let categoria of categorias" [class.activa]="categoria === categoriaActiva" (click)="filtrarCategoria(categoria)">{{ categoria }}</button>
+    <div class="explore-search">
+      <input type="text" placeholder="Busca tu pelicula favorita..." (input)="buscar($event)">
+      <span class="search-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+      </span>
     </div>
 
-    <div class="loading-box" *ngIf="cargando">Cargando contenido...</div>
+    <div class="explore-categories">
+      <button type="button" *ngFor="let categoria of categorias" [class.active]="categoria === categoriaActiva" (click)="filtrarCategoria(categoria)">{{ categoria }}</button>
+    </div>
 
-    <div class="public-list" *ngIf="!cargando">
-      <article class="public-item" *ngFor="let pelicula of peliculas">
-        <img [src]="imagen(pelicula)" [alt]="pelicula.titulo">
-        <div>
-          <small>{{ pelicula.tipoContenido || 'Contenido' }}</small>
+    <div class="sg-panel loading-box" *ngIf="cargando">Cargando contenido...</div>
+
+    <div class="movie-grid" *ngIf="!cargando && peliculas.length > 0">
+      <article class="movie-card" *ngFor="let pelicula of peliculas" (click)="verPelicula(pelicula)">
+        <div class="card-poster">
+          <img [src]="imagen(pelicula)" [alt]="pelicula.titulo" loading="lazy">
+          <div class="card-overlay">
+            <span class="card-play">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </span>
+          </div>
+          <span class="card-rating" *ngIf="pelicula.promedioCalificacion">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            {{ pelicula.promedioCalificacion | number:'1.1-1' }}
+          </span>
+        </div>
+        <div class="card-body">
+          <small class="card-type">{{ pelicula.tipoContenido || 'Contenido' }}</small>
           <h3>{{ pelicula.titulo }}</h3>
-          <small>Estreno: {{ pelicula.fechaEstreno || 'Sin fecha' }}</small>
-          <p>{{ pelicula.descripcion || 'Sin descripción disponible.' }}</p>
-          <div class="meta-publica">
-            <span>⭐ {{ pelicula.promedioCalificacion || 0 }}</span>
-            <span>▶ {{ pelicula.totalReproducciones || 0 }}</span>
-            <span>{{ pelicula.categoria || 'Sin categoría' }}</span>
+          <div class="card-meta">
+            <span>{{ pelicula.categoria || 'Sin categoria' }}</span>
+            <span>{{ pelicula.totalReproducciones || 0 }} reproducciones</span>
           </div>
         </div>
-        <button type="button" (click)="verPelicula(pelicula)">ver</button>
       </article>
     </div>
 
-    <div class="empty-public" *ngIf="!cargando && peliculas.length === 0">No se encontró contenido disponible.</div>
+    <div class="sg-panel empty-state" *ngIf="!cargando && peliculas.length === 0">
+      <p>No se encontro contenido disponible.</p>
+    </div>
   </section>
 </main>

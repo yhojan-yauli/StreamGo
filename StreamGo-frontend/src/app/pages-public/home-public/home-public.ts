@@ -2,10 +2,12 @@ import { Component, ChangeDetectorRef, inject, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ContenidoClienteService } from '../../services/contenido-cliente';
+import { FooterPublic } from '../../componentes/footer-public/footer-public';
+import { urlCompleta } from '../../services/api';
 
 @Component({
   selector: 'app-home-public',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FooterPublic],
   templateUrl: './home-public.html',
   styleUrl: './home-public.scss',
 })
@@ -24,7 +26,7 @@ export class HomePublic implements OnInit {
   }
 
   cargarLanding(): void {
-    this.contenidoService.listar().subscribe({
+    this.contenidoService.listarPublico().subscribe({
       next: (data) => {
         this.contenidos = Array.isArray(data) ? [...data] : [];
         this.posters = this.contenidos.filter(item => item.imagenUrl || item.bannerUrl).slice(0, 5);
@@ -42,7 +44,7 @@ export class HomePublic implements OnInit {
   }
 
   imagen(item: any): string {
-    return item?.imagenUrl || item?.bannerUrl || '/background.png';
+    return urlCompleta(item?.imagenUrl || item?.bannerUrl);
   }
 
   irPeliculas(): void {
