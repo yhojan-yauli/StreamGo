@@ -42,3 +42,7 @@ logs/
 
 # Archivos subidos localmente
 uploads/
+
+# Credenciales locales - no subir
+src/main/resources/application.properties
+src/main/resources/application-prod.properties
