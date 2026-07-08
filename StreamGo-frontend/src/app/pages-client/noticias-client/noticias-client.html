@@ -10,6 +10,7 @@
       <input
         type="search"
         [(ngModel)]="busqueda"
+        (ngModelChange)="buscarNoticias()"
         placeholder="Buscar noticias..."
         autocomplete="off"
       >
@@ -36,12 +37,21 @@
   <section class="alert-box error" *ngIf="error">{{ error }}</section>
   <section class="loading-box" *ngIf="cargando">Cargando noticias...</section>
 
-  <section class="noticias-grid" *ngIf="!cargando && noticiasFiltradas.length > 0">
-    <article class="noticia-card" *ngFor="let noticia of noticiasFiltradas; trackBy: trackByNoticia">
+  <section class="noticias-grid" *ngIf="!cargando && noticias.length > 0">
+    <article class="noticia-card" *ngFor="let noticia of noticias; trackBy: trackByNoticia">
       <div class="card-media">
+        <img
+          *ngIf="portada(noticia) as portadaUrl; else portadaFallback"
+          class="media-image"
+          [src]="portadaUrl"
+          [alt]="noticia.titulo"
+        >
+
+        <ng-template #portadaFallback>
         <div class="media-fallback">
           <span>STREAMGO</span>
         </div>
+        </ng-template>
 
         <span class="reactions-pill">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -54,6 +64,7 @@
       <div class="card-body">
         <div class="card-meta">
           <span>{{ autor(noticia) }}</span>
+          <span *ngIf="fecha(noticia)">{{ fecha(noticia) }}</span>
           <span class="sg-badge info" *ngIf="noticia.fijado">Fijado</span>
         </div>
 
@@ -102,7 +113,7 @@
     </article>
   </section>
 
-  <section class="empty-box" *ngIf="!cargando && noticiasFiltradas.length === 0">
+  <section class="empty-box" *ngIf="!cargando && noticias.length === 0">
     No hay noticias disponibles.
   </section>
 </main>

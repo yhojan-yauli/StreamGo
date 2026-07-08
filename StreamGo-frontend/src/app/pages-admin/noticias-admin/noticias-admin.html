@@ -47,8 +47,10 @@
         <thead>
           <tr>
             <th>ID</th>
+            <th>Portada</th>
             <th>Título</th>
             <th>Autor</th>
+            <th>Fecha</th>
             <th>Estado</th>
             <th>Reacciones</th>
             <th>Tráiler</th>
@@ -59,10 +61,19 @@
           <tr *ngFor="let noticia of noticiasPaginadas; trackBy: trackByNoticia">
             <td class="id-cell">NW-{{ noticia.idPost }}</td>
             <td>
+              <div class="cover-thumb">
+                <img *ngIf="portada(noticia) as portadaUrl; else portadaFallback" [src]="portadaUrl" [alt]="noticia.titulo">
+                <ng-template #portadaFallback>
+                  <span>SG</span>
+                </ng-template>
+              </div>
+            </td>
+            <td>
               <strong>{{ noticia.titulo }}</strong>
               <small>{{ noticia.contenido }}</small>
             </td>
             <td>{{ autor(noticia) }}</td>
+            <td>{{ fecha(noticia) }}</td>
             <td>
               <span class="sg-badge" [class.info]="noticia.fijado" [class.muted]="!noticia.fijado">
                 {{ noticia.fijado ? 'Fijado' : 'Normal' }}
@@ -137,13 +148,13 @@
       </table>
     </div>
 
-    <div class="sg-empty" *ngIf="!cargando && noticiasFiltradas.length === 0">
+    <div class="sg-empty" *ngIf="!cargando && totalElementos === 0">
       No hay noticias registradas.
     </div>
 
-    <div class="table-footer" *ngIf="!cargando && noticiasFiltradas.length > 0">
+    <div class="table-footer" *ngIf="!cargando && totalElementos > 0">
       <span>
-        Mostrando {{ inicioResultado }} a {{ finResultado }} de {{ noticiasFiltradas.length }} noticias
+        Mostrando {{ inicioResultado }} a {{ finResultado }} de {{ totalElementos }} noticias
       </span>
 
       <div class="pagination">
@@ -193,6 +204,19 @@
         <div class="form-group full">
           <label>URL del tráiler</label>
           <input type="text" [(ngModel)]="noticiaForm.trailer" placeholder="https://...">
+        </div>
+
+        <div class="form-group full">
+          <label>URL de portada</label>
+          <input type="text" [(ngModel)]="noticiaForm.portadaUrl" placeholder="https://...">
+        </div>
+
+        <div class="form-group full">
+          <label>Archivo de portada</label>
+          <label class="file-control">
+            <input type="file" accept="image/jpeg,image/png,image/webp" (change)="seleccionarPortada($event)">
+            <span>{{ portadaArchivo ? portadaArchivo.name : 'Seleccionar imagen JPG, PNG o WEBP' }}</span>
+          </label>
         </div>
 
         <div class="form-group">

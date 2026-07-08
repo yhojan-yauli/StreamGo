@@ -68,6 +68,29 @@
   font-weight: 800;
 }
 
+.cover-thumb {
+  width: 72px;
+  height: 46px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(125, 90, 255, .25);
+  border-radius: 8px;
+  color: var(--sg-muted);
+  background:
+    linear-gradient(135deg, rgba(125, 90, 255, .22), rgba(255, 255, 255, .05)),
+    rgba(255, 255, 255, .04);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cover-thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 .sg-table td strong {
   display: block;
   max-width: 260px;
@@ -246,6 +269,28 @@
   outline: none;
   color: white;
   background: rgba(255, 255, 255, .08);
+}
+
+.file-control {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 11px 13px;
+  border: 1px dashed rgba(125, 90, 255, .38);
+  border-radius: 12px;
+  color: #d8d8e5;
+  background: rgba(255, 255, 255, .06);
+  cursor: pointer;
+}
+
+.file-control input {
+  display: none;
+}
+
+.file-control span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 1080px) {
