@@ -39,3 +39,7 @@ out/
 # Logs ignora los loggs realizados en local, no se suben al repositorio
 logs/
 *.log
+
+# Credenciales locales - no subir
+src/main/resources/application.properties
+src/main/resources/application-prod.properties
