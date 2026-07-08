@@ -6,8 +6,9 @@
 
     <section class="auth-box">
       <div class="alert-box error" *ngIf="mensajeError">
-    {{ mensajeError }}
-  </div>
+        {{ mensajeError }}
+      </div>
+
       <h1>Crear Cuenta</h1>
 
       <form (ngSubmit)="register()">

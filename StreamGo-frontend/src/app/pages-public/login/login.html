@@ -6,12 +6,13 @@
 
     <section class="auth-box">
       <div class="alert-box success" *ngIf="mensajeInfo">
-    {{ mensajeInfo }}
-  </div>
+        {{ mensajeInfo }}
+      </div>
 
-  <div class="alert-box error" *ngIf="mensajeError">
-    {{ mensajeError }}
-  </div>
+      <div class="alert-box error" *ngIf="mensajeError">
+        {{ mensajeError }}
+      </div>
+
       <h1>Iniciar Sesión</h1>
 
       <form (ngSubmit)="login()">

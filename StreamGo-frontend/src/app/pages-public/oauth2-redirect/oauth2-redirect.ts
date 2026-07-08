@@ -24,9 +24,13 @@ export class Oauth2RedirectComponent implements OnInit {
         // Guardamos el token en el localStorage (usa la misma clave que ya manejas)
         localStorage.setItem('token', token);
 
-        // Aquí puedes decodificar tu token para saber si es ADMIN o USER 
-        // y redirigir usando tu lógica o mandarlo directamente al home de clientes
-        this.router.navigate(['/home-client']);
+        const decoded: any = JSON.parse(atob(token.split('.')[1]));
+        const role = decoded.rol;
+        if (role === 'ADMIN') {
+          this.router.navigate(['/admin/home']);
+        } else {
+          this.router.navigate(['/client/home']);
+        }
       } else {
         // Si algo falló, de vuelta al login
         this.router.navigate(['/login']);

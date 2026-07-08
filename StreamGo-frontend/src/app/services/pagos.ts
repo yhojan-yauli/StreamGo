@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,7 @@ import { Observable } from 'rxjs';
 export class PagosService {
 
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080';
+  private apiUrl = environment.apiUrl;
 
   crearPago(planId: number, metodoPago: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/payments/create`, {

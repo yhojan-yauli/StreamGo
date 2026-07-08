@@ -1,32 +1,31 @@
-import { Component, OnInit } from '@angular/core'; // 1. Importamos OnInit
+import { Component, OnInit } from '@angular/core';
 import { NavbarPublic } from '../../componentes/navbar-public/navbar-public';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router'; // 2. Importamos ActivatedRoute
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common'; // 3. Importamos NgIf para la alerta
+import { NgIf } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-register',
-  imports: [NavbarPublic, RouterLink, FormsModule, NgIf], // 4. Añadimos NgIf aquí
+  imports: [NavbarPublic, RouterLink, FormsModule, NgIf],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
-export class Register implements OnInit { // 5. Implementamos OnInit
+export class Register implements OnInit {
   nombre = '';
   email = '';
   password = '';
 
-  // Variable para controlar el mensaje de error en la interfaz
   mensajeError: string | null = null;
 
   constructor(
     private authService: Auth,
     private router: Router,
-    private route: ActivatedRoute // 6. Inyectamos ActivatedRoute
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    // 7. Escuchamos si el backend nos redirige con el error de cuenta existente
     this.route.queryParams.subscribe(params => {
       if (params['error'] === 'ya_existe') {
         this.mensajeError = 'Este correo electrónico ya está registrado en StreamGO. Intenta iniciar sesión.';
@@ -55,6 +54,6 @@ export class Register implements OnInit { // 5. Implementamos OnInit
   }
 
   registerConGoogle(): void {
-    window.location.href = 'http://localhost:8080/auth/google-init?action=register';
+    window.location.href = `${environment.apiUrl}/auth/google-init?action=register`;
   }
 }

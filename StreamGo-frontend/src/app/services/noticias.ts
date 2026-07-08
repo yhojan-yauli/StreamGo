@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Noticia, NoticiaQueryParams, NoticiaRequest, PageResponse } from '../models/noticia.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { Noticia, NoticiaQueryParams, NoticiaRequest, PageResponse } from '../mo
 export class NoticiasService {
 
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080';
+  private apiUrl = environment.apiUrl;
 
   listar(): Observable<Noticia[]> {
     return this.http.get<Noticia[]>(`${this.apiUrl}/noticias`);
