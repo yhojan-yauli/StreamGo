@@ -3,12 +3,8 @@ spring.application.name=StreamGo
 #trabaja con Mysql
 spring.datasource.url=jdbc:mysql://localhost:3306/StreamGo
 spring.datasource.username=root
-spring.datasource.password=root
+spring.datasource.password={{DB_PASSWORD}}
 spring.jpa.open-in-view=false
-
-#trabaja con railway ademas desconectar de las dependecias
-#spring.datasource.password=QSyVhBsLQORBikmMLlvhJqlHENFjyMng
-#spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 # JPA
 spring.jpa.hibernate.ddl-auto=update
@@ -16,11 +12,11 @@ spring.jpa.show-sql=false
 spring.jpa.properties.hibernate.format_sql=true
 
 # JWT
-jwt.secret=streamgo_secret_key_streamgo_secret_key_2026
+jwt.secret={{JWT_SECRET}}
 jwt.expiration=86400000
 
 #Mercad Pago
-mercadopago.access.token=APP_USR-8960673039139422-052400-da7f81b3e0a229d07785eb03c88d2ad5-3422205730
+mercadopago.access.token={{MP_ACCESS_TOKEN}}
 
 # SWAGGER
 springdoc.api-docs.enabled=true
