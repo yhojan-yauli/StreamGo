@@ -1,22 +1,17 @@
 package com.StreamGo.service;
 
 import com.StreamGo.dto.response.ClienteAdminResponse;
-import com.StreamGo.entity.Suscripcion;
-import com.StreamGo.entity.Usuario;
 import com.StreamGo.entity.Enum.Rol;
-import com.StreamGo.repository.SuscripcionRepository;
+import com.StreamGo.entity.Usuario;
 import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * Servicio de administración del sistema StreamGo.
- * Gestiona  a  clientes y sus suscripciones.
- *
+ * Gestiona a clientes y sus suscripciones.
  * @author Yhojan Yauli
  * @version 1.0
  */
@@ -25,13 +20,13 @@ import java.util.List;
 public class AdminService {
 
     private final UsuarioRepository usuarioRepository;
-    private final SuscripcionRepository suscripcionRepository;
+    private final SuscripcionService suscripcionService;
 
     /**
      * Obtiene la lista de clientes registrados con información de suscripción.
-     * Calcula si el cliente tiene suscripción activa y las horas restantes.
+     * Calcula si el cliente tiene suscripción activa y suma todas sus horas restantes.
      *
-     * @return lista de clientes con datos administrativos
+     * @return lista de clientes con datos administrativos.
      */
     public List<ClienteAdminResponse> obtenerClientes() {
 
@@ -39,27 +34,11 @@ public class AdminService {
 
         return clientes.stream().map(usuario -> {
 
-            // Buscar suscripción activa
-            Suscripcion suscripcion = suscripcionRepository
-                    .findByUsuario(usuario)
-                    .orElse(null);
+            boolean tieneSuscripcion =
+                    suscripcionService.usuarioTieneSuscripcionActiva(usuario);
 
-            boolean tieneSuscripcion = suscripcion != null;
-
-            long horasRestantes = 0;
-
-            // Calcular horas restantes de suscripción
-            if (tieneSuscripcion) {
-
-                horasRestantes = Duration.between(
-                        LocalDateTime.now(),
-                        suscripcion.getFechaFin()
-                ).toHours();
-
-                if (horasRestantes < 0) {
-                    horasRestantes = 0;
-                }
-            }
+            long horasRestantes =
+                    suscripcionService.calcularHorasRestantesTotales(usuario);
 
             return ClienteAdminResponse.builder()
                     .avatar(usuario.getAvatar())

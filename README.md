@@ -27,10 +27,10 @@ Desarrollar una plataforma de streaming con:
 
 ## 🚀 Tecnologías utilizadas
 
-### 🔹 Frontend
-- React + Vite  
-- Tailwind CSS  
-- Axios  
+### 🔹 Frontend (Se considera migrar a angular)
+- Html5  
+- js
+- css
 - Autenticación con JWT  
 
 ### 🔹 Backend
@@ -49,7 +49,7 @@ Desarrollar una plataforma de streaming con:
 plataforma-de-streaming/
 │
 ├── Backend-Streaming/     # API REST (Spring Boot)
-├── Frontend-Streaming/    # Frontend (React + Vite)
+├── Frontend-Streaming/    # Frontend (Html5 + Js)
 └── README.md
 
 ---
@@ -69,8 +69,8 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado:
 
 ### 1️⃣ Clonar el repositorio
 
-git clone https://github.com/yhojan-yauli/plataforma-de-streaming.git  
-cd plataforma-de-streaming  
+git clone https://github.com/yhojan-yauli/StreamGo.git  
+cd StreamGo
 
 ---
 
@@ -80,7 +80,7 @@ cd plataforma-de-streaming
 
 1. Crear la base de datos en MySQL:
 
-CREATE DATABASE streaming_db;
+CREATE DATABASE streamgo;
 
 2. Configurar credenciales en:
 
@@ -88,7 +88,7 @@ Backend-Streaming/src/main/resources/application.properties
 
 Ejemplo:
 
-spring.datasource.url=jdbc:mysql://localhost:3306/streaming_db  
+spring.datasource.url=jdbc:mysql://localhost:3306/streamgo  
 spring.datasource.username=TU_USUARIO  
 spring.datasource.password=TU_PASSWORD  
 
@@ -99,7 +99,7 @@ spring.jpa.show-sql=true
 
 ### ▶️ Ejecutar backend
 
-cd Backend-Streaming  
+cd Streamgo-backend 
 ./gradlew bootRun  
 
 El backend se ejecutará en:  
@@ -107,7 +107,7 @@ http://localhost:8080
 
 ---
 
-## 🎨 Frontend (React + Vite)
+## 🎨 Frontend (Html + JS)
 
 ### ▶️ Instalación
 
@@ -117,11 +117,9 @@ npm install
 ---
 
 ### ▶️ Ejecutar frontend
+ 
 
-npm run dev  
-
-El frontend se ejecutará en:  
-http://localhost:5173  
+El frontend se ejecutará con index.html mediante server-live (navegador)
 
 ---
 
@@ -150,7 +148,7 @@ El sistema incluye:
 ## ⚠️ Notas importantes
 
 - Ejecutar primero el backend antes del frontend  
-- Verificar que los puertos 8080 y 5173 estén libres  
+- Verificar que los puertos 8080 estén libres  
 - Configurar correctamente la base de datos  
 
 ---

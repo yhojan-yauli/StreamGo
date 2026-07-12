@@ -4,6 +4,7 @@ import com.StreamGo.dto.response.ContenidoResponse;
 import com.StreamGo.service.ContenidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,8 +12,8 @@ import java.util.List;
 /**
  * Controlador para la visualización de contenidos por parte del cliente.
  *
- * Permite consultar el catálogo, buscar contenidos,
- * filtrar por categoría y visualizar recomendados o tendencias.
+ * Permite consultar el catálogo según el estado real del usuario,
+ * buscar contenidos, filtrar por categoría y visualizar recomendados o tendencias.
  */
 @RestController
 @RequestMapping("/contenidos")
@@ -21,25 +22,29 @@ public class ContenidoClienteController {
 
     private final ContenidoService contenidoService;
 
-    // Usuario logueado sin suscripción: ve SINLOGIN e INACTIVO
     /**
-     * Controlador para la visualización de contenidos por parte del cliente.
+     * Lista el contenido permitido para el usuario autenticado.
      *
-     * Permite consultar el catálogo, buscar contenidos,
-     * filtrar por categoría y visualizar recomendados o tendencias.
+     * Reglas:
+     * - Usuario ACTIVO o con suscripción activa: ve todo.
+     * - Usuario INACTIVO: ve INACTIVO y SINLOGIN.
+     * - Usuario SUSPENDIDO: no puede consultar contenidos.
+     *
+     * @param authentication información del usuario autenticado.
+     * @return lista de contenidos permitidos para el usuario.
      */
     @GetMapping
-    public ResponseEntity<List<ContenidoResponse>> listarClienteSinSuscripcion() {
+    public ResponseEntity<List<ContenidoResponse>> listarContenidos(Authentication authentication) {
+        String email = authentication.getName();
         return ResponseEntity.ok(
-                contenidoService.listarParaClienteSinSuscripcion()
+                contenidoService.listarParaUsuario(email)
         );
     }
 
-    // Usuario logueado con suscripción: ve todo
     /**
-     * Lista el contenido disponible para clientes sin suscripción.
+     * Lista el catálogo completo para usuarios con suscripción.
      *
-     * @return lista de contenidos permitidos para usuarios logueados sin plan activo.
+     * @return lista completa de contenidos.
      */
     @GetMapping("/suscriptor")
     public ResponseEntity<List<ContenidoResponse>> listarClienteConSuscripcion() {

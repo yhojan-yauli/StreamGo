@@ -1,19 +1,21 @@
 package com.StreamGo.security;
 
-import com.StreamGo.service.JwtService;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.List;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.List;
+import com.StreamGo.service.JwtService;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -28,20 +30,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Header Authorization
+        String path = request.getServletPath();
+
+        if (path.startsWith("/public/")
+                || path.startsWith("/auth/")
+                || path.startsWith("/swagger-ui/")
+                || path.startsWith("/v3/api-docs/")
+                || path.startsWith("/webhook/")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
-        // Si no existe token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Obtener token
         String token = authHeader.substring(7);
 
-        // Obtener email
         String email = jwtService.extractUsername(token);
 
         if (!jwtService.isTokenValid(token, email)) {
@@ -49,14 +59,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Obtener rol
         String rol = jwtService.extractRole(token);
 
-        // Crear authority
         SimpleGrantedAuthority authority =
-                new SimpleGrantedAuthority("ROLE_" + rol);
+                new SimpleGrantedAuthority(rol);
 
-        // Crear autenticación
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
                         email,
@@ -64,7 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         List.of(authority)
                 );
 
-        // IMPORTANTE
         SecurityContextHolder.getContext()
                 .setAuthentication(authentication);
 

@@ -242,6 +242,59 @@ public class PeticionService {
         return response;
     }
 
+    // ── ADMINISTRACIÓN DE PETICIONES (PARA CONTROLLERS) ──
+
+    /**
+     * Guarda una petición (para administración).
+     * 
+     * @param peticion Entidad Peticion a guardar
+     * @return La petición guardada
+     */
+    public Peticion guardar(Peticion peticion) {
+        log.debug("Guardando petición en administración: id={}", peticion.getId());
+        return peticionRepository.save(peticion);
+    }
+
+    /**
+     * Elimina una petición por su ID.
+     * 
+     * @param id ID de la petición a eliminar
+     */
+    public void eliminar(Long id) {
+        log.info("Eliminando petición con ID: {}", id);
+        peticionRepository.deleteById(id);
+    }
+
+    /**
+     * Lista todas las peticiones (para administración).
+     * 
+     * @return Lista de todas las peticiones
+     */
+    public List<PeticionResponse> listarTodas() {
+        log.debug("Listando todas las peticiones para administración");
+        return peticionRepository.findAll()
+                .stream()
+                .map(this::mapPeticionToResponse)
+                .toList();
+    }
+
+    /**
+     * Obtiene una petición por su ID.
+     * 
+     * @param id ID de la petición
+     * @return PeticionResponse con los datos de la petición
+     * @throws RuntimeException si no se encuentra la petición
+     */
+    public PeticionResponse obtenerPorId(Long id) {
+        log.debug("Obteniendo petición por ID: {}", id);
+        Peticion peticion = peticionRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Petición no encontrada con ID: {}", id);
+                    return new RuntimeException("Petición no encontrada con ID: " + id);
+                });
+        return mapPeticionToResponse(peticion);
+    }
+
     // ── MAPPERS ────────────────────────────────────────
 
     /**
