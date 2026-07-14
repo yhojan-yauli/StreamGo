@@ -32,7 +32,10 @@
           <span *ngIf="f['password'].errors?.['minlength']">Mínimo 6 caracteres.</span>
         </div>
 
-        <button class="sg-btn" type="submit">Iniciar Sesión</button>
+        <button class="sg-btn btn-submit" type="submit" [disabled]="submitting || loading">
+          <span class="spinner" *ngIf="submitting"></span>
+          {{ submitting ? 'Verificando...' : 'Iniciar Sesión' }}
+        </button>
       </form>
 
       <div class="oauth-container">
