@@ -39,6 +39,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
+        String picture = oAuth2User.getAttribute("picture");
 
         // LEER LA ACCIÓN GUARDADA EN LA SESIÓN DEL SERVIDOR
         String action = (String) request.getSession().getAttribute("oauth2_action");
@@ -56,7 +57,7 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 targetUrl = frontendUrl + "/register?error=ya_existe";
             } else {
                 // Registramos al usuario en MySQL con tu método tradicional
-                authService.registerFromGoogle(email, name);
+                authService.registerFromGoogle(email, name, picture);
 
                 // NO GENERAMOS TOKEN AQUÍ.
                 // Redirigimos directo al Login de Angular con un parámetro de éxito
@@ -64,15 +65,22 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
             }
         } else {
             // === FLUJO DE LOGIN ===
-            // (Este bloque se queda exactamente igual como ya lo tienes)
             if (usuarioOptional.isEmpty()) {
                 targetUrl = frontendUrl + "/login?error=usuario_no_registrado";
             } else {
                 Usuario usuario = usuarioOptional.get();
                 usuario.setUltimoAcceso(java.time.LocalDateTime.now());
+                // Refrescar nombre y avatar desde Google en cada login
+                if (name != null && !name.isBlank()) {
+                    usuario.setNombre(name);
+                }
+                if (picture != null && !picture.isBlank()) {
+                    usuario.setAvatar(picture);
+                }
                 usuarioRepository.save(usuario);
 
-                String token = jwtService.generateTokenFromOAuth2(usuario.getEmail(), usuario.getRol().name());
+                String token = jwtService.generateTokenFromOAuth2(
+                        usuario.getEmail(), usuario.getNombre(), usuario.getAvatar());
                 targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/redirect")
                         .queryParam("token", token)
                         .build().toUriString();

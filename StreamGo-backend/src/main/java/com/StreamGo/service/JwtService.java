@@ -47,6 +47,8 @@ public class JwtService {
         return Jwts.builder()
                 .subject(usuario.getEmail())
                 .claim("rol", usuario.getRol().name())
+                .claim("nombre", usuario.getNombre())
+                .claim("avatar", usuario.getAvatar())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
@@ -60,10 +62,12 @@ public class JwtService {
      * @param rol rol asignado en formato String (ej: "CLIENTE")
      * @return token JWT generado
      */
-    public String generateTokenFromOAuth2(String email, String rol) {
+    public String generateTokenFromOAuth2(String email, String nombre, String avatar) {
         return Jwts.builder()
                 .subject(email)
-                .claim("rol", rol)
+                .claim("rol", "CLIENTE")
+                .claim("nombre", nombre)
+                .claim("avatar", avatar)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
