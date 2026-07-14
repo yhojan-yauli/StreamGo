@@ -45,9 +45,8 @@ export class Register implements OnInit {
     }
 
     this.authService.register(this.registerForm.value).subscribe({
-      next: (res: any) => {
-        localStorage.setItem('token', res.token);
-        this.router.navigate(['/client/home']);
+      next: () => {
+        this.router.navigate(['/login'], { queryParams: { registro: 'exitoso' } });
       },
       error: () => {
         this.mensajeError = 'Error al registrar. Intenta con otro correo.';

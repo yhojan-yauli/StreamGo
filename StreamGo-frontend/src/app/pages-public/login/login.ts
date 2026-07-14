@@ -5,10 +5,11 @@ import { Auth } from '../../services/auth';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import { LoadingScreenComponent } from '../../componentes/ui/loading-screen/loading-screen';
 
 @Component({
   selector: 'app-login',
-  imports: [NavbarPublic, RouterLink, ReactiveFormsModule, CommonModule],
+  imports: [NavbarPublic, RouterLink, ReactiveFormsModule, CommonModule, LoadingScreenComponent],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -21,6 +22,7 @@ export class Login implements OnInit {
 
   mensajeInfo: string | null = null;
   mensajeError: string | null = null;
+  loading = false;
 
   constructor(
     private authService: Auth,
@@ -31,7 +33,7 @@ export class Login implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       if (params['registro'] === 'exitoso') {
-        this.mensajeInfo = '¡Registro exitoso con Google! Ya puedes iniciar sesión.';
+        this.mensajeInfo = '¡Cuenta creada exitosamente! Ya puedes iniciar sesión.';
         this.mensajeError = null;
       }
       if (params['error'] === 'usuario_no_registrado') {
@@ -49,17 +51,23 @@ export class Login implements OnInit {
       return;
     }
 
+    this.loading = true;
+    this.mensajeError = null;
+
     this.authService.login(this.loginForm.value).subscribe({
       next: (res: any) => {
         this.authService.saveToken(res.token);
         const role = this.authService.getRole();
-        if (role === 'ADMIN') {
-          this.router.navigate(['/admin/home']);
-        } else {
-          this.router.navigate(['/client/home']);
-        }
+        setTimeout(() => {
+          if (role === 'ADMIN') {
+            this.router.navigate(['/admin/home']);
+          } else {
+            this.router.navigate(['/client/home']);
+          }
+        }, 800);
       },
       error: () => {
+        this.loading = false;
         this.mensajeError = 'Credenciales incorrectas.';
         this.mensajeInfo = null;
       }

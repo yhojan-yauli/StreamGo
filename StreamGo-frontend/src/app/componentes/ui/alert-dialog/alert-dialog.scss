@@ -1,0 +1,105 @@
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60000;
+  background: rgba(7, 9, 20, .75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: dialogFadeIn .2s ease;
+}
+
+.dialog-panel {
+  width: 400px;
+  max-width: 90%;
+  padding: 24px;
+  background: rgba(14, 18, 34, .97);
+  border: 1px solid rgba(125, 90, 255, .3);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+  animation: dialogSlideIn .25s ease;
+}
+
+.dialog-panel.dialog-danger {
+  border-color: rgba(255, 79, 109, .35);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dialog-icon {
+  flex-shrink: 0;
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.dialog-message {
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .65);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dialog-btn {
+  padding: 9px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.dialog-btn-cancel {
+  background: rgba(255, 255, 255, .06);
+  border-color: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .7);
+}
+
+.dialog-btn-cancel:hover {
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+}
+
+.dialog-btn-confirm {
+  background: linear-gradient(135deg, #6d32ff, #884cff);
+  color: #fff;
+}
+
+.dialog-btn-confirm:hover {
+  background: linear-gradient(135deg, #7b4cff, #9b5cff);
+}
+
+.dialog-btn-danger {
+  background: linear-gradient(135deg, #cc3355, #ff4f6d);
+}
+
+.dialog-btn-danger:hover {
+  background: linear-gradient(135deg, #dd4466, #ff6680);
+}
+
+@keyframes dialogFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dialogSlideIn {
+  from { opacity: 0; transform: scale(.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
