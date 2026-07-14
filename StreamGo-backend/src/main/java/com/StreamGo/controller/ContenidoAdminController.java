@@ -5,15 +5,19 @@ import com.StreamGo.dto.request.CrearContenidoRequest;
 import com.StreamGo.dto.response.ContenidoResponse;
 import com.StreamGo.service.ContenidoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 /**
  * Controlador administrativo para la gestión de contenidos.
  *
  * Permite al administrador crear, listar, actualizar,
  * desactivar y eliminar contenidos dentro de la plataforma StreamGo.
+ * Incluye endpoints para subir archivos (imagen, banner, video).
  */
 @RestController
 @RequestMapping("/admin/contenidos")
@@ -21,8 +25,10 @@ import java.util.List;
 public class ContenidoAdminController {
 
     private final ContenidoService contenidoService;
+
     /**
      * Registra un nuevo contenido en la plataforma.
+     * Versión sin archivos (solo URLs).
      *
      * @param request datos necesarios para crear el contenido.
      * @return contenido creado con su información principal.
@@ -35,6 +41,29 @@ public class ContenidoAdminController {
                 contenidoService.crearContenido(request)
         );
     }
+
+    /**
+     * Registra un nuevo contenido en la plataforma con archivos.
+     * Endpoint para subir imagen, banner y video junto con los datos del contenido.
+     *
+     * @param request datos del contenido en formato JSON.
+     * @param imagen archivo de imagen (poster) - opcional.
+     * @param banner archivo de banner - opcional.
+     * @param video archivo de video - opcional.
+     * @return contenido creado con las URLs de los archivos.
+     */
+    @PostMapping(value = "/crear-con-archivos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ContenidoResponse> crearContenidoConArchivos(
+            @RequestPart("data") CrearContenidoRequest request,
+            @RequestPart(value = "imagen", required = false) MultipartFile imagen,
+            @RequestPart(value = "banner", required = false) MultipartFile banner,
+            @RequestPart(value = "video", required = false) MultipartFile video
+    ) {
+        return ResponseEntity.ok(
+                contenidoService.crearContenidoConArchivos(request, imagen, banner, video)
+        );
+    }
+
     /**
      * Lista todos los contenidos registrados para administración.
      *
@@ -46,8 +75,10 @@ public class ContenidoAdminController {
                 contenidoService.listarAdmin()
         );
     }
+
     /**
      * Actualiza la información de un contenido existente.
+     * Versión sin archivos (solo URLs).
      *
      * @param id identificador del contenido.
      * @param request nuevos datos del contenido.
@@ -62,8 +93,35 @@ public class ContenidoAdminController {
                 contenidoService.actualizarContenido(id, request)
         );
     }
+
+    /**
+     * Actualiza un contenido existente con archivos.
+     * Permite actualizar imagen, banner y video.
+     * Los archivos son opcionales, solo se actualizan los que se envíen.
+     *
+     * @param id identificador del contenido.
+     * @param request datos del contenido en formato JSON.
+     * @param imagen archivo de imagen (poster) - opcional.
+     * @param banner archivo de banner - opcional.
+     * @param video archivo de video - opcional.
+     * @return contenido actualizado con las URLs de los archivos.
+     */
+    @PutMapping(value = "/{id}/editar-con-archivos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ContenidoResponse> actualizarContenidoConArchivos(
+            @PathVariable("id") Long id,
+            @RequestPart("data") ActualizarContenidoRequest request,
+            @RequestPart(value = "imagen", required = false) MultipartFile imagen,
+            @RequestPart(value = "banner", required = false) MultipartFile banner,
+            @RequestPart(value = "video", required = false) MultipartFile video
+    ) {
+        return ResponseEntity.ok(
+                contenidoService.actualizarContenidoConArchivos(id, request, imagen, banner, video)
+        );
+    }
+
     /**
      * Cambia el estado del contenido a INACTIVO.
+     * No elimina el contenido, solo lo oculta.
      *
      * @param id identificador del contenido.
      * @return mensaje de confirmación.
@@ -73,9 +131,16 @@ public class ContenidoAdminController {
             @PathVariable("id") Long id
     ) {
         contenidoService.desactivarContenido(id);
-        return ResponseEntity.ok("Contenido desactivado");
+        return ResponseEntity.ok("Contenido desactivado correctamente");
     }
 
+    /**
+     * Elimina un contenido permanentemente.
+     * También elimina los archivos asociados (imagen, banner, video).
+     *
+     * @param id identificador del contenido.
+     * @return mensaje de confirmación.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminarContenido(
             @PathVariable("id") Long id

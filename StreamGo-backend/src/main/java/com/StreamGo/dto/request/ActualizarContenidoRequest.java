@@ -1,10 +1,11 @@
 package com.StreamGo.dto.request;
 
+import java.time.LocalDate;
+
 import com.StreamGo.entity.Enum.EstadoContenido;
 import com.StreamGo.entity.Enum.TipoContenido;
-import lombok.Data;
 
-import java.time.LocalDate;
+import lombok.Data;
 
 @Data
 public class ActualizarContenidoRequest {
