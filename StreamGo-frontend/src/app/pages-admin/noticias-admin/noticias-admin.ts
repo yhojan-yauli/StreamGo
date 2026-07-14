@@ -33,6 +33,7 @@ export class NoticiasAdmin implements OnInit {
   paginaActual = 1;
   elementosPorPagina = 6;
   totalElementos = 0;
+
   mensaje = '';
   error = '';
 
