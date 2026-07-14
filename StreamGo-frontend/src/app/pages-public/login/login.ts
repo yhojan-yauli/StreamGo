@@ -2,19 +2,22 @@ import { Component, OnInit } from '@angular/core';
 import { NavbarPublic } from "../../componentes/navbar-public/navbar-public";
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
-import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
-  imports: [NavbarPublic, RouterLink, FormsModule, NgIf],
+  imports: [NavbarPublic, RouterLink, ReactiveFormsModule, CommonModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
 export class Login implements OnInit {
-  email = '';
-  password = '';
+
+  loginForm = new FormGroup({
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.required, Validators.minLength(6)])
+  });
 
   mensajeInfo: string | null = null;
   mensajeError: string | null = null;
@@ -28,31 +31,28 @@ export class Login implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       if (params['registro'] === 'exitoso') {
-        this.mensajeInfo = '¡Registro exitoso con Google! Tu cuenta ha sido creada en StreamGO. Ahora puedes iniciar sesión.';
+        this.mensajeInfo = '¡Registro exitoso con Google! Ya puedes iniciar sesión.';
         this.mensajeError = null;
       }
-
       if (params['error'] === 'usuario_no_registrado') {
-        this.mensajeError = 'Tu cuenta de Google no está registrada en el sistema. Por favor, ve a la sección de Registro.';
+        this.mensajeError = 'Tu cuenta de Google no está registrada. Crea una cuenta primero.';
         this.mensajeInfo = null;
       }
     });
   }
 
-  login() {
-    const data = {
-      email: this.email,
-      password: this.password
-    };
+  get f() { return this.loginForm.controls; }
 
-    this.authService.login(data).subscribe({
+  login() {
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    this.authService.login(this.loginForm.value).subscribe({
       next: (res: any) => {
         this.authService.saveToken(res.token);
-
         const role = this.authService.getRole();
-
-        console.log("ROL:", role);
-
         if (role === 'ADMIN') {
           this.router.navigate(['/admin/home']);
         } else {
@@ -60,7 +60,8 @@ export class Login implements OnInit {
         }
       },
       error: () => {
-        alert('Credenciales incorrectas');
+        this.mensajeError = 'Credenciales incorrectas.';
+        this.mensajeInfo = null;
       }
     });
   }

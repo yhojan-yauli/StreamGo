@@ -2,20 +2,23 @@ import { Component, OnInit } from '@angular/core';
 import { NavbarPublic } from '../../componentes/navbar-public/navbar-public';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
-import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-register',
-  imports: [NavbarPublic, RouterLink, FormsModule, NgIf],
+  imports: [NavbarPublic, RouterLink, ReactiveFormsModule, CommonModule],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
 export class Register implements OnInit {
-  nombre = '';
-  email = '';
-  password = '';
+
+  registerForm = new FormGroup({
+    nombre: new FormControl('', [Validators.required, Validators.minLength(2)]),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [Validators.required, Validators.minLength(6)])
+  });
 
   mensajeError: string | null = null;
 
@@ -28,27 +31,26 @@ export class Register implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       if (params['error'] === 'ya_existe') {
-        this.mensajeError = 'Este correo electrónico ya está registrado en StreamGO. Intenta iniciar sesión.';
+        this.mensajeError = 'Este correo electrónico ya está registrado.';
       }
     });
   }
 
-  register() {
-    const data = {
-      nombre: this.nombre,
-      email: this.email,
-      password: this.password
-    };
+  get f() { return this.registerForm.controls; }
 
-    this.authService.register(data).subscribe({
+  register() {
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
+    }
+
+    this.authService.register(this.registerForm.value).subscribe({
       next: (res: any) => {
-        console.log('REGISTER OK:', res);
         localStorage.setItem('token', res.token);
         this.router.navigate(['/client/home']);
       },
-      error: (err) => {
-        console.error(err);
-        alert('Error al registrar');
+      error: () => {
+        this.mensajeError = 'Error al registrar. Intenta con otro correo.';
       }
     });
   }
