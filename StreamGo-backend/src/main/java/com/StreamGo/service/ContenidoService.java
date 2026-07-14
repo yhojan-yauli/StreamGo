@@ -162,12 +162,9 @@ public class ContenidoService {
     public List<ContenidoResponse> listarParaClienteSinSuscripcion() {
         log.debug("Listando contenidos para cliente sin suscripción (INACTIVO y SINLOGIN)");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoRepository.findByEstadoIn(
+                        java.util.List.of(EstadoContenido.INACTIVO, EstadoContenido.SINLOGIN))
                 .stream()
-                .filter(c ->
-                        c.getEstado() == EstadoContenido.INACTIVO ||
-                        c.getEstado() == EstadoContenido.SINLOGIN
-                )
                 .map(this::mapToResponse)
                 .toList();
         
@@ -403,10 +400,8 @@ public class ContenidoService {
     public List<ContenidoResponse> listarPorCategoria(String categoria) {
         log.debug("Buscando contenidos por categoría: {}", categoria);
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoRepository.findByCategoria(categoria)
                 .stream()
-                .filter(c -> c.getCategoria() != null &&
-                        c.getCategoria().equalsIgnoreCase(categoria))
                 .map(this::mapToResponse)
                 .toList();
         
@@ -422,9 +417,8 @@ public class ContenidoService {
     public List<ContenidoResponse> listarRecomendados() {
         log.debug("Listando contenidos recomendados");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoRepository.findByRecomendadoTrue()
                 .stream()
-                .filter(c -> Boolean.TRUE.equals(c.getRecomendado()))
                 .map(this::mapToResponse)
                 .toList();
         
@@ -440,9 +434,8 @@ public class ContenidoService {
     public List<ContenidoResponse> listarTendencias() {
         log.debug("Listando contenidos en tendencia");
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoRepository.findByTendenciaTrue()
                 .stream()
-                .filter(c -> Boolean.TRUE.equals(c.getTendencia()))
                 .map(this::mapToResponse)
                 .toList();
         
@@ -459,10 +452,8 @@ public class ContenidoService {
     public List<ContenidoResponse> buscarPorTitulo(String titulo) {
         log.debug("Buscando contenidos por título: {}", titulo);
         
-        List<ContenidoResponse> contenidos = contenidoRepository.findAll()
+        List<ContenidoResponse> contenidos = contenidoRepository.findByTituloContainingIgnoreCase(titulo)
                 .stream()
-                .filter(c -> c.getTitulo() != null &&
-                        c.getTitulo().toLowerCase().contains(titulo.toLowerCase()))
                 .map(this::mapToResponse)
                 .toList();
         

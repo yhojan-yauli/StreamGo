@@ -1,14 +1,16 @@
 package com.StreamGo.controller;
 
+import com.StreamGo.entity.Enum.EstadoSuscripcion;
 import com.StreamGo.entity.Suscripcion;
 import com.StreamGo.repository.SuscripcionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 /**
  * Controlador administrativo de suscripciones.
  * Permite consultar, filtrar y ordenar suscripciones del sistema.
@@ -24,61 +26,58 @@ public class SuscripcionAdminController {
     private final SuscripcionRepository suscripcionRepository;
 
     /**
-     * Lista todas las suscripciones registradas.
+     * Lista todas las suscripciones registradas (paginadas).
      *
-     * @return lista completa de suscripciones
+     * @param pageable parámetros de paginación.
+     * @return página de suscripciones.
      */
     @GetMapping("/todos")
-    public ResponseEntity<List<Suscripcion>> listarTodas() {
-        return ResponseEntity.ok(suscripcionRepository.findAll());
+    public ResponseEntity<Page<Suscripcion>> listarTodas(
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        return ResponseEntity.ok(suscripcionRepository.findAll(pageable));
     }
 
     /**
-     * Lista las suscripciones en estado ACTIVA.
+     * Lista las suscripciones en estado ACTIVA (paginadas).
      *
-     * @return lista de suscripciones activas
+     * @param pageable parámetros de paginación.
+     * @return página de suscripciones activas.
      */
     @GetMapping("/activas")
-    public ResponseEntity<List<Suscripcion>> activas() {
+    public ResponseEntity<Page<Suscripcion>> activas(
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
         return ResponseEntity.ok(
-                suscripcionRepository.findAll()
-                        .stream()
-                        .filter(s -> s.getEstado().name().equals("ACTIVA"))
-                        .collect(Collectors.toList())
+                suscripcionRepository.findByEstado(EstadoSuscripcion.ACTIVA, pageable)
         );
     }
 
     /**
-     * Lista las suscripciones en estado VENCIDA.
+     * Lista las suscripciones en estado VENCIDA (paginadas).
      *
-     * @return lista de suscripciones vencidas
+     * @param pageable parámetros de paginación.
+     * @return página de suscripciones vencidas.
      */
     @GetMapping("/vencidas")
-    public ResponseEntity<List<Suscripcion>> vencidas() {
+    public ResponseEntity<Page<Suscripcion>> vencidas(
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
         return ResponseEntity.ok(
-                suscripcionRepository.findAll()
-                        .stream()
-                        .filter(s -> s.getEstado().name().equals("VENCIDA"))
-                        .collect(Collectors.toList())
+                suscripcionRepository.findByEstado(EstadoSuscripcion.VENCIDA, pageable)
         );
     }
 
     /**
-     * Lista las suscripciones ordenadas por estado.
+     * Lista las suscripciones ordenadas por estado (paginadas).
      *
-     * @return lista de suscripciones ordenadas
+     * @param pageable parámetros de paginación.
+     * @return página de suscripciones ordenadas.
      */
     @GetMapping("/ordenadas")
-    public ResponseEntity<List<Suscripcion>> ordenadas() {
-
-        List<Suscripcion> lista = suscripcionRepository.findAll();
-
-        List<Suscripcion> ordenada = lista.stream()
-                .sorted(Comparator.comparing(
-                        (Suscripcion s) -> s.getEstado().name()
-                ))
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(ordenada);
+    public ResponseEntity<Page<Suscripcion>> ordenadas(
+            @PageableDefault(size = 10, sort = "estado") Pageable pageable
+    ) {
+        return ResponseEntity.ok(suscripcionRepository.findAll(pageable));
     }
 }

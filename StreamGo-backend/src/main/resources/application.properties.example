@@ -24,7 +24,7 @@ springdoc.swagger-ui.enabled=true
 
 # LOGGING
 spring.output.ansi.enabled=ALWAYS
-logging.level.com.StreamGo=DEBUG
+logging.level.com.StreamGo=WARN
 logging.level.org.springframework.security=INFO
 logging.pattern.console=%n============================================================%n%d{yyyy-MM-dd HH:mm:ss} | %clr(%-5level) | %logger{30} | %msg%n
 logging.file.name=logs/streamgo.log
