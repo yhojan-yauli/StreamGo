@@ -90,6 +90,10 @@ public class SecurityConfig {
                         .requestMatchers("/calificaciones/**").hasAuthority("CLIENTE")
                         .requestMatchers("/historial/**").hasAuthority("CLIENTE")
 
+                        // En SecurityConfig.java, dentro de authorizeHttpReqst...para acceso al contenido
+                        .requestMatchers("/uploads/**").permitAll()
+                        .anyRequest().authenticated()
+
                         // Catálogo autenticado para cliente o administrador
                         .requestMatchers("/contenidos/**").hasAnyAuthority("CLIENTE", "ADMIN")
 
