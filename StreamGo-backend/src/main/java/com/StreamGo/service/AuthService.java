@@ -110,7 +110,7 @@ public class AuthService {
      * @param nombre nombre obtenido de Google
      * @return El usuario guardado en la base de datos
      */
-    public Usuario registerFromGoogle(String email, String nombre) {
+    public Usuario registerFromGoogle(String email, String nombre, String avatar) {
         log.info("Intentando registrar usuario vía Google con email: {}", email);
 
         if (usuarioRepository.existsByEmail(email)) {
@@ -121,6 +121,7 @@ public class AuthService {
         Usuario usuario = Usuario.builder()
                 .nombre(nombre)
                 .email(email)
+                .avatar(avatar)
                 .password("") // Al ser login social, no maneja contraseña clásica
                 .rol(Rol.CLIENTE)
                 .estado(EstadoUsuario.INACTIVO) // Mantiene tu regla de negocio
