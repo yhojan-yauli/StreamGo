@@ -51,11 +51,11 @@ export class Login implements OnInit {
       return;
     }
 
-    this.loading = true;
     this.mensajeError = null;
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (res: any) => {
+        this.loading = true;
         this.authService.saveToken(res.token);
         const role = this.authService.getRole();
         setTimeout(() => {
@@ -67,7 +67,6 @@ export class Login implements OnInit {
         }, 800);
       },
       error: () => {
-        this.loading = false;
         this.mensajeError = 'Credenciales incorrectas.';
         this.mensajeInfo = null;
       }
