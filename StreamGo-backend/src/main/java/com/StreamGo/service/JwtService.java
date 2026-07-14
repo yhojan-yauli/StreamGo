@@ -62,10 +62,10 @@ public class JwtService {
      * @param rol rol asignado en formato String (ej: "CLIENTE")
      * @return token JWT generado
      */
-    public String generateTokenFromOAuth2(String email, String nombre, String avatar) {
+    public String generateTokenFromOAuth2(String email, String nombre, String avatar, String rol) {
         return Jwts.builder()
                 .subject(email)
-                .claim("rol", "CLIENTE")
+                .claim("rol", rol)
                 .claim("nombre", nombre)
                 .claim("avatar", avatar)
                 .issuedAt(new Date())

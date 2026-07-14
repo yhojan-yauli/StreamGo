@@ -80,7 +80,8 @@ public class CustomOAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 usuarioRepository.save(usuario);
 
                 String token = jwtService.generateTokenFromOAuth2(
-                        usuario.getEmail(), usuario.getNombre(), usuario.getAvatar());
+                        usuario.getEmail(), usuario.getNombre(), usuario.getAvatar(),
+                        usuario.getRol().name());
                 targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/redirect")
                         .queryParam("token", token)
                         .build().toUriString();
