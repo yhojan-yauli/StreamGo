@@ -52,14 +52,10 @@ export class Auth {
     return decoded.exp < now;
   }
 
-    //isLoggedIn(): boolean {
-    //const token = this.getToken();
-    //return !!token && !this.isTokenExpired();
-  //}
   isLoggedIn(): boolean {
-  const token = localStorage.getItem('token');
-  return !!token;
-}
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired();
+  }
   
   getUser(): any {
   return this.getDecodedToken();

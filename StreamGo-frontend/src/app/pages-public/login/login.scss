@@ -52,12 +52,23 @@
 .auth-box input {
   width: 100%;
   padding: 10px 12px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   border: 1px solid rgba(125, 90, 255, .30);
   border-radius: 12px;
   background: rgba(255, 255, 255, .08);
   color: white;
   outline: none;
+}
+
+.auth-box input.input-error {
+  border-color: rgba(255, 79, 109, .6);
+}
+
+.field-error {
+  font-size: 11px;
+  color: #ff4f6d;
+  margin-bottom: 12px;
+  padding-left: 4px;
 }
 
 .auth-box input::placeholder {
