@@ -6,6 +6,7 @@ import com.StreamGo.dto.response.VotoResponse;
 import com.StreamGo.service.PeticionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
