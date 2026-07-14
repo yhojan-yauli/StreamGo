@@ -1,45 +1,26 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea/
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-logs/
-docs/
-StreamGo-frontend/
+# Uploads
 uploads/
+
+# Node
+StreamGo-frontend/node_modules/
+StreamGo-frontend/dist/
+
+# Java / Gradle
+StreamGo-backend/
+StreamGo-backend/.gradle/
+StreamGo-backend/build/
+StreamGo-backend/bin/
+StreamGo-backend/src/
+# IDE
+.idea/
+*.iml
+.vscode/
+docs/
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Credenciales locales - no subir
 StreamGo-backend/src/main/resources/application.properties

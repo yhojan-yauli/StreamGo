@@ -15,6 +15,9 @@ public class CorsConfig {
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
+    @Value("${FRONTEND_URL:http://localhost:4200}")
+    private String frontendUrl;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
 
@@ -27,7 +30,8 @@ public class CorsConfig {
                         .allowedOrigins(
                                 "http://127.0.0.1:5500",
                                 "http://localhost:5500",
-                                "http://localhost:4200"
+                                "http://localhost:4200",
+                                frontendUrl
                         )
                         .allowedMethods("*")
                         .allowedHeaders("*")

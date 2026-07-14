@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public class ContenidoService {
     private final ContenidoRepository contenidoRepository;
     private final UsuarioRepository usuarioRepository;
     private final SuscripcionService suscripcionService;
+    private final FileStorageService fileStorageService; // <-- AGREGADO
 
     /**
      * Crea un nuevo contenido dentro de la plataforma.
@@ -69,6 +71,51 @@ public class ContenidoService {
                 response.getId(), response.getTitulo(), response.getEstado());
 
         return response;
+    }
+
+    /**
+     * Crea un nuevo contenido con archivos (imagen, banner, video).
+     * Los archivos se suben al servidor remoto a través de FileStorageService.
+     *
+     * @param request datos del contenido a crear.
+     * @param imagen archivo de imagen (poster)
+     * @param banner archivo de banner
+     * @param video archivo de video
+     * @return respuesta con los datos del contenido creado.
+     */
+    public ContenidoResponse crearContenidoConArchivos(
+            CrearContenidoRequest request,
+            MultipartFile imagen,
+            MultipartFile banner,
+            MultipartFile video
+    ) {
+        log.info("Creando contenido con archivos: {}", request.getTitulo());
+        
+        // Primero crear el contenido sin archivos
+        ContenidoResponse response = crearContenido(request);
+        Long id = response.getId();
+        
+        // Sanitizar el título para usar como nombre base
+        String nombreBase = fileStorageService.sanitizarTitulo(request.getTitulo());
+
+        // Guardar los archivos en el servidor remoto
+        String imagenUrl = fileStorageService.guardarImagen(imagen, nombreBase, "poster");
+        String bannerUrl = fileStorageService.guardarImagen(banner, nombreBase, "banner");
+        String videoUrl = fileStorageService.guardarVideo(video, nombreBase);
+
+        // Actualizar el contenido con las URLs de los archivos
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+
+        if (imagenUrl != null) contenido.setImagenUrl(imagenUrl);
+        if (bannerUrl != null) contenido.setBannerUrl(bannerUrl);
+        if (videoUrl != null) contenido.setVideoUrl(videoUrl);
+
+        ContenidoResponse finalResponse = mapToResponse(contenidoRepository.save(contenido));
+        
+        log.info("Contenido creado con archivos. ID: {}, Título: {}", finalResponse.getId(), finalResponse.getTitulo());
+        
+        return finalResponse;
     }
 
     /**
@@ -229,6 +276,88 @@ public class ContenidoService {
     }
 
     /**
+     * Actualiza un contenido existente con archivos (imagen, banner, video).
+     * Los archivos se suben al servidor remoto a través de FileStorageService.
+     *
+     * @param id identificador del contenido a actualizar.
+     * @param request datos actualizados del contenido.
+     * @param imagen archivo de imagen (poster) - opcional
+     * @param banner archivo de banner - opcional
+     * @param video archivo de video - opcional
+     * @return respuesta con los datos del contenido actualizado.
+     */
+    public ContenidoResponse actualizarContenidoConArchivos(
+            Long id,
+            ActualizarContenidoRequest request,
+            MultipartFile imagen,
+            MultipartFile banner,
+            MultipartFile video
+    ) {
+        log.info("Actualizando contenido con archivos. ID: {}", id);
+        
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+
+        String nombreBase = fileStorageService.sanitizarTitulo(request.getTitulo());
+
+        // Actualizar imagen si se proporciona
+        if (imagen != null && !imagen.isEmpty()) {
+            // Eliminar archivo anterior
+            if (contenido.getImagenUrl() != null) {
+                fileStorageService.eliminarArchivo(contenido.getImagenUrl());
+            }
+            // Guardar nueva imagen
+            String nuevaImagenUrl = fileStorageService.guardarImagen(imagen, nombreBase, "poster");
+            contenido.setImagenUrl(nuevaImagenUrl);
+        } else if (request.getImagenUrl() != null) {
+            contenido.setImagenUrl(request.getImagenUrl());
+        }
+
+        // Actualizar banner si se proporciona
+        if (banner != null && !banner.isEmpty()) {
+            if (contenido.getBannerUrl() != null) {
+                fileStorageService.eliminarArchivo(contenido.getBannerUrl());
+            }
+            String nuevoBannerUrl = fileStorageService.guardarImagen(banner, nombreBase, "banner");
+            contenido.setBannerUrl(nuevoBannerUrl);
+        } else if (request.getBannerUrl() != null) {
+            contenido.setBannerUrl(request.getBannerUrl());
+        }
+
+        // Actualizar video si se proporciona
+        if (video != null && !video.isEmpty()) {
+            if (contenido.getVideoUrl() != null) {
+                fileStorageService.eliminarArchivo(contenido.getVideoUrl());
+            }
+            String nuevoVideoUrl = fileStorageService.guardarVideo(video, nombreBase);
+            contenido.setVideoUrl(nuevoVideoUrl);
+        } else if (request.getVideoUrl() != null) {
+            contenido.setVideoUrl(request.getVideoUrl());
+        }
+
+        // Actualizar otros campos
+        contenido.setTitulo(request.getTitulo());
+        contenido.setDescripcion(request.getDescripcion());
+        contenido.setCategoria(request.getCategoria());
+        contenido.setTipoContenido(request.getTipoContenido());
+        contenido.setFechaEstreno(request.getFechaEstreno());
+        contenido.setDuracionMinutos(request.getDuracionMinutos());
+        contenido.setGratuito(request.getGratuito());
+        contenido.setRecomendado(request.getRecomendado());
+        contenido.setTendencia(request.getTendencia());
+
+        if (request.getEstado() != null) {
+            contenido.setEstado(request.getEstado());
+        }
+
+        ContenidoResponse response = mapToResponse(contenidoRepository.save(contenido));
+        
+        log.info("Contenido actualizado con archivos. ID: {}, Título: {}", response.getId(), response.getTitulo());
+        
+        return response;
+    }
+
+    /**
      * Cambia el estado de un contenido.
      *
      * @param id identificador del contenido.
@@ -356,6 +485,7 @@ public class ContenidoService {
     
     /**
      * Admin puede eliminar contenido, lo que realmente hace es borrarlo de la base de datos.
+     * Tambien elimina los archivos asociados del servidor de archivos.
      * Solo se recomienda usar esta función para eliminar contenido que se haya creado por error
      * o que ya no se quiera mostrar en la plataforma.
      */
@@ -369,6 +499,18 @@ public class ContenidoService {
                 });
 
         String titulo = contenido.getTitulo();
+        
+        // Eliminar archivos asociados del servidor remoto
+        if (contenido.getImagenUrl() != null) {
+            fileStorageService.eliminarArchivo(contenido.getImagenUrl());
+        }
+        if (contenido.getBannerUrl() != null) {
+            fileStorageService.eliminarArchivo(contenido.getBannerUrl());
+        }
+        if (contenido.getVideoUrl() != null) {
+            fileStorageService.eliminarArchivo(contenido.getVideoUrl());
+        }
+        
         contenidoRepository.delete(contenido);
         
         log.warn("Contenido eliminado permanentemente. ID: {}, Título: '{}'", id, titulo);

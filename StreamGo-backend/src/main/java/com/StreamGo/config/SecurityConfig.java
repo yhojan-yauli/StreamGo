@@ -19,6 +19,7 @@ import com.StreamGo.security.CustomOAuth2SuccessHandler;
 import com.StreamGo.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.Arrays;
 
 /**
@@ -32,7 +33,10 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final CustomOAuth2SuccessHandler oAuth2SuccessHandler; // <- Inyectamos tu Handler de éxito
+    private final CustomOAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @Value("${FRONTEND_URL:http://localhost:4200}")
+    private String frontendUrl;
 
     /**
      * Configura la cadena de filtros de seguridad de Spring Security.
@@ -86,6 +90,10 @@ public class SecurityConfig {
                         .requestMatchers("/calificaciones/**").hasAuthority("CLIENTE")
                         .requestMatchers("/historial/**").hasAuthority("CLIENTE")
 
+                        // En SecurityConfig.java, dentro de authorizeHttpReqst...para acceso al contenido
+                        .requestMatchers("/uploads/**").permitAll()
+                        .anyRequest().authenticated()
+
                         // Catálogo autenticado para cliente o administrador
                         .requestMatchers("/contenidos/**").hasAnyAuthority("CLIENTE", "ADMIN")
 
@@ -114,7 +122,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:4200",
                 "http://localhost:5500",
-                "http://127.0.0.1:5500"
+                "http://127.0.0.1:5500",
+                frontendUrl
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));

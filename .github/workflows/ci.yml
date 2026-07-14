@@ -32,10 +32,18 @@ jobs:
       - name: Dar permisos a Gradle
         run: chmod +x StreamGo-backend/gradlew
 
-      # Compila el proyecto
-      - name: Compilar proyecto
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Compila y ejecuta tests
+      - name: Compilar y testear
         working-directory: StreamGo-backend
-        run: ./gradlew build -x test
+        run: ./gradlew build
 
   # Fusiona automáticamente el PR hacia la rama destino (backend o main) si la compilación fue exitosa
   auto-merge:

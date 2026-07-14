@@ -1,0 +1,12 @@
+.usuarios-panel { padding: 18px; }
+.avatar-admin { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: linear-gradient(135deg, #6d32ff, #9b5cff); color: white; font-size: 24px; font-weight: 800; border: 2px solid rgba(255, 255, 255, .25); }
+.avatar-admin img { width: 100%; height: 100%; object-fit: cover; }
+
+@media (max-width: 768px) {
+  .sg-table-wrap { overflow-x: auto; }
+}
+
+@media (max-width: 480px) {
+  .usuarios-panel { padding: 12px; }
+  .avatar-admin { width: 40px; height: 40px; font-size: 18px; }
+}
