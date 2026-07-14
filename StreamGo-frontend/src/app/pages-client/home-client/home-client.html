@@ -1,0 +1,127 @@
+<app-navbar-client></app-navbar-client>
+
+<main class="cliente-main">
+  <!-- ===== SECCIÓN SUPERIOR (FULL VIEWPORT) ===== -->
+  <section class="hero-section">
+    <h1 class="titulo-cliente">{{ tituloPagina }}</h1>
+
+    <!-- BUSCADOR -->
+    <div class="buscador-centro">
+      <input class="search-cliente" type="text" placeholder="Buscar" (input)="buscar($event)">
+      <span>⌕</span>
+    </div>
+
+    <!-- CATEGORÍAS (chips) -->
+    <div class="categorias-cliente">
+      <span 
+        *ngFor="let categoria of categorias" 
+        [class.categoria-activa]="categoria === categoriaActual" 
+        (click)="seleccionarCategoria(categoria)">
+        {{ categoria }}
+      </span>
+    </div>
+
+    <!-- TABS: RECOMENDADOS | TENDENCIAS -->
+    <div class="tabs-contenido">
+      <button 
+        type="button" 
+        [class.tab-activo]="tipoActual === 'recomendados'" 
+        (click)="seleccionarTipo('recomendados')">
+        Recomendados
+      </button>
+      <button 
+        type="button" 
+        [class.tab-activo]="tipoActual === 'tendencias'" 
+        (click)="seleccionarTipo('tendencias')">
+        Tendencias
+      </button>
+    </div>
+
+    <!-- CARRUSEL CURVO (FORMA V) -->
+    <section class="carousel-u" (wheel)="moverConScroll($event)">
+      <button type="button" class="carousel-arrow arrow-left" (click)="moverManual(-1)">‹</button>
+
+      <article 
+        class="carousel-card" 
+        *ngFor="let item of obtenerVisibles(); let i = index" 
+        [ngClass]="'pos-' + i" 
+        (click)="verContenido(item)">
+        <img [src]="imagen(item)" [alt]="item.titulo || 'contenido'">
+      </article>
+
+      <button type="button" class="carousel-arrow arrow-right" (click)="moverManual(1)">›</button>
+      <div class="loading-carousel" *ngIf="cargando">Cargando contenido...</div>
+    </section>
+
+    <p class="titulo-card-centro">{{ tituloCentro }}</p>
+
+    <!-- INDICADOR SCROLL -->
+    <div class="scroll-indicator">
+      <span>Desplázate para más contenido</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ===== SECCIÓN INFERIOR ===== -->
+  <section class="categorias-section" id="categorias-section">
+    
+    <!-- HISTORIAL - PRIMERO EN LA SECCIÓN INFERIOR -->
+    <section class="historial-preview" *ngIf="historial.length > 0">
+      <h3>Continuar viendo</h3>
+      <div class="historial-grid">
+        <article class="historial-card" *ngFor="let item of historial" (click)="verContenido(item)">
+          <img [src]="imagen(item)" [alt]="item.titulo">
+          <div>
+            <strong>{{ item.titulo }}</strong>
+            <small>{{ item.categoria || 'Contenido' }}</small>
+            <div class="progress"><span [style.width.%]="item.completado ? 100 : 35"></span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- CARRUSELES POR CATEGORÍA -->
+    <div class="carousels-wrapper" *ngIf="!buscando && categoriaActual === 'Todas'">
+      <section class="carrusel-seccion" *ngFor="let carousel of carousels">
+        <h2 class="carrusel-titulo">{{ carousel.categoria }}</h2>
+        <div class="carrusel-track">
+          <button type="button" class="carousel-arrow arrow-left" (click)="moverManualCategoria(-1, carousel)" [class.hidden]="carousel.itemsFiltrados.length <= 1">
+            ‹
+          </button>
+          <div class="carrusel-viewport">
+            <div class="carrusel-slider" [style.transform]="getTransform(carousel)" [class.no-transition]="carousel.sinTransicion">
+              <article class="carousel-card-plano" *ngFor="let item of carousel.itemsFiltrados" (click)="verContenido(item)">
+                <img [src]="imagen(item)" [alt]="item.titulo || 'contenido'">
+                <div class="card-play">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </div>
+                <div class="card-footer">
+                  <span class="card-titulo">{{ item.titulo }}</span>
+                </div>
+              </article>
+            </div>
+          </div>
+          <button type="button" class="carousel-arrow arrow-right" (click)="moverManualCategoria(1, carousel)" [class.hidden]="carousel.itemsFiltrados.length <= 1">
+            ›
+          </button>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<!-- FIXED BOTTOM -->
+<div class="plan-bottom" *ngIf="!buscando">
+  <span>Adquiere un plan personalizado</span>
+  <button type="button" routerLink="/client/planes">Ver Planes disponibles</button>
+</div>
+
+<div class="random-box" *ngIf="!buscando">
+  <strong>¿No sabes qué mirar?</strong>
+  <span>contenido aleatorio</span>
+  <button type="button" (click)="contenidoAleatorio()">↕</button>
+</div>

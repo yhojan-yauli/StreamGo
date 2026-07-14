@@ -1,0 +1,65 @@
+<app-navbar-client></app-navbar-client>
+
+<main class="cliente-main peticiones-main">
+  <h1 class="titulo-cliente peticiones-titulo">Peticiones de estrenos</h1>
+
+  <!-- Mensajes de alerta -->
+  <section class="alert-box success" *ngIf="mensaje">
+    {{ mensaje }}
+  </section>
+  <section class="alert-box error" *ngIf="error">
+    {{ error }}
+  </section>
+
+  <!-- Lista de peticiones -->
+  <section class="peticiones-prototipo">
+    <!-- Header -->
+    <div class="peticiones-header">
+      <span></span>
+      <span></span>
+      <span>Deseados</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-box" *ngIf="cargando">
+      Cargando peticiones...
+    </div>
+
+    <!-- Lista de items -->
+    <div *ngIf="!cargando">
+      <article class="peticion-item" *ngFor="let item of peticiones">
+        <img [src]="imagen(item)" [alt]="item.titulo">
+
+        <div class="peticion-info">
+          <h3>{{ item.titulo }}</h3>
+          <small>Próximamente en StreamGO</small>
+          <p>{{ item.descripcion || 'Contenido solicitado por la comunidad para futuros estrenos.' }}</p>
+        </div>
+
+        <button type="button"
+                class="btn-deseado"
+                [class.activo]="estaSeleccionada(item.id)"
+                [disabled]="votandoId === item.id"
+                (click)="elegirPeticion(item)">
+          <span *ngIf="votandoId !== item.id">
+            {{ estaSeleccionada(item.id) ? '✓' : '+' }}
+          </span>
+          <span *ngIf="votandoId === item.id">...</span>
+        </button>
+      </article>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-box" *ngIf="!cargando && peticiones.length === 0">
+      No hay peticiones disponibles.
+    </div>
+  </section>
+</main>
+
+<!-- Footer / Planes -->
+<div class="plan-bottom">
+  <span>Adquiere un plan personalizado</span>
+  <button type="button" routerLink="/client/planes">
+    Ver Planes disponibles
+  </button>
+</div>
