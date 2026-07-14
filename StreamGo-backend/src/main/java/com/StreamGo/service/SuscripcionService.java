@@ -295,6 +295,35 @@ public class SuscripcionService {
     }
 
     /**
+     * Indica si un usuario tiene tiempo de suscripción vigente.
+     * Versión read-only: NO ejecuta verificación ni escrituras.
+     *
+     * @param usuario usuario a validar.
+     * @return true si tiene suscripción activa por tiempo real.
+     */
+    public boolean tieneSuscripcionActivaSoloLectura(Usuario usuario) {
+        return calcularHorasRestantesSoloLectura(usuario) > 0;
+    }
+
+    /**
+     * Calcula las horas restantes en modo lectura.
+     * NO ejecuta verificación de expiración ni guarda cambios.
+     *
+     * @param usuario usuario a evaluar.
+     * @return horas restantes por reloj.
+     */
+    public long calcularHorasRestantesSoloLectura(Usuario usuario) {
+
+        LocalDateTime fechaFinMasLejana = obtenerFechaFinMasLejanaVigente(usuario);
+
+        if (fechaFinMasLejana == null) {
+            return 0;
+        }
+
+        return calcularHorasRestantesHasta(fechaFinMasLejana);
+    }
+
+    /**
      * Obtiene la fecha de vencimiento más lejana entre las suscripciones activas.
      *
      * @param usuario usuario a evaluar.
@@ -366,7 +395,8 @@ public class SuscripcionService {
 
         logger.info("Ejecutando verificación de suscripciones...");
 
-        List<Suscripcion> suscripciones = suscripcionRepository.findAll();
+        List<Suscripcion> suscripciones = suscripcionRepository
+                .findByEstadoAndFechaFinBefore(EstadoSuscripcion.ACTIVA, LocalDateTime.now());
         LocalDateTime ahora = LocalDateTime.now();
 
         for (Suscripcion suscripcion : suscripciones) {

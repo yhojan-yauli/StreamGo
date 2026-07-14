@@ -5,7 +5,10 @@ import com.StreamGo.entity.Enum.Rol;
 import com.StreamGo.entity.Usuario;
 import com.StreamGo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +20,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AdminService {
 
     private final UsuarioRepository usuarioRepository;
@@ -35,10 +39,10 @@ public class AdminService {
         return clientes.stream().map(usuario -> {
 
             boolean tieneSuscripcion =
-                    suscripcionService.usuarioTieneSuscripcionActiva(usuario);
+                    suscripcionService.tieneSuscripcionActivaSoloLectura(usuario);
 
             long horasRestantes =
-                    suscripcionService.calcularHorasRestantesTotales(usuario);
+                    suscripcionService.calcularHorasRestantesSoloLectura(usuario);
 
             return ClienteAdminResponse.builder()
                     .avatar(usuario.getAvatar())
@@ -56,5 +60,41 @@ public class AdminService {
                     .build();
 
         }).toList();
+    }
+
+    /**
+     * Obtiene clientes paginados con información de suscripción.
+     *
+     * @param pageable parámetros de paginación.
+     * @return página de clientes con datos administrativos.
+     */
+    public Page<ClienteAdminResponse> obtenerClientesPaginados(Pageable pageable) {
+
+        Page<Usuario> clientes = usuarioRepository.findByRol(Rol.CLIENTE, pageable);
+
+        return clientes.map(usuario -> {
+
+            boolean tieneSuscripcion =
+                    suscripcionService.tieneSuscripcionActivaSoloLectura(usuario);
+
+            long horasRestantes =
+                    suscripcionService.calcularHorasRestantesSoloLectura(usuario);
+
+            return ClienteAdminResponse.builder()
+                    .avatar(usuario.getAvatar())
+                    .nombre(usuario.getNombre())
+                    .estado(usuario.getEstado().name())
+                    .email(usuario.getEmail())
+                    .telefono(usuario.getTelefono())
+                    .ultimoAcceso(
+                            usuario.getUltimoAcceso() != null
+                                    ? usuario.getUltimoAcceso().toString()
+                                    : null
+                    )
+                    .tieneSuscripcion(tieneSuscripcion)
+                    .horasRestantes(horasRestantes)
+                    .build();
+
+        });
     }
 }

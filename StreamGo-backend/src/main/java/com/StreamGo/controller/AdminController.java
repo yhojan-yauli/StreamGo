@@ -4,6 +4,9 @@ package com.StreamGo.controller;
 import com.StreamGo.dto.response.ClienteAdminResponse;
 import com.StreamGo.service.AdminService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,5 +33,18 @@ public class AdminController {
     @GetMapping("/clientes")
     public List<ClienteAdminResponse> obtenerClientes() {
         return adminService.obtenerClientes();
+    }
+
+    /**
+     * Obtiene clientes paginados con información de suscripción.
+     *
+     * @param pageable parámetros de paginación (page, size, sort).
+     * @return página de clientes.
+     */
+    @GetMapping("/clientes/paginados")
+    public Page<ClienteAdminResponse> obtenerClientesPaginados(
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        return adminService.obtenerClientesPaginados(pageable);
     }
 }

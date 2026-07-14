@@ -1,5 +1,6 @@
 package com.StreamGo.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,14 @@ public interface ContenidoRepository extends JpaRepository<Contenido, Long> {
     List<Contenido> findByTendenciaTrueAndEstado(EstadoContenido estado);
 
     List<Contenido> findByTituloContainingIgnoreCaseAndEstado(String titulo, EstadoContenido estado);
+
+    List<Contenido> findByCategoria(String categoria);
+
+    List<Contenido> findByRecomendadoTrue();
+
+    List<Contenido> findByTendenciaTrue();
+
+    List<Contenido> findByTituloContainingIgnoreCase(String titulo);
+
+    List<Contenido> findByEstadoIn(Collection<EstadoContenido> estados);
 }

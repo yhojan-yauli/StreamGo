@@ -2,6 +2,7 @@ package com.StreamGo.entity;
 
 import com.StreamGo.entity.Enum.EstadoUsuario;
 import com.StreamGo.entity.Enum.Rol;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,7 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
