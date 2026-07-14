@@ -33,7 +33,6 @@ export class NoticiasAdmin implements OnInit {
   paginaActual = 1;
   elementosPorPagina = 6;
   totalElementos = 0;
-  portadaArchivo: File | null = null;
   mensaje = '';
   error = '';
 
@@ -118,7 +117,6 @@ export class NoticiasAdmin implements OnInit {
   nuevaNoticia(): void {
     this.modoEdicion = false;
     this.noticiaId = null;
-    this.portadaArchivo = null;
     this.modalVisible = true;
     this.noticiaForm = { titulo: '', contenido: '', trailer: '', portadaUrl: '', reacciones: 0 };
     this.cdr.detectChanges();
@@ -127,7 +125,6 @@ export class NoticiasAdmin implements OnInit {
   editarNoticia(noticia: Noticia): void {
     this.modoEdicion = true;
     this.noticiaId = noticia.idPost;
-    this.portadaArchivo = null;
     this.modalVisible = true;
     this.noticiaForm = {
       titulo: noticia.titulo || '',
@@ -145,35 +142,6 @@ export class NoticiasAdmin implements OnInit {
     this.modalVisible = false;
     this.modoEdicion = false;
     this.noticiaId = null;
-    this.portadaArchivo = null;
-    this.cdr.detectChanges();
-  }
-
-  seleccionarPortada(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const archivo = input.files?.[0] ?? null;
-
-    this.error = '';
-    this.portadaArchivo = null;
-
-    if (!archivo) return;
-
-    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!tiposPermitidos.includes(archivo.type)) {
-      this.error = 'La portada debe ser JPG, PNG o WEBP.';
-      input.value = '';
-      this.cdr.detectChanges();
-      return;
-    }
-
-    if (archivo.size > 2 * 1024 * 1024) {
-      this.error = 'La portada no puede superar 2MB.';
-      input.value = '';
-      this.cdr.detectChanges();
-      return;
-    }
-
-    this.portadaArchivo = archivo;
     this.cdr.detectChanges();
   }
 
@@ -193,18 +161,13 @@ export class NoticiasAdmin implements OnInit {
 
     this.guardando = true;
     const obs = this.modoEdicion && this.noticiaId
-      ? this.portadaArchivo
-        ? this.noticiasService.actualizarConPortada(this.noticiaId, request, this.portadaArchivo)
-        : this.noticiasService.actualizar(this.noticiaId, request)
-      : this.portadaArchivo
-        ? this.noticiasService.crearConPortada(request, this.portadaArchivo)
-        : this.noticiasService.crear(request);
+      ? this.noticiasService.actualizar(this.noticiaId, request)
+      : this.noticiasService.crear(request);
 
     obs.subscribe({
       next: () => {
         this.guardando = false;
         this.modalVisible = false;
-        this.portadaArchivo = null;
         this.mensaje = this.modoEdicion
           ? 'Noticia actualizada correctamente.'
           : 'Noticia creada correctamente.';
