@@ -23,18 +23,18 @@ public class PeticionAdminController {
         return ResponseEntity.ok(peticionService.agregarVotable(request));
     }
 
-    @PutMapping("/editar/{id}")
+    @PutMapping("/{id}/editar")
     public ResponseEntity<ContenidoVotableResponse> editar(
-            @PathVariable Long id,
-            @RequestBody ContenidoVotableRequest request
+            @PathVariable("id") Long id,
+            @Valid @RequestBody ContenidoVotableRequest request
     ) {
         return ResponseEntity.ok(peticionService.editarVotable(id, request));
     }
 
-    @PutMapping("/desactivar/{id}")
-    public ResponseEntity<Void> desactivar(@PathVariable Long id) {
+    @PutMapping("/{id}/desactivar")
+    public ResponseEntity<Void> desactivar(@PathVariable("id") Long id) {
         peticionService.desactivarVotable(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/ranking")
