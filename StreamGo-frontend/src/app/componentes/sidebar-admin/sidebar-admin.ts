@@ -1,10 +1,11 @@
 import { Component, Renderer2, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Auth } from '../../services/auth';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar-admin',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar-admin.html',
   styleUrl: './sidebar-admin.scss',
 })
@@ -13,6 +14,7 @@ export class SidebarAdmin implements OnInit {
   sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
   sidebarAbierto = true;
   isMobile = false;
+  usuario: any;
 
   private renderer = inject(Renderer2);
 
@@ -20,6 +22,7 @@ export class SidebarAdmin implements OnInit {
     private authService: Auth,
     private router: Router
   ) {
+    this.usuario = this.authService.getUser();
     if (window.innerWidth <= 768) {
       this.isMobile = true;
       this.sidebarAbierto = false;

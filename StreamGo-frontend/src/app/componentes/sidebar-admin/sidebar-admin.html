@@ -9,11 +9,12 @@
 
   <div class="sidebar-head">
     <div class="sidebar-avatar">
-      <span>A</span>
+      <img *ngIf="usuario?.avatar" [src]="usuario.avatar" alt="avatar" class="avatar-img">
+      <span *ngIf="!usuario?.avatar">{{ usuario?.nombre?.charAt(0) || 'A' }}</span>
     </div>
     <div class="sidebar-user">
       <span class="user-label">Panel Admin</span>
-      <span class="user-name">StreamGO</span>
+      <span class="user-name">{{ usuario?.nombre || 'Admin' }}</span>
     </div>
   </div>
 
