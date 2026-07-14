@@ -99,6 +99,31 @@
   font-size: 14px;
 }
 
+.auth-box .btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.auth-box .btn-submit:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .btn-google {
   width: 100%;
   margin-top: 10px;
@@ -160,7 +185,8 @@
     font-size: 13px;
   }
 
-  .auth-box .sg-btn {
+  .auth-box .sg-btn,
+  .auth-box .btn-submit {
     padding: 9px;
     font-size: 13px;
   }

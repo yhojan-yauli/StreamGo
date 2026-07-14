@@ -23,6 +23,7 @@ export class Login implements OnInit {
   mensajeInfo: string | null = null;
   mensajeError: string | null = null;
   loading = false;
+  submitting = false;
 
   constructor(
     private authService: Auth,
@@ -52,9 +53,11 @@ export class Login implements OnInit {
     }
 
     this.mensajeError = null;
+    this.submitting = true;
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (res: any) => {
+        this.submitting = false;
         this.loading = true;
         this.authService.saveToken(res.token);
         const role = this.authService.getRole();
@@ -67,6 +70,7 @@ export class Login implements OnInit {
         }, 800);
       },
       error: () => {
+        this.submitting = false;
         this.mensajeError = 'Credenciales incorrectas.';
         this.mensajeInfo = null;
       }
