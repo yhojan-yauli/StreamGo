@@ -4,11 +4,14 @@ import com.StreamGo.dto.request.PeticionRequest;
 import com.StreamGo.dto.response.ContenidoVotableResponse;
 import com.StreamGo.dto.response.PeticionResponse;
 import com.StreamGo.service.PeticionService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/peticiones")
@@ -24,7 +27,7 @@ public class PeticionClienteController {
 
     @PostMapping("/elegir")
     public ResponseEntity<PeticionResponse> elegir(
-            @RequestBody PeticionRequest request,
+            @Valid @RequestBody PeticionRequest request,
             @AuthenticationPrincipal String email
     ) {
         return ResponseEntity.ok(
