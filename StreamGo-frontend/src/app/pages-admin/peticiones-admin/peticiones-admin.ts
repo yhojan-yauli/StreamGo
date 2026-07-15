@@ -43,17 +43,25 @@ export class PeticionesAdmin implements OnInit {
 
   cargarRanking(): void {
     this.cargando = true;
+
     this.service.ranking().subscribe({
       next: data => {
-        this.ranking = Array.isArray(data) ? [...data] : [];
+
+        this.ranking = Array.isArray(data)
+          ? data.filter(item => item.totalVotos > 0)
+          : [];
+
         this.cargando = false;
         this.cdr.detectChanges();
       },
+
       error: err => {
         console.error(err);
+
         this.ranking = [];
         this.cargando = false;
         this.error = 'No se pudo cargar el ranking.';
+
         this.cdr.detectChanges();
       }
     });
