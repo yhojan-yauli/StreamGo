@@ -27,4 +27,9 @@ public class ContenidoVotable {
     private String imagenUrl;
 
     private Boolean activo;
+    
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer cantidadVotos = 0;
+
 }
