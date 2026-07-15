@@ -28,7 +28,6 @@ export class PeticionesAdminService {
     return this.http.put<any>(`${this.apiUrl}/admin/peticiones/${id}/desactivar`, {});
     //                                         ↑ ID va ANTES de /desactivar
   }
-
   lista(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/peticiones/lista`);
   }
