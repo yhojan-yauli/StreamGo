@@ -6,6 +6,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { LoadingScreenComponent } from '../../componentes/ui/loading-screen/loading-screen';
+import { timeout, TimeoutError } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -55,26 +56,34 @@ export class Login implements OnInit {
     this.mensajeError = null;
     this.submitting = true;
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (res: any) => {
-        this.submitting = false;
-        this.loading = true;
-        this.authService.saveToken(res.token);
-        const role = this.authService.getRole();
-        setTimeout(() => {
-          if (role === 'ADMIN') {
-            this.router.navigate(['/admin/home']);
+    this.authService.login(this.loginForm.value)
+      .pipe(timeout(15000))
+      .subscribe({
+        next: (res: any) => {
+          this.submitting = false;
+          this.loading = true;
+          this.authService.saveToken(res.token);
+          const role = this.authService.getRole();
+          setTimeout(() => {
+            if (role === 'ADMIN') {
+              this.router.navigate(['/admin/home']);
+            } else {
+              this.router.navigate(['/client/home']);
+            }
+          }, 800);
+        },
+        error: (err) => {
+          this.submitting = false;
+          if (err instanceof TimeoutError) {
+            this.mensajeError = 'El servidor está tardando. Intenta de nuevo.';
+          } else if (err.status === 400) {
+            this.mensajeError = 'Credenciales incorrectas.';
           } else {
-            this.router.navigate(['/client/home']);
+            this.mensajeError = 'Error de conexión.';
           }
-        }, 800);
-      },
-      error: () => {
-        this.submitting = false;
-        this.mensajeError = 'Credenciales incorrectas.';
-        this.mensajeInfo = null;
-      }
-    });
+          this.mensajeInfo = null;
+        }
+      });
   }
 
   loginConGoogle(): void {
