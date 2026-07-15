@@ -10,5 +10,6 @@ public class ContenidoVotableResponse {
     private String descripcion;
     private String posterUrl;
     private String imagenUrl;
+    private Integer cantidadVotos;
     private Boolean activo;
 }
