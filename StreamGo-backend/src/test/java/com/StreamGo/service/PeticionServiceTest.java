@@ -78,7 +78,7 @@ class PeticionServiceTest {
                 .id(1L)
                 .usuario(usuario)
                 .contenidoVotable(contenidoVotable)
-                .fechaPeticion(LocalDateTime.now())
+                .fechaCreacion(LocalDateTime.now())
                 .build();
 
         peticionRequest = new PeticionRequest();
