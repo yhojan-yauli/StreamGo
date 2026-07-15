@@ -66,6 +66,7 @@ public class PeticionService {
                 .descripcion(request.getDescripcion())
                 .posterUrl(request.getPosterUrl())
                 .imagenUrl(request.getImagenUrl())
+                .cantidadVotos(0)
                 .activo(true)
                 .build();
         ContenidoVotableResponse response = mapVotableToResponse(contenidoVotableRepository.save(votable));
@@ -142,12 +143,14 @@ public class PeticionService {
      */
     public List<VotoResponse> verRankingVotos() {
         log.debug("Consultando ranking de votos");
-        List<VotoResponse> ranking = peticionRepository.contarVotosPorContenido()
+
+        List<VotoResponse> ranking = contenidoVotableRepository
+                .findAllByOrderByCantidadVotosDesc()
                 .stream()
-                .map(row -> VotoResponse.builder()
-                        .contenidoVotableId((Long) row[0])
-                        .titulo((String) row[1])
-                        .totalVotos((Long) row[2])
+                .map(c -> VotoResponse.builder()
+                        .contenidoVotableId(c.getId())
+                        .titulo(c.getTitulo())
+                        .totalVotos(c.getCantidadVotos().longValue())
                         .build())
                 .toList();
 
@@ -199,46 +202,66 @@ public class PeticionService {
      * @throws RuntimeException Si el usuario no existe o el contenido votable no existe
      */
     public PeticionResponse elegirPelicula(String email, PeticionRequest request) {
+
         log.debug("Usuario {} intentando elegir contenido votable id={}", email, request.getContenidoVotableId());
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    log.error("Usuario no encontrado: email={}", email);
-                    return new RuntimeException("Usuario no encontrado");
-                });
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        ContenidoVotable votable = contenidoVotableRepository.findById(request.getContenidoVotableId())
-                .orElseThrow(() -> {
-                    log.error("Contenido votable no encontrado: id={}", request.getContenidoVotableId());
-                    return new RuntimeException("Contenido votable no encontrado");
-                });
+        ContenidoVotable nuevoContenido = contenidoVotableRepository
+                .findById(request.getContenidoVotableId())
+                .orElseThrow(() -> new RuntimeException("Contenido votable no encontrado"));
 
-        if (!votable.getActivo()) {
-            log.warn("Usuario {} intentó votar por un contenido votable inactivo: id={}, titulo={}",
-                    email, votable.getId(), votable.getTitulo());
+        if (!nuevoContenido.getActivo()) {
+            throw new RuntimeException("El contenido votable está inactivo");
         }
 
         Optional<Peticion> existente = peticionRepository.findByUsuarioId(usuario.getId());
 
         Peticion peticion;
+
         if (existente.isPresent()) {
-            log.warn("Usuario {} está cambiando su elección: titulo anterior={} → nuevo titulo={}",
-                    email, existente.get().getContenidoVotable().getTitulo(), votable.getTitulo());
+
             peticion = existente.get();
-            peticion.setContenidoVotable(votable);
-            peticion.setFechaPeticion(LocalDateTime.now());
+
+            ContenidoVotable contenidoAnterior = peticion.getContenidoVotable();
+
+            if (!contenidoAnterior.getId().equals(nuevoContenido.getId())) {
+
+                contenidoAnterior.setCantidadVotos(
+                        contenidoAnterior.getCantidadVotos() - 1);
+
+                nuevoContenido.setCantidadVotos(
+                        nuevoContenido.getCantidadVotos() + 1);
+
+                contenidoVotableRepository.save(contenidoAnterior);
+                contenidoVotableRepository.save(nuevoContenido);
+
+                peticion.setContenidoVotable(nuevoContenido);
+            }
+
+            peticion.setFechaCreacion(LocalDateTime.now());
+
         } else {
-            log.debug("Creando nueva petición para usuario {}", email);
+
+            nuevoContenido.setCantidadVotos(
+                    nuevoContenido.getCantidadVotos() + 1);
+
+            contenidoVotableRepository.save(nuevoContenido);
+
             peticion = Peticion.builder()
                     .usuario(usuario)
-                    .contenidoVotable(votable)
-                    .fechaPeticion(LocalDateTime.now())
+                    .contenidoVotable(nuevoContenido)
+                    .fechaCreacion(LocalDateTime.now())
                     .build();
         }
 
-        PeticionResponse response = mapPeticionToResponse(peticionRepository.save(peticion));
+        PeticionResponse response = mapPeticionToResponse(
+                peticionRepository.save(peticion));
+
         log.info("Petición guardada: usuarioId={}, contenidoVotableId={}, titulo={}",
-                usuario.getId(), votable.getId(), votable.getTitulo());
+                usuario.getId(), nuevoContenido.getId(), nuevoContenido.getTitulo());
+
         return response;
     }
 
@@ -304,15 +327,16 @@ public class PeticionService {
      * @return DTO con los datos del contenido votable
      */
     private ContenidoVotableResponse mapVotableToResponse(ContenidoVotable v) {
-        return ContenidoVotableResponse.builder()
-                .id(v.getId())
-                .titulo(v.getTitulo())
-                .descripcion(v.getDescripcion())
-                .posterUrl(v.getPosterUrl())
-                .imagenUrl(v.getImagenUrl())
-                .activo(v.getActivo())
-                .build();
-    }
+    return ContenidoVotableResponse.builder()
+            .id(v.getId())
+            .titulo(v.getTitulo())
+            .descripcion(v.getDescripcion())
+            .posterUrl(v.getPosterUrl())
+            .imagenUrl(v.getImagenUrl())
+            .cantidadVotos(v.getCantidadVotos())
+            .activo(v.getActivo())
+            .build();
+}
 
     /**
      * Convierte una entidad {@link Peticion} a un DTO {@link PeticionResponse}.
@@ -326,7 +350,7 @@ public class PeticionService {
                 .usuarioId(p.getUsuario().getId())
                 .contenidoVotableId(p.getContenidoVotable().getId())
                 .tituloPelicula(p.getContenidoVotable().getTitulo())
-                .fechaPeticion(p.getFechaPeticion())
+                .fechaCreacion(p.getFechaCreacion())
                 .build();
     }
 }

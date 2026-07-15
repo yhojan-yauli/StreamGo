@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "peticiones")
+@Table(name = "peticion")  // ← Sin uniqueConstraints
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,13 +17,19 @@ public class Peticion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contenido_votable_id", nullable = false)
     private ContenidoVotable contenidoVotable;
 
-    private LocalDateTime fechaPeticion;
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaCreacion = LocalDateTime.now();
+    }
 }
