@@ -10,5 +10,5 @@ public class PeticionResponse {
     private Long usuarioId;
     private Long contenidoVotableId;
     private String tituloPelicula;
-    private LocalDateTime fechaPeticion;
+    private LocalDateTime fechaCreacion;
 }
