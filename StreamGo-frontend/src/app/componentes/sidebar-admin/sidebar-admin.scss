@@ -322,9 +322,13 @@
   border-bottom-color: rgba(255, 79, 109, .4);
 }
 
+.sidebar-backdrop {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .menu-toggle {
-    display: none;
+    display: grid;
   }
 
   .sidebar-admin {
@@ -341,5 +345,14 @@
 
   .collapse-btn {
     display: none;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .5);
+    z-index: 1050;
+    backdrop-filter: blur(2px);
   }
 }

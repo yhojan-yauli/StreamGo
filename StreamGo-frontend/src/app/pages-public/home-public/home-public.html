@@ -7,7 +7,7 @@
       <div class="landing-s-shape"></div>
 
       <div class="landing-posters">
-        <img *ngFor="let item of posters" [src]="imagen(item)" [alt]="item.titulo || 'poster'">
+        <img *ngFor="let item of posters" [src]="imagen(item)" [alt]="item.titulo || 'poster'" loading="lazy">
       </div>
     </section>
 

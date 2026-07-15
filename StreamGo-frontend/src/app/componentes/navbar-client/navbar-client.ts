@@ -12,6 +12,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 export class NavbarClient {
   usuario: any;
   menuVisible = false;
+  menuMobileAbierto = false;
 
   constructor(
     private authService: Auth,
@@ -37,6 +38,14 @@ export class NavbarClient {
 
   toggleMenu(): void {
     this.menuVisible = !this.menuVisible;
+  }
+
+  toggleMenuMobile(): void {
+    this.menuMobileAbierto = !this.menuMobileAbierto;
+  }
+
+  closeMenuMobile(): void {
+    this.menuMobileAbierto = false;
   }
 
   irAMiCuenta(): void {

@@ -1,4 +1,4 @@
-import { Component, Renderer2, inject, OnInit } from '@angular/core';
+import { Component, Renderer2, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../../services/auth';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -33,6 +33,19 @@ export class SidebarAdmin implements OnInit {
   ngOnInit(): void {
     if (this.sidebarCollapsed) {
       this.renderer.addClass(document.body, 'sidebar-collapsed');
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    const wasMobile = this.isMobile;
+    this.isMobile = window.innerWidth <= 768;
+    if (!wasMobile && this.isMobile) {
+      this.sidebarAbierto = false;
+      this.sidebarCollapsed = true;
+      this.renderer.addClass(document.body, 'sidebar-collapsed');
+    } else if (wasMobile && !this.isMobile) {
+      this.sidebarAbierto = true;
     }
   }
 
