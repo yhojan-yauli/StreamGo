@@ -8,6 +8,8 @@ import com.StreamGo.entity.Enum.EstadoContenido;
 import com.StreamGo.repository.ContenidoRepository;
 import com.StreamGo.repository.UsuarioRepository;
 import com.StreamGo.repository.SuscripcionRepository;
+import com.StreamGo.repository.HistorialReproduccionRepository;
+import com.StreamGo.repository.CalificacionRepository;
 import com.StreamGo.entity.Usuario;
 import com.StreamGo.entity.Suscripcion;
 import com.StreamGo.entity.Enum.EstadoUsuario;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -34,7 +37,9 @@ public class ContenidoService {
     private final ContenidoRepository contenidoRepository;
     private final UsuarioRepository usuarioRepository;
     private final SuscripcionService suscripcionService;
-    private final FileStorageService fileStorageService; // <-- AGREGADO
+    private final FileStorageService fileStorageService;
+    private final HistorialReproduccionRepository historialRepository;
+    private final CalificacionRepository calificacionRepository;
 
     /**
      * Crea un nuevo contenido dentro de la plataforma.
@@ -133,6 +138,26 @@ public class ContenidoService {
         
         log.debug("Total de contenidos listados para admin: {}", contenidos.size());
         return contenidos;
+    }
+
+    /**
+     * Obtiene un contenido por su ID.
+     *
+     * @param id identificador del contenido.
+     * @return ContenidoResponse con los datos del contenido.
+     * @throws RuntimeException si no existe.
+     */
+    public ContenidoResponse obtenerContenidoPorId(Long id) {
+        log.debug("Buscando contenido por ID: {}", id);
+        
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Contenido no encontrado con ID: {}", id);
+                    return new RuntimeException("Contenido no encontrado");
+                });
+        
+        log.debug("Contenido encontrado: {}", contenido.getTitulo());
+        return mapToResponse(contenido);
     }
 
     /**
@@ -461,6 +486,59 @@ public class ContenidoService {
         return contenidos;
     }
 
+    /**
+     * Admin puede eliminar contenido, lo que realmente hace es borrarlo de la base de datos.
+     * Tambien elimina los archivos asociados del servidor de archivos.
+     * Solo se recomienda usar esta función para eliminar contenido que se haya creado por error
+     * o que ya no se quiera mostrar en la plataforma.
+     */
+    @Transactional
+    public void eliminarContenido(Long id) {
+        log.warn("Intentando eliminar contenido con ID: {}", id);
+        
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Intento de eliminar contenido no existente con ID: {}", id);
+                    return new RuntimeException("Contenido no encontrado");
+                });
+
+        String titulo = contenido.getTitulo();
+        
+        // Eliminar archivos asociados del servidor remoto
+        if (contenido.getImagenUrl() != null) {
+            fileStorageService.eliminarArchivo(contenido.getImagenUrl());
+            log.debug("Imagen eliminada: {}", contenido.getImagenUrl());
+        }
+        if (contenido.getBannerUrl() != null) {
+            fileStorageService.eliminarArchivo(contenido.getBannerUrl());
+            log.debug("Banner eliminado: {}", contenido.getBannerUrl());
+        }
+        if (contenido.getVideoUrl() != null) {
+            fileStorageService.eliminarArchivo(contenido.getVideoUrl());
+            log.debug("Video eliminado: {}", contenido.getVideoUrl());
+        }
+        
+        // ELIMINAR REGISTROS RELACIONADOS ANTES DE ELIMINAR EL CONTENIDO
+        try {
+            historialRepository.deleteByContenidoId(id);
+            log.debug("Historial de reproducciones eliminado para el contenido ID: {}", id);
+        } catch (Exception e) {
+            log.warn("Error al eliminar historial: {}", e.getMessage());
+        }
+        
+        try {
+            calificacionRepository.deleteByContenidoId(id);
+            log.debug("Calificaciones eliminadas para el contenido ID: {}", id);
+        } catch (Exception e) {
+            log.warn("Error al eliminar calificaciones: {}", e.getMessage());
+        }
+        
+        // Finalmente eliminar el contenido
+        contenidoRepository.delete(contenido);
+        
+        log.warn("Contenido eliminado permanentemente. ID: {}, Título: '{}'", id, titulo);
+    }
+
     private ContenidoResponse mapToResponse(Contenido contenido) {
         return ContenidoResponse.builder()
                 .id(contenido.getId())
@@ -481,38 +559,5 @@ public class ContenidoService {
                 .totalCalificaciones(contenido.getTotalCalificaciones())
                 .totalReproducciones(contenido.getTotalReproducciones())
                 .build();
-    }
-    
-    /**
-     * Admin puede eliminar contenido, lo que realmente hace es borrarlo de la base de datos.
-     * Tambien elimina los archivos asociados del servidor de archivos.
-     * Solo se recomienda usar esta función para eliminar contenido que se haya creado por error
-     * o que ya no se quiera mostrar en la plataforma.
-     */
-    public void eliminarContenido(Long id) {
-        log.warn("Intentando eliminar contenido con ID: {}", id);
-        
-        Contenido contenido = contenidoRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Intento de eliminar contenido no existente con ID: {}", id);
-                    return new RuntimeException("Contenido no encontrado");
-                });
-
-        String titulo = contenido.getTitulo();
-        
-        // Eliminar archivos asociados del servidor remoto
-        if (contenido.getImagenUrl() != null) {
-            fileStorageService.eliminarArchivo(contenido.getImagenUrl());
-        }
-        if (contenido.getBannerUrl() != null) {
-            fileStorageService.eliminarArchivo(contenido.getBannerUrl());
-        }
-        if (contenido.getVideoUrl() != null) {
-            fileStorageService.eliminarArchivo(contenido.getVideoUrl());
-        }
-        
-        contenidoRepository.delete(contenido);
-        
-        log.warn("Contenido eliminado permanentemente. ID: {}, Título: '{}'", id, titulo);
     }
 }
