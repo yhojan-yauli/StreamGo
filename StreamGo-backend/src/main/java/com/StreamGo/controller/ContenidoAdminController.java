@@ -77,6 +77,21 @@ public class ContenidoAdminController {
     }
 
     /**
+     * Obtiene un contenido por su ID para administración.
+     *
+     * @param id identificador del contenido.
+     * @return contenido encontrado.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ContenidoResponse> obtenerContenido(
+            @PathVariable("id") Long id
+    ) {
+        return ResponseEntity.ok(
+                contenidoService.obtenerContenidoPorId(id)
+        );
+    }
+
+    /**
      * Actualiza la información de un contenido existente.
      * Versión sin archivos (solo URLs).
      *
@@ -136,7 +151,8 @@ public class ContenidoAdminController {
 
     /**
      * Elimina un contenido permanentemente.
-     * También elimina los archivos asociados (imagen, banner, video).
+     * También elimina los archivos asociados (imagen, banner, video)
+     * del servidor de archivos remoto.
      *
      * @param id identificador del contenido.
      * @return mensaje de confirmación.
