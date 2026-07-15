@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NavbarPublic } from "../../componentes/navbar-public/navbar-public";
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { Auth } from '../../services/auth';
@@ -6,7 +6,7 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { LoadingScreenComponent } from '../../componentes/ui/loading-screen/loading-screen';
-import { timeout, TimeoutError } from 'rxjs';
+import { timeout, TimeoutError, finalize, catchError, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -29,7 +29,8 @@ export class Login implements OnInit {
   constructor(
     private authService: Auth,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -42,6 +43,7 @@ export class Login implements OnInit {
         this.mensajeError = 'Tu cuenta de Google no está registrada. Crea una cuenta primero.';
         this.mensajeInfo = null;
       }
+      this.cdr.detectChanges();
     });
   }
 
@@ -55,15 +57,28 @@ export class Login implements OnInit {
 
     this.mensajeError = null;
     this.submitting = true;
+    this.cdr.detectChanges();
 
     this.authService.login(this.loginForm.value)
-      .pipe(timeout(15000))
+      .pipe(
+        timeout(12000),
+        catchError((err) => {
+          if (err instanceof TimeoutError) {
+            return throwError(() => ({ type: 'timeout' }));
+          }
+          return throwError(() => err);
+        }),
+        finalize(() => {
+          this.submitting = false;
+          this.cdr.detectChanges();
+        })
+      )
       .subscribe({
         next: (res: any) => {
-          this.submitting = false;
           this.loading = true;
           this.authService.saveToken(res.token);
           const role = this.authService.getRole();
+          this.cdr.detectChanges();
           setTimeout(() => {
             if (role === 'ADMIN') {
               this.router.navigate(['/admin/home']);
@@ -73,8 +88,7 @@ export class Login implements OnInit {
           }, 800);
         },
         error: (err) => {
-          this.submitting = false;
-          if (err instanceof TimeoutError) {
+          if (err.type === 'timeout') {
             this.mensajeError = 'El servidor está tardando. Intenta de nuevo.';
           } else if (err.status === 400) {
             this.mensajeError = 'Credenciales incorrectas.';
@@ -82,6 +96,7 @@ export class Login implements OnInit {
             this.mensajeError = 'Error de conexión.';
           }
           this.mensajeInfo = null;
+          this.cdr.detectChanges();
         }
       });
   }
