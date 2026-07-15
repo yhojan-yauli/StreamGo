@@ -3,13 +3,17 @@
     <div class="logo-cliente-wrap"><img src="/logo.png" class="logo-cliente" alt="StreamGO"></div>
   </a>
 
-  <nav>
-    <a routerLink="/client/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
-    <a routerLink="/client/home">Categorías</a>
-    <a routerLink="/client/noticias" routerLinkActive="active">Noticias</a>
-    <a routerLink="/client/peticiones" routerLinkActive="active">Peticiones</a>
-    <a routerLink="/client/historial" routerLinkActive="active">Historial</a>
-    <a routerLink="/client/planes" routerLinkActive="active">Planes</a>
+  <button class="hamburger-btn" type="button" (click)="toggleMenuMobile()" [class.active]="menuMobileAbierto">
+    <span></span><span></span><span></span>
+  </button>
+
+  <nav [class.mobile-open]="menuMobileAbierto">
+    <a routerLink="/client/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenuMobile()">Inicio</a>
+    <a routerLink="/client/home" (click)="closeMenuMobile()">Categorías</a>
+    <a routerLink="/client/noticias" routerLinkActive="active" (click)="closeMenuMobile()">Noticias</a>
+    <a routerLink="/client/peticiones" routerLinkActive="active" (click)="closeMenuMobile()">Peticiones</a>
+    <a routerLink="/client/historial" routerLinkActive="active" (click)="closeMenuMobile()">Historial</a>
+    <a routerLink="/client/planes" routerLinkActive="active" (click)="closeMenuMobile()">Planes</a>
     <div class="avatar-dropdown">
       <div class="avatar-navbar" (click)="toggleMenu()">
         <img *ngIf="usuario?.avatar" [src]="usuario.avatar" alt="avatar" class="avatar-img">

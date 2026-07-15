@@ -20,12 +20,15 @@ export class PeticionesAdminService {
   }
 
   editar(id: number, data: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/admin/peticiones/editar/${id}`, data);
+    return this.http.put<any>(`${this.apiUrl}/admin/peticiones/${id}/editar`, data);
+    //                                         ↑ ID va ANTES de /editar
+  }
+  
+  desactivar(id: number): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/admin/peticiones/${id}/desactivar`, {});
+    //                                         ↑ ID va ANTES de /desactivar
   }
 
-  desactivar(id: number): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/admin/peticiones/desactivar/${id}`, {});
-  }
   lista(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/peticiones/lista`);
   }
