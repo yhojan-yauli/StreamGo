@@ -32,19 +32,31 @@
 
         <div class="peticion-info">
           <h3>{{ item.titulo }}</h3>
-          <small>Próximamente en StreamGO</small>
-          <p>{{ item.descripcion || 'Contenido solicitado por la comunidad para futuros estrenos.' }}</p>
+              <small>Próximamente en StreamGO</small>
+
+              <p>
+                {{ item.descripcion || 'Contenido solicitado por la comunidad para futuros estrenos.' }}
+              </p>
+
+              <small class="votos">
+                ⭐ {{ item.cantidadVotos }} votos
+              </small>
         </div>
 
-        <button type="button"
-                class="btn-deseado"
-                [class.activo]="estaSeleccionada(item.id)"
-                [disabled]="votandoId === item.id"
-                (click)="elegirPeticion(item)">
-          <span *ngIf="votandoId !== item.id">
-            {{ estaSeleccionada(item.id) ? '✓' : '+' }}
-          </span>
-          <span *ngIf="votandoId === item.id">...</span>
+        <button
+            type="button"
+            class="btn-deseado"
+            [disabled]="votandoId === item.id"
+            (click)="elegirPeticion(item)">
+
+            <span *ngIf="votandoId !== item.id">
+                {{ item.votadoPorMi ? '✓' : '+' }}
+            </span>
+
+            <span *ngIf="votandoId === item.id">
+                ...
+            </span>
+
         </button>
       </article>
     </div>

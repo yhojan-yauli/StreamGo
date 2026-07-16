@@ -43,17 +43,25 @@ export class PeticionesAdmin implements OnInit {
 
   cargarRanking(): void {
     this.cargando = true;
+
     this.service.ranking().subscribe({
       next: data => {
-        this.ranking = Array.isArray(data) ? [...data] : [];
+
+        this.ranking = Array.isArray(data)
+          ? data.filter(item => item.totalVotos > 0)
+          : [];
+
         this.cargando = false;
         this.cdr.detectChanges();
       },
+
       error: err => {
         console.error(err);
+
         this.ranking = [];
         this.cargando = false;
         this.error = 'No se pudo cargar el ranking.';
+
         this.cdr.detectChanges();
       }
     });
@@ -90,18 +98,30 @@ export class PeticionesAdmin implements OnInit {
     this.cdr.detectChanges();
   }
 
-  editar(item: any): void {
-    this.modoEdicion = true;
-    this.peticionId = item.contenidoVotableId;
-    this.form = {
-      titulo: item.titulo || '',
-      descripcion: item.descripcion || '',
-      posterUrl: item.posterUrl || '',
-      imagenUrl: item.imagenUrl || ''
-    };
-    this.modalVisible = true;
-    this.cdr.detectChanges();
+editar(item: any): void {
+  // ✅ Busca el ID en cualquier propiedad posible
+  const id = item.contenidoVotableId || item.id || item.peticionId || item.contenidoId;
+  
+  console.log('✏️ Editando item:', item);
+  console.log('🆔 ID encontrado:', id);
+  
+  if (!id) {
+    console.error('❌ No se encontró ID en el objeto:', item);
+    this.error = 'Error: No se puede identificar la petición.';
+    return;
   }
+
+  this.modoEdicion = true;
+  this.peticionId = id;
+  this.form = {
+    titulo: item.titulo || '',
+    descripcion: item.descripcion || '',
+    posterUrl: item.posterUrl || '',
+    imagenUrl: item.imagenUrl || ''
+  };
+  this.modalVisible = true;
+  this.cdr.detectChanges();
+}
 
   cerrar(): void {
     this.modalVisible = false;
@@ -145,25 +165,35 @@ export class PeticionesAdmin implements OnInit {
     });
   }
 
-  desactivar(item: any): void {
-    if (!item?.contenidoVotableId || !confirm(`¿Desactivar "${item.titulo}"?`)) {
-      return;
-    }
-
-    this.service.desactivar(item.contenidoVotableId).subscribe({
-      next: () => {
-        this.mensaje = 'Petición desactivada.';
-        this.cargarRanking();       // 👈 Recarga ranking
-        this.cargarListaCompleta(); // 👈 Recarga lista completa
-        this.cdr.detectChanges();
-      },
-      error: err => {
-        console.error(err);
-        this.error = 'No se pudo desactivar.';
-        this.cdr.detectChanges();
-      }
-    });
+desactivar(item: any): void {
+  // ✅ Busca el ID en cualquier propiedad posible
+  const id = item.contenidoVotableId || item.id || item.peticionId || item.contenidoId;
+  
+  if (!id) {
+    console.error('❌ No se encontró ID para desactivar:', item);
+    return;
   }
+
+  if (!confirm(`¿Seguro que quieres desactivar "${item.titulo}"?`)) {
+    return;
+  }
+
+  console.log(`🗑️ Desactivando ID: ${id}`);
+  
+  this.service.desactivar(id).subscribe({
+    next: () => {
+      this.mensaje = 'Petición desactivada.';
+      this.cargarRanking();
+      this.cargarListaCompleta();
+      this.cdr.detectChanges();
+    },
+    error: err => {
+      console.error('❌ Error al desactivar:', err);
+      this.error = 'No se pudo desactivar la petición.';
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   porcentaje(votos: number): number {
     const max = Math.max(...this.ranking.map(x => Number(x.totalVotos || 0)), 1);

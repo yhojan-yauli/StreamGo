@@ -206,22 +206,103 @@
   }
 }
 
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(125, 90, 255, .45);
+  border-radius: 12px;
+  background: rgba(12, 16, 30, .9);
+  cursor: pointer;
+  z-index: 150;
+
+  span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 2px;
+    transition: transform .3s ease, opacity .3s ease;
+  }
+
+  &.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  &.active span:nth-child(2) {
+    opacity: 0;
+  }
+  &.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .navbar-cliente nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    flex-direction: column;
+    background: rgba(10, 14, 26, .96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(125, 90, 255, .15);
+    padding: 12px 16px;
+    gap: 4px;
+    z-index: 140;
+  }
+
+  .navbar-cliente nav.mobile-open {
+    display: flex;
+  }
+
+  .navbar-cliente nav a {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-cliente nav a:hover {
+    background: rgba(255, 255, 255, .06);
+  }
+
+  .avatar-dropdown {
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    border: 1px solid rgba(125, 90, 255, .15);
+    margin-top: 4px;
+  }
+
+  .dropdown-menu::before {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .navbar-cliente {
     position: relative;
     min-height: auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
     padding: 12px;
   }
 
   .logo-cliente {
     width: 140px;
-  }
-
-  .navbar-cliente nav {
-    flex-wrap: wrap;
-    justify-content: center;
   }
 }

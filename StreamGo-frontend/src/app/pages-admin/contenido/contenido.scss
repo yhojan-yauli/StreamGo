@@ -3,7 +3,7 @@
 .sg-table td strong { display: block; margin-bottom: 6px; }
 .sg-table td small { display: block; max-width: 290px; color: #b9b9c8; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
-.acciones button { border: none; border-radius: 9px; padding: 8px 12px; color: white; font-size: 12px; font-weight: 700; }
+.acciones button { border: none; border-radius: 9px; padding: 8px 12px; min-height: 44px; color: white; font-size: 12px; font-weight: 700; }
 .btn-edit { background: rgba(255,204,102,.22); border: 1px solid rgba(255,204,102,.35) !important; }
 .btn-delete { background: rgba(255,79,109,.22); border: 1px solid rgba(255,79,109,.35) !important; }
 .btn-disable { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.20) !important; }
@@ -86,4 +86,7 @@
   .media-row { grid-template-columns: 1fr; }
   .form-row-3 { grid-template-columns: 1fr 1fr; }
   .w-step-line { width: 20px; }
+  .form-row { grid-template-columns: 1fr; }
+  .modal-header-custom h2 { font-size: 14px; }
+  .w-step-label { font-size: 11px; }
 }

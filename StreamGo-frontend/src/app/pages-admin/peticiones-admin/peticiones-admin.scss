@@ -52,6 +52,7 @@
 .acciones button {
   border-radius: 9px;
   padding: 8px 12px;
+  min-height: 44px;
   color: white;
   font-size: 12px;
   font-weight: 700;
@@ -170,5 +171,16 @@
 
   .rank-img {
     margin: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-custom {
+    width: 98%;
+    max-width: none;
   }
 }
