@@ -1,24 +1,42 @@
 <app-navbar-client></app-navbar-client>
 
 <main class="repro-page">
-  <!-- ===== SECCIÓN PRINCIPAL ===== -->
   <section class="repro-grid">
     <!-- VIDEO -->
     <div class="video-container">
+      <!-- BLOQUEO POR SUSCRIPCIÓN -->
+      <div class="suscripcion-block" *ngIf="mostrarMensajeSuscripcion">
+        <div class="block-icon">🔒</div>
+        <h2>Contenido exclusivo para suscriptores</h2>
+        <p>{{ error || 'Este contenido requiere una suscripción activa para poder reproducirse.' }}</p>
+        <div class="block-actions">
+          <button type="button" class="btn-primary" routerLink="/client/planes">
+            Ver planes disponibles
+          </button>
+          <button type="button" class="btn-secondary" (click)="verificarSuscripcionYReproducir()">
+            Verificar suscripción
+          </button>
+        </div>
+        <p class="block-help">Si ya tienes una suscripción activa, haz clic en "Verificar" para actualizar tu estado.</p>
+      </div>
+
+      <!-- VIDEO PLAYER -->
       <app-video-player 
+        #videoPlayer
+        *ngIf="mostrarVideo"
         [videoUrl]="videoUrl" 
         [titulo]="titulo()">
       </app-video-player>
       
-      <!-- MENSAJE DE ERROR / CARGA -->
-      <div class="video-status" *ngIf="cargando">
+      <div class="video-status" *ngIf="cargando && !mostrarMensajeSuscripcion">
         <span class="spinner"></span>
         <p>Cargando contenido...</p>
       </div>
-      <div class="video-status error" *ngIf="error">
+      
+      <div class="video-status error" *ngIf="error && !mostrarMensajeSuscripcion">
         <span>⚠️</span>
         <p>{{ error }}</p>
-        <button type="button" class="btn-retry" (click)="reproducir()">Reintentar</button>
+        <button type="button" class="btn-retry" (click)="verificarSuscripcionYReproducir()">Reintentar</button>
       </div>
     </div>
 
@@ -29,35 +47,81 @@
         <span class="badge-categoria">{{ categoria() }}</span>
       </div>
       
+      <div class="suscripcion-indicator" *ngIf="contenidoEsActivo">
+        <span class="badge-suscripcion" [class.activo]="tieneSuscripcion">
+          {{ tieneSuscripcion ? '✅ Suscripción activa' : '🔒 Requiere suscripción' }}
+        </span>
+        <span class="horas-restantes" *ngIf="tieneSuscripcion">
+          {{ horasRestantes }}h restantes
+        </span>
+      </div>
+      
       <div class="meta-video">
         <span class="meta-tag">{{ tipoContenido() }}</span>
-        <span class="meta-tag">⭐ {{ promedioCalificacion() }}</span>
-        <span class="meta-tag">▶ {{ totalReproducciones() }}</span>
+        <span class="meta-tag">⭐ {{ calificacionPromedio | number:'1.1-1' }}</span>
+        <span class="meta-tag">{{ totalCalificaciones }} calificaciones</span>
       </div>
       
       <p class="descripcion">{{ descripcion() }}</p>
       
       <div class="info-actions">
         <button type="button" class="btn-mas" (click)="irAHome()">Ver más contenido</button>
+        <button type="button" class="btn-planes" *ngIf="!tieneSuscripcion" routerLink="/client/planes">
+          🎯 Adquirir plan
+        </button>
+        <button type="button" class="btn-calificar" (click)="abrirModalCalificacion()">
+          ⭐ Calificar
+        </button>
         <span class="info-circle">i</span>
       </div>
     </aside>
   </section>
 
-  <!-- ===== RELACIONADOS ===== -->
+  <!-- MODAL CALIFICACIÓN -->
+  <div class="modal-backdrop" *ngIf="mostrarModalCalificacion" (click)="cerrarModalCalificacion()">
+    <div class="modal-calificacion" (click)="$event.stopPropagation()">
+      <button type="button" class="cerrar-modal" (click)="cerrarModalCalificacion()">✕</button>
+      <h2>Calificar contenido</h2>
+      <p>{{ titulo() }}</p>
+      
+      <div class="estrellas-container">
+        <span 
+          *ngFor="let star of estrellas" 
+          class="estrella" 
+          [class.activa]="star <= calificacionUsuario"
+          (click)="calificacionUsuario = star">
+          ★
+        </span>
+      </div>
+      
+      <textarea 
+        [(ngModel)]="comentarioUsuario" 
+        placeholder="Escribe un comentario (opcional)"
+        class="comentario-input"></textarea>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-cancelar" (click)="cerrarModalCalificacion()">Cancelar</button>
+        <button type="button" class="btn-enviar" [disabled]="calificando || !calificacionUsuario" (click)="enviarCalificacion()">
+          {{ calificando ? 'Guardando...' : 'Calificar' }}
+        </button>
+      </div>
+      
+      <div class="error-text" *ngIf="error">{{ error }}</div>
+    </div>
+  </div>
+
+  <!-- RELACIONADOS -->
   <section class="relacionados" *ngIf="relacionados.length > 0 || cargandoRelacionados">
     <div class="relacionados-header">
       <h2>Relacionados</h2>
       <span class="relacionados-count">{{ relacionados.length }} contenido(s)</span>
     </div>
 
-    <!-- LOADING RELACIONADOS -->
     <div class="relacionados-loading" *ngIf="cargandoRelacionados">
       <span class="spinner-small"></span>
       <p>Cargando relacionados...</p>
     </div>
 
-    <!-- GRID RELACIONADOS -->
     <div class="relacionados-grid" *ngIf="!cargandoRelacionados">
       <article 
         class="relacionado-card" 
@@ -74,10 +138,11 @@
         <div class="card-info">
           <h3>{{ item.titulo }}</h3>
           <span class="card-categoria">{{ item.categoria || 'StreamGO' }}</span>
+          <!-- Mostrar si requiere suscripción -->
+          <span class="card-badge" *ngIf="item.estado === 'ACTIVO'">🔒</span>
         </div>
       </article>
 
-      <!-- MENSAJE VACÍO -->
       <div class="relacionados-empty" *ngIf="relacionados.length === 0 && !cargandoRelacionados">
         <p>No hay contenido relacionado disponible.</p>
         <button type="button" class="btn-mas" (click)="irAHome()">Explorar más</button>

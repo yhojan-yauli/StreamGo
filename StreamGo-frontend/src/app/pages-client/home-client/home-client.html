@@ -76,7 +76,9 @@
           <div>
             <strong>{{ item.titulo }}</strong>
             <small>{{ item.categoria || 'Contenido' }}</small>
-            <div class="progress"><span [style.width.%]="item.completado ? 100 : 35"></span></div>
+            <div class="progress">
+              <span [style.width.%]="item.completado ? 100 : (item.progresoSegundos ? (item.progresoSegundos / 5400 * 100) : 20)"></span>
+            </div>
           </div>
         </article>
       </div>

@@ -62,4 +62,12 @@ export class ContenidoClienteService {
   miSuscripcion(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/cliente/suscripciones/mi-suscripcion`);
   }
+
+  actualizarProgreso(contenidoId: number, progreso: number, completado?: boolean): Observable<any> {
+    let url = `${this.apiUrl}/reproduccion/${contenidoId}/progreso?progreso=${progreso}`;
+    if (completado !== undefined) {
+      url += `&completado=${completado}`;
+    }
+    return this.http.patch<any>(url, {});
+  }
 }

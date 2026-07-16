@@ -57,6 +57,38 @@
   }
 }
 
+.vp-buffer-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2;
+  color: #b9b9c8;
+  
+  .vp-buffer-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(123, 76, 255, 0.15);
+    border-top-color: #7b4cff;
+    border-radius: 50%;
+    animation: spin 0.8s ease-in-out infinite;
+  }
+  
+  .vp-buffer-percent {
+    font-size: 14px;
+    font-weight: 600;
+    color: #a78bfa;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .vp-controls-overlay {
   position: absolute;
   bottom: 0;
@@ -73,11 +105,15 @@
   }
 }
 
+/* ===== BARRA DE PROGRESO CON BUFFER CIRCULAR ===== */
 .vp-progress-wrap {
   position: relative;
   height: 6px;
   margin-bottom: 8px;
   cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
 
   .vp-progress {
     position: absolute;
@@ -86,7 +122,7 @@
     height: 6px;
     appearance: none;
     background: transparent;
-    z-index: 2;
+    z-index: 3;
     cursor: pointer;
     outline: none;
 
@@ -131,6 +167,24 @@
     border-radius: 3px;
     pointer-events: none;
     transition: width .1s linear;
+    z-index: 2;
+  }
+
+  /* BUFFER SEGMENTOS (CIRCULAR / SOMBRA) */
+  .vp-buffer-segments {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .vp-buffer-segment {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    transition: none;
   }
 }
 
@@ -171,8 +225,70 @@
     color: #fff;
   }
 
+  &.active {
+    color: #7d5aff;
+    background: rgba(125, 90, 255, .15);
+  }
+
   svg {
     display: block;
+  }
+}
+
+/* ===== CALIDAD ===== */
+.vp-quality-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vp-quality-btn {
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 6px;
+  width: auto;
+  
+  .vp-quality-label {
+    min-width: 32px;
+    text-align: center;
+  }
+}
+
+.vp-quality-menu {
+  position: absolute;
+  bottom: 40px;
+  right: 0;
+  background: rgba(10, 14, 26, 0.95);
+  border: 1px solid rgba(125, 90, 255, 0.3);
+  border-radius: 8px;
+  padding: 6px 0;
+  min-width: 80px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  
+  button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #b9b9c8;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: rgba(125, 90, 255, 0.15);
+      color: #fff;
+    }
+    
+    &.active {
+      color: #a78bfa;
+      font-weight: 600;
+    }
   }
 }
 
@@ -273,6 +389,15 @@
 
   .vp-volume {
     width: 40px;
+  }
+  
+  .vp-quality-btn .vp-quality-label {
+    display: none;
+  }
+  
+  .vp-quality-menu {
+    min-width: 70px;
+    right: -10px;
   }
 }
 
