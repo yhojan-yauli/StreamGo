@@ -5,13 +5,11 @@
   <section class="hero-section">
     <h1 class="titulo-cliente">{{ tituloPagina }}</h1>
 
-    <!-- BUSCADOR -->
     <div class="buscador-centro">
       <input class="search-cliente" type="text" placeholder="Buscar" (input)="buscar($event)">
       <span>⌕</span>
     </div>
 
-    <!-- CATEGORÍAS (chips) -->
     <div class="categorias-cliente">
       <span 
         *ngFor="let categoria of categorias" 
@@ -21,7 +19,6 @@
       </span>
     </div>
 
-    <!-- TABS: RECOMENDADOS | TENDENCIAS -->
     <div class="tabs-contenido">
       <button 
         type="button" 
@@ -37,12 +34,13 @@
       </button>
     </div>
 
-    <!-- CARRUSEL CURVO (FORMA V) -->
+    <!-- CARRUSEL CURVO -->
     <section class="carousel-u" (wheel)="moverConScroll($event)">
       <button type="button" class="carousel-arrow arrow-left" (click)="moverManual(-1)">‹</button>
 
       <article 
         class="carousel-card" 
+        [class.premium-glow]="item.estado === 'ACTIVO'"
         *ngFor="let item of obtenerVisibles(); let i = index" 
         [ngClass]="'pos-' + i" 
         (click)="verContenido(item)">
@@ -55,7 +53,6 @@
 
     <p class="titulo-card-centro">{{ tituloCentro }}</p>
 
-    <!-- INDICADOR SCROLL -->
     <div class="scroll-indicator">
       <span>Desplázate para más contenido</span>
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -67,12 +64,17 @@
   <!-- ===== SECCIÓN INFERIOR ===== -->
   <section class="categorias-section" id="categorias-section">
     
-    <!-- HISTORIAL - PRIMERO EN LA SECCIÓN INFERIOR -->
+    <!-- HISTORIAL -->
     <section class="historial-preview" *ngIf="historial.length > 0">
       <h3>Continuar viendo</h3>
       <div class="historial-grid">
-        <article class="historial-card" *ngFor="let item of historial" (click)="verContenido(item)">
-          <img [src]="imagen(item)" [alt]="item.titulo" loading="lazy">
+        <article class="historial-card" 
+          [class.premium-glow]="item.estado === 'ACTIVO'"
+          *ngFor="let item of historial" 
+          (click)="verContenido(item)">
+          <div class="historial-img-wrap">
+            <img [src]="imagen(item)" [alt]="item.titulo" loading="lazy">
+          </div>
           <div>
             <strong>{{ item.titulo }}</strong>
             <small>{{ item.categoria || 'Contenido' }}</small>
@@ -84,9 +86,9 @@
       </div>
     </section>
 
-    <!-- CARRUSELES POR CATEGORÍA -->
-    <div class="carousels-wrapper" *ngIf="!buscando && categoriaActual === 'Todas'">
-      <section class="carrusel-seccion" *ngFor="let carousel of carousels">
+    <!-- CARRUSELES POR CATEGORÍA (MOSAICOS FILTRADOS) -->
+    <div class="carousels-wrapper" *ngIf="!buscando && carouselsFiltrados.length > 0">
+      <section class="carrusel-seccion" *ngFor="let carousel of carouselsFiltrados">
         <h2 class="carrusel-titulo">{{ carousel.categoria }}</h2>
         <div class="carrusel-track">
           <button type="button" class="carousel-arrow arrow-left" (click)="moverManualCategoria(-1, carousel)" [class.hidden]="carousel.itemsFiltrados.length <= 1">
@@ -94,7 +96,10 @@
           </button>
           <div class="carrusel-viewport">
             <div class="carrusel-slider" [style.transform]="getTransform(carousel)" [class.no-transition]="carousel.sinTransicion">
-              <article class="carousel-card-plano" *ngFor="let item of carousel.itemsFiltrados" (click)="verContenido(item)">
+              <article class="carousel-card-plano" 
+                [class.premium-glow]="item.estado === 'ACTIVO'"
+                *ngFor="let item of carousel.itemsFiltrados" 
+                (click)="verContenido(item)">
                 <img [src]="imagen(item)" [alt]="item.titulo || 'contenido'" loading="lazy">
                 <div class="card-play">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">

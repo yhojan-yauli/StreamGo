@@ -19,6 +19,7 @@ export class VideoPlayer implements OnChanges, OnDestroy {
 
   @Input() videoUrl: string = '';
   @Input() titulo: string = '';
+  @Input() showAds: boolean = false;
 
   tipo: PlayerType = 'none';
   safeUrl: SafeResourceUrl | null = null;
@@ -43,6 +44,14 @@ export class VideoPlayer implements OnChanges, OnDestroy {
   private isUserSeeking = false;
   private qualityObserver: any = null;
   isPipActive = false;
+
+  // Control para evitar múltiples toggles
+  private togglePlayLock = false;
+
+  // Control para evitar pausas por eventos de mouse
+  private mouseDownPos = { x: 0, y: 0 };
+  private isDragging = false;
+  private readonly DRAG_THRESHOLD = 10;
 
   ngOnChanges(): void {
     this.iniciar();
@@ -97,7 +106,7 @@ export class VideoPlayer implements OnChanges, OnDestroy {
       this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
     } else if (this.esVideoDirecto(this.videoUrlFinal)) {
       this.tipo = 'directo';
-      this.cargando = true;
+      this.cargando = true; // Mostrar carga mientras se prepara el video
       this.iniciarObserverCalidad();
     } else {
       this.tipo = 'none';
@@ -158,7 +167,8 @@ export class VideoPlayer implements OnChanges, OnDestroy {
   onVideoInit(video: HTMLVideoElement): void {
     if (!video) return;
     this.videoEl = video;
-    this.cargando = true;
+    // No poner cargando = true aquí, ya se puso en iniciar()
+    // Dejamos que los eventos decidan
     this.duration = video.duration || 0;
     video.addEventListener('loadedmetadata', this.onMetadata);
     video.addEventListener('timeupdate', this.onTimeUpdate);
@@ -192,7 +202,9 @@ export class VideoPlayer implements OnChanges, OnDestroy {
 
   private onPlay = (): void => {
     this.isPlaying = true;
+    this.cargando = false; // Ocultar carga al empezar a reproducir
     this.iniciarHideTimer();
+    if (this.showAds) this.lanzarAdInterstitial();
     this.cdr.detectChanges();
   };
 
@@ -200,6 +212,7 @@ export class VideoPlayer implements OnChanges, OnDestroy {
     this.isPlaying = false;
     if (this.hideTimer) clearTimeout(this.hideTimer);
     this.controlsVisible = true;
+    if (this.showAds) this.lanzarAdInterstitial();
     this.cdr.detectChanges();
   };
 
@@ -244,20 +257,73 @@ export class VideoPlayer implements OnChanges, OnDestroy {
   };
 
   private onStalled = (): void => {
-    if (this.videoEl && this.videoEl.paused) {
+    // Si el video se detiene por falta de datos, mostrar carga
+    this.cargando = true;
+    this.cdr.detectChanges();
+    // Intentar reanudar si estaba reproduciendo
+    if (this.videoEl && this.videoEl.paused && this.isPlaying) {
       this.videoEl.play().catch(() => {});
     }
   };
 
+  private lanzarAdInterstitial(): void {
+    const existing = document.querySelector('script[src*="61fd325f5078c89a8ace03e289873ed7"]');
+    if (existing) existing.remove();
+
+    const script = document.createElement('script');
+    script.src = 'https://pl30384311.effectivecpmnetwork.com/61/fd/32/61fd325f5078c89a8ace03e289873ed7.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    setTimeout(() => {
+      if (script.parentNode) script.remove();
+    }, 5000);
+  };
+
+  // ===== TOGGLE PLAY CON BLOQUEO Y CONTROL DE ARRASTRE =====
   togglePlay(): void {
     if (!this.videoEl) return;
+    if (this.togglePlayLock) return;
+    this.togglePlayLock = true;
+    setTimeout(() => { this.togglePlayLock = false; }, 200);
+
     if (this.videoEl.paused || this.videoEl.ended) {
-      this.videoEl.play();
+      this.videoEl.play().catch(() => {});
     } else {
       this.videoEl.pause();
     }
   }
 
+  // ===== CONTROL DE ARRASTRE PARA EVITAR PAUSAS ACCIDENTALES =====
+  onMouseDown(event: MouseEvent): void {
+    this.mouseDownPos.x = event.clientX;
+    this.mouseDownPos.y = event.clientY;
+    this.isDragging = false;
+  }
+
+  onMouseUp(event: MouseEvent): void {
+    const dx = event.clientX - this.mouseDownPos.x;
+    const dy = event.clientY - this.mouseDownPos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    // Solo toggle si no hubo arrastre significativo
+    if (distance < this.DRAG_THRESHOLD && !this.isDragging) {
+      this.togglePlay();
+    }
+    this.isDragging = false;
+  }
+
+  onMouseMove(event: MouseEvent): void {
+    const dx = event.clientX - this.mouseDownPos.x;
+    const dy = event.clientY - this.mouseDownPos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance > this.DRAG_THRESHOLD) {
+      this.isDragging = true;
+    }
+    // Mostrar controles al mover el ratón
+    this.showControls();
+  }
+
+  // ===== SEEK =====
   seek(event: Event): void {
     if (!this.videoEl) return;
     const target = event.target as HTMLInputElement;

@@ -50,7 +50,6 @@ export class ReproducirClient implements OnInit, OnDestroy {
     this.route.paramMap.subscribe(params => {
       const nuevoId = Number(params.get('id'));
       
-      // Si el ID cambió, limpiar estado anterior
       if (this.contenidoId !== nuevoId) {
         this.limpiarEstado();
         this.contenidoId = nuevoId;
@@ -86,11 +85,9 @@ export class ReproducirClient implements OnInit, OnDestroy {
     if (guardado) {
       try {
         const parsed = JSON.parse(guardado);
-        // Si el contenido guardado tiene el mismo ID, usarlo
         if (parsed?.id === this.contenidoId) {
           this.contenido = parsed;
         } else {
-          // Si no coincide, buscar en la lista de relacionados o cargar desde el servicio
           const encontrado = this.relacionados.find(r => r.id === this.contenidoId);
           if (encontrado) {
             this.contenido = encontrado;
@@ -111,7 +108,6 @@ export class ReproducirClient implements OnInit, OnDestroy {
   }
 
   verificarSuscripcionYReproducir(): void {
-    // Si no hay contenidoId, error
     if (!this.contenidoId) {
       this.error = 'Contenido no válido.';
       return;
@@ -121,7 +117,6 @@ export class ReproducirClient implements OnInit, OnDestroy {
     this.error = '';
     this.bloqueadoPorSuscripcion = false;
 
-    // Si no tenemos el contenido, intentar obtenerlo del servicio
     if (!this.contenido) {
       this.contenidoService.listar().subscribe({
         next: (data) => {
@@ -138,7 +133,6 @@ export class ReproducirClient implements OnInit, OnDestroy {
           }
         },
         error: () => {
-          // Si falla, usar lo que tenemos en el contenido
           this.continuarVerificacion();
         }
       });
@@ -148,13 +142,11 @@ export class ReproducirClient implements OnInit, OnDestroy {
   }
 
   continuarVerificacion(): void {
-    // Verificar suscripción
     this.suscripcionService.verificarSuscripcion().subscribe({
       next: (data) => {
         this.tieneSuscripcion = data?.horasRestantes > 0;
         this.horasRestantes = data?.horasRestantes || 0;
 
-        // Verificar si el contenido requiere suscripción
         if (this.contenidoEsActivo && !this.tieneSuscripcion) {
           this.bloqueadoPorSuscripcion = true;
           this.error = 'Este contenido requiere una suscripción activa. Adquiere un plan para verlo.';
@@ -163,7 +155,6 @@ export class ReproducirClient implements OnInit, OnDestroy {
           return;
         }
 
-        // Si no requiere suscripción o tiene suscripción, reproducir
         this.reproducir();
       },
       error: () => {
@@ -297,7 +288,6 @@ export class ReproducirClient implements OnInit, OnDestroy {
   cargarRelacionados(): void {
     this.cargandoRelacionados = true;
     
-    // Usar el contenido actual para buscar relacionados
     const categoria = this.contenido?.categoria;
     
     if (categoria) {
@@ -374,11 +364,7 @@ export class ReproducirClient implements OnInit, OnDestroy {
 
   verRelacionado(item: any): void {
     if (!item?.id) return;
-    
-    // Guardar el contenido relacionado en localStorage
     localStorage.setItem('clientContenido', JSON.stringify(item));
-    
-    // Navegar al nuevo contenido - esto activará ngOnInit nuevamente
     this.router.navigate(['/client/reproducir', item.id]);
   }
 

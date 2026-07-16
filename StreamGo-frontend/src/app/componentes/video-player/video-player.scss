@@ -335,24 +335,7 @@
   user-select: none;
 }
 
-.vp-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  color: #b9b9c8;
-  font-size: 14px;
-  background: rgba(0, 0, 0, .6);
-  z-index: 1;
-
-  svg {
-    animation: vp-spin 1.2s linear infinite;
-    opacity: .5;
-  }
-}
+/* ELIMINADO: .vp-loading (ya no se usa) */
 
 .vp-empty {
   position: absolute;

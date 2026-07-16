@@ -6,7 +6,7 @@
     <div class="video-container">
       <!-- BLOQUEO POR SUSCRIPCIÓN -->
       <div class="suscripcion-block" *ngIf="mostrarMensajeSuscripcion">
-        <div class="block-icon">🔒</div>
+        <div class="block-icon premium-icon"></div>
         <h2>Contenido exclusivo para suscriptores</h2>
         <p>{{ error || 'Este contenido requiere una suscripción activa para poder reproducirse.' }}</p>
         <div class="block-actions">
@@ -20,7 +20,7 @@
         <p class="block-help">Si ya tienes una suscripción activa, haz clic en "Verificar" para actualizar tu estado.</p>
       </div>
 
-      <!-- VIDEO PLAYER -->
+      <!-- VIDEO PLAYER (ya maneja su propia carga) -->
       <app-video-player 
         #videoPlayer
         *ngIf="mostrarVideo"
@@ -28,12 +28,10 @@
         [titulo]="titulo()">
       </app-video-player>
       
-      <div class="video-status" *ngIf="cargando && !mostrarMensajeSuscripcion">
-        <span class="spinner"></span>
-        <p>Cargando contenido...</p>
-      </div>
+      <!-- ELIMINADO: video-status (ya no es necesario, el video player maneja su carga) -->
       
-      <div class="video-status error" *ngIf="error && !mostrarMensajeSuscripcion">
+      <!-- Solo mostramos un error general si el reproductor falla (opcional) -->
+      <div class="video-status error" *ngIf="error && !mostrarMensajeSuscripcion && !mostrarVideo">
         <span>⚠️</span>
         <p>{{ error }}</p>
         <button type="button" class="btn-retry" (click)="verificarSuscripcionYReproducir()">Reintentar</button>
@@ -49,7 +47,7 @@
       
       <div class="suscripcion-indicator" *ngIf="contenidoEsActivo">
         <span class="badge-suscripcion" [class.activo]="tieneSuscripcion">
-          {{ tieneSuscripcion ? '✅ Suscripción activa' : '🔒 Requiere suscripción' }}
+          {{ tieneSuscripcion ? 'Suscripción activa' : 'Requiere suscripción' }}
         </span>
         <span class="horas-restantes" *ngIf="tieneSuscripcion">
           {{ horasRestantes }}h restantes
@@ -67,10 +65,10 @@
       <div class="info-actions">
         <button type="button" class="btn-mas" (click)="irAHome()">Ver más contenido</button>
         <button type="button" class="btn-planes" *ngIf="!tieneSuscripcion" routerLink="/client/planes">
-          🎯 Adquirir plan
+          Adquirir plan
         </button>
         <button type="button" class="btn-calificar" (click)="abrirModalCalificacion()">
-          ⭐ Calificar
+          Calificar
         </button>
         <span class="info-circle">i</span>
       </div>
@@ -125,6 +123,7 @@
     <div class="relacionados-grid" *ngIf="!cargandoRelacionados">
       <article 
         class="relacionado-card" 
+        [class.premium-glow]="item.estado === 'ACTIVO'"
         *ngFor="let item of relacionados" 
         (click)="verRelacionado(item)">
         <div class="card-image">

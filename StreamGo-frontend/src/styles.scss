@@ -228,6 +228,7 @@ button {
   color: var(--sg-muted);
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   body {
     background-attachment: scroll;
@@ -242,4 +243,97 @@ button {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ==========================================================
+   GLOW PREMIUM - FILTER DROP-SHADOW (no se recorta con overflow)
+   ========================================================== */
+
+.premium-glow {
+  position: relative;
+  border: 1.5px solid rgba(251, 191, 36, 0.3) !important;
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.15));
+  transition: filter 0.3s ease, border-color 0.3s ease;
+  animation: premiumPulse 2.5s ease-in-out infinite;
+}
+
+.premium-glow:hover {
+  border-color: rgba(251, 191, 36, 0.7) !important;
+  filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.4));
+}
+
+@keyframes premiumPulse {
+  0%, 100% {
+    border-color: rgba(251, 191, 36, 0.3);
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.15));
+  }
+  50% {
+    border-color: rgba(251, 191, 36, 0.6);
+    filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.35));
+  }
+}
+
+/* Versión más sutil para el historial */
+.historial-card.premium-glow {
+  border-color: rgba(251, 191, 36, 0.25) !important;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.1));
+  animation: premiumPulseSmall 2.5s ease-in-out infinite;
+}
+
+.historial-card.premium-glow:hover {
+  border-color: rgba(251, 191, 36, 0.5) !important;
+  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.25));
+}
+
+@keyframes premiumPulseSmall {
+  0%, 100% {
+    border-color: rgba(251, 191, 36, 0.25);
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.1));
+  }
+  50% {
+    border-color: rgba(251, 191, 36, 0.45);
+    filter: drop-shadow(0 0 14px rgba(251, 191, 36, 0.2));
+  }
+}
+
+/* Versión más intensa para el carrusel central */
+.carousel-card.premium-glow.pos-2 {
+  border-color: rgba(251, 191, 36, 0.4) !important;
+  filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.2));
+  animation: premiumPulseCentral 2.5s ease-in-out infinite;
+}
+
+.carousel-card.premium-glow.pos-2:hover {
+  border-color: rgba(251, 191, 36, 0.8) !important;
+  filter: drop-shadow(0 0 40px rgba(251, 191, 36, 0.4));
+}
+
+@keyframes premiumPulseCentral {
+  0%, 100% {
+    border-color: rgba(251, 191, 36, 0.4);
+    filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.2));
+  }
+  50% {
+    border-color: rgba(251, 191, 36, 0.7);
+    filter: drop-shadow(0 0 35px rgba(251, 191, 36, 0.4));
+  }
+}
+
+/* Icono premium para el bloque de suscripción (sin emojis) */
+.suscripcion-block .premium-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E") no-repeat center;
+  mask-size: contain;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M2 17l10 5 10-5'/%3E%3Cpath d='M2 12l10 5 10-5'/%3E%3C/svg%3E") no-repeat center;
+  -webkit-mask-size: contain;
+  background-color: #fbbf24;
+  animation: premiumIconPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes premiumIconPulse {
+  0% { filter: drop-shadow(0 0 10px rgba(251,191,36,0.3)); }
+  100% { filter: drop-shadow(0 0 30px rgba(251,191,36,0.6)); }
 }
