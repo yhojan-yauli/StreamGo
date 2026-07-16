@@ -1,235 +1,317 @@
-# 🎬 Plataforma de StreamGo
+<div align="center">
 
-Proyecto para el curso de Integrador  
+# StreamGo
 
-StreamGo es una plataforma de streaming desarrollada con Spring Boot que permite la gestión de usuarios, contenido multimedia, suscripciones, pagos y votaciones.
+### Plataforma de Streaming
 
-El proyecto implementa arquitectura REST, seguridad con JWT y documentación con Swagger, permitiendo la administración completa del sistema por roles (CLIENTE y ADMIN).
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Angular](https://img.shields.io/badge/Angular-21-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.dev/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#)
 
----
+<br>
 
-# 🎯 Objetivo del Sistema
+Plataforma de streaming desarrollada como proyecto integrador de Ingenieria de Software.
 
-Desarrollar una plataforma de streaming con:
+Administra contenido multimedia, suscripciones, pagos y una comunidad activa con sistema de votaciones y noticias.
 
-- Gestión de usuarios por roles  
-- Control de contenido multimedia  
-- Sistema de suscripciones  
-- Pagos simulados  
-- Sistema de votaciones (contenido futuro)  
-- Noticias internas  
-- Seguridad con JWT  
-- API documentada profesionalmente  
-
----
----
-
-
-## 🚀 Tecnologías utilizadas
-
-### 🔹 Frontend (Se considera migrar a angular)
-- Html5  
-- js
-- css
-- Autenticación con JWT  
-
-### 🔹 Backend
-- Spring Boot  
-- Spring Security  
-- JWT + OAuth2 (Google)  
-- JPA / Hibernate  
-
-### 🔹 Base de datos
-- MySQL  
+</div>
 
 ---
 
-## 📁 Estructura del proyecto
+## Arquitectura del Sistema
 
-plataforma-de-streaming/
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENTE                                   │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐   │
+│  │  Navegador │  │   Móvil   │  │  Tablet   │  │  Smart TV │   │
+│  └─────┬─────┘  └─────┬─────┘  └─────┬─────┘  └─────┬─────┘   │
+└────────┼───────────────┼───────────────┼───────────────┼─────────┘
+         │               │               │               │
+         └───────────────┴───────┬───────┴───────────────┘
+                                 │ HTTPS
+                    ┌────────────▼────────────┐
+                    │    FRONTEND (Angular)    │
+                    │   Angular 21 + TS 5.9   │
+                    │    Deploy: Netlify       │
+                    └────────────┬────────────┘
+                                 │ REST API
+                    ┌────────────▼────────────┐
+                    │   BACKEND (Spring Boot)  │
+                    │   Java 21 + Spring 4.0   │
+                    │   JWT + OAuth2 + Swagger │
+                    │    Deploy: Render        │
+                    └────────────┬────────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                   │
+     ┌────────▼────────┐ ┌──────▼──────┐  ┌────────▼────────┐
+     │   MySQL 8.0     │ │  MercadoPago│  │   Google OAuth2  │
+     │   Base de datos  │ │  Pagos      │  │   Autenticacion  │
+     └─────────────────┘ └─────────────┘  └─────────────────┘
+```
+
+---
+
+## Funcionalidades
+
+### Visitante (sin cuenta)
+
+| Funcion | Descripcion |
+|---------|-------------|
+| Ver contenido publico | Peliculas y series disponibles sin registro |
+| Reproducir contenido | Player con control de calidad, volumen y pantalla completa |
+| Buscar contenido | Busqueda por titulo, categoria y tipo |
+| Ver noticias | Noticias y novedades de la plataforma |
+| Registrarse | Crear cuenta nueva o vincular con Google |
+
+### Cliente (suscriptor)
+
+| Funcion | Descripcion |
+|---------|-------------|
+| Dashboard personalizado | Contenido recomendado segun suscripcion |
+| Reproducir contenido completo | Acceso a todo el catalogo segun plan |
+| Sistema de votaciones | Proponer y votar contenido futuro |
+| Historial de reproduccion | Registro de todo lo visto |
+| Gestionar suscripcion | Ver plan actual, cambiar o cancelar |
+| Noticias interactivas | Comentar y reaccionar a noticias |
+| Mi cuenta | Editar perfil y datos personales |
+
+### Administrador
+
+| Funcion | Descripcion |
+|---------|-------------|
+| Dashboard con metricas | Resumen de usuarios, contenido y suscripciones |
+| Gestion de contenido | CRUD completo con subida de archivos multimedia |
+| Gestion de usuarios | Administrar estados y roles |
+| Gestion de planes | Crear, editar y eliminar planes de suscripcion |
+| Gestion de suscripciones | Ver y administrar suscripciones activas |
+| Gestion de noticias | Publicar, fijar y administrar noticias |
+| Gestion de peticiones | Administrar votaciones y contenido propuesto |
+| Historial del sistema | Registro completo de actividad |
+
+---
+
+## Tecnologias
+
+### Backend
+
+| Componente | Tecnologia | Version |
+|------------|-----------|---------|
+| Framework | Spring Boot | 4.0.6 |
+| Lenguaje | Java | 21 |
+| Seguridad | Spring Security + JWT | - |
+| OAuth2 | Google Login | - |
+| ORM | Spring Data JPA / Hibernate | - |
+| Base de datos | MySQL | 8.0 |
+| Pagos | MercadoPago SDK | 2.1.28 |
+| Documentacion | SpringDoc OpenAPI (Swagger) | 3.0.2 |
+| Build | Gradle (Kotlin DSL) | - |
+| Contenedor | Docker | - |
+
+### Frontend
+
+| Componente | Tecnologia | Version |
+|------------|-----------|---------|
+| Framework | Angular | 21.2 |
+| Lenguaje | TypeScript | 5.9 |
+| Estilos | SCSS + Tailwind CSS | 4.3 |
+| UI Components | Bootstrap | 5.3 |
+| Routing | Angular Router | - |
+| HTTP | Angular HttpClient + Interceptor JWT | - |
+| Build | Angular CLI | 21.2 |
+
+---
+
+## Estructura del Proyecto
+
+```
+StreamGo/
+├── StreamGo-backend/                    # API REST
+│   └── src/main/java/com/StreamGo/
+│       ├── config/                      # Configuracion general
+│       ├── controller/                  # 22 controladores REST
+│       │   ├── AuthController.java      # Autenticacion
+│       │   ├── ContenidoAdminController.java
+│       │   ├── ReproduccionController.java
+│       │   └── ...
+│       ├── dto/                         # Data Transfer Objects
+│       │   ├── request/                 # DTOs de entrada
+│       │   └── response/                # DTOs de salida
+│       ├── entity/                      # Entidades JPA (12)
+│       │   ├── Usuario.java
+│       │   ├── Contenido.java
+│       │   ├── Plan.java
+│       │   └── ...
+│       ├── repository/                  # Repositorios JPA
+│       ├── security/                    # JWT + Filtros
+│       └── service/                     # Logica de negocio (15)
 │
-├── Backend-Streaming/     # API REST (Spring Boot)
-├── Frontend-Streaming/    # Frontend (Html5 + Js)
+├── StreamGo-frontend/                   # Aplicacion Angular
+│   └── src/app/
+│       ├── componentes/                 # Componentes reutilizables
+│       │   ├── ad-banner/              # Sistema de publicidad
+│       │   ├── video-player/           # Player multimedia custom
+│       │   ├── navbar-public/          # Navegacion publica
+│       │   ├── navbar-client/          # Navegacion cliente
+│       │   ├── sidebar-admin/          # Panel administrativo
+│       │   └── ui/                     # Componentes UI genericos
+│       ├── guards/                      # AuthGuard, RoleGuard, PublicGuard
+│       ├── interceptors/               # JWT Interceptor
+│       ├── models/                      # Modelos TypeScript
+│       ├── pages-public/               # Paginas publicas (5)
+│       ├── pages-client/               # Paginas cliente (7)
+│       ├── pages-admin/                # Paginas admin (7)
+│       └── services/                   # Servicios API (16)
+│
+├── docker-compose.yml                   # Orquestacion Docker
 └── README.md
+```
 
 ---
 
-## ⚙️ Requisitos previos
+## Endpoints Principales
 
-Antes de ejecutar el proyecto, asegúrate de tener instalado:
+### Autenticacion
 
-- Java 17 o superior  
-- Node.js (v18 o superior)  
-- MySQL  
-- Git  
+| Metodo | Endpoint | Descripcion |
+|--------|----------|-------------|
+| POST | `/auth/login` | Iniciar sesion |
+| POST | `/auth/register` | Registrar usuario |
+| GET | `/auth/google-init` | Login con Google |
+| GET | `/auth/google-callback` | Callback OAuth2 |
 
----
+### Contenido
 
-## ▶️ Instalación y ejecución
+| Metodo | Endpoint | Acceso |
+|--------|----------|--------|
+| GET | `/public/contenidos` | Publico |
+| POST | `/public/reproduccion/{id}` | Publico |
+| GET | `/contenidos/suscriptor` | Cliente |
+| POST | `/reproduccion/{id}` | Cliente |
+| GET/POST/PUT/DELETE | `/admin/contenidos/**` | Admin |
 
-### 1️⃣ Clonar el repositorio
+### Suscripciones y Pagos
 
-git clone https://github.com/yhojan-yauli/StreamGo.git  
-cd StreamGo
+| Metodo | Endpoint | Acceso |
+|--------|----------|--------|
+| GET | `/public/planes` | Publico |
+| GET | `/cliente/planes` | Cliente |
+| POST | `/payments/create` | Cliente |
+| GET | `/cliente/suscripciones/mi-suscripcion` | Cliente |
 
----
+### Mas endpoints documentados en Swagger UI
 
-## 🧠 Backend (Spring Boot)
-
-### 🔧 Configuración
-
-1. Crear la base de datos en MySQL:
-
-CREATE DATABASE streamgo;
-
-2. Configurar credenciales en:
-
-Backend-Streaming/src/main/resources/application.properties
-
-Ejemplo:
-
-spring.datasource.url=jdbc:mysql://localhost:3306/streamgo  
-spring.datasource.username=TU_USUARIO  
-spring.datasource.password=TU_PASSWORD  
-
-spring.jpa.hibernate.ddl-auto=update  
-spring.jpa.show-sql=true  
+Acceder a: `http://localhost:8080/swagger-ui.html`
 
 ---
 
-### ▶️ Ejecutar backend
+## Instalacion
 
-cd Streamgo-backend 
-./gradlew bootRun  
+### Requisitos
 
-El backend se ejecutará en:  
-http://localhost:8080  
+- Java 21+
+- Node.js 18+
+- npm 11+
+- MySQL 8.0+
+- Git
 
----
+### Backend
 
-## 🎨 Frontend (Html + JS)
+```bash
+# Clonar
+git clone https://github.com/yhojan-yauli/StreamGo.git
+cd StreamGo/StreamGo-backend
 
-### ▶️ Instalación
+# Configurar base de datos
+# Editar src/main/resources/application.properties
 
-cd Frontend-Streaming  
-npm install  
+# Crear base de datos
+mysql -u root -p -e "CREATE DATABASE streamgo"
 
----
+# Ejecutar
+./gradlew bootRun
+```
 
-### ▶️ Ejecutar frontend
- 
+El backend estara disponible en: `http://localhost:8080`
 
-El frontend se ejecutará con index.html mediante server-live (navegador)
+### Frontend
 
----
+```bash
+cd StreamGo/StreamGo-frontend
 
-## 🔐 Autenticación
+# Instalar dependencias
+npm install
 
-El sistema incluye:
+# Ejecutar en desarrollo
+ng serve
 
-- Login con usuario y contraseña (JWT)  
-- Login con Google (OAuth2)  
-- Manejo de roles:
-  - Usuario  
-  - Administrador  
+# Build para produccion
+ng build --configuration production
+```
 
----
+El frontend estara disponible en: `http://localhost:4200`
 
-## 📌 Funcionalidades principales
+### Docker
 
-- Visualización de contenido multimedia  
-- Sistema de valoraciones y comentarios  
-- Recomendaciones personalizadas  
-- Gestión de suscripciones  
-- Panel administrativo  
-
----
-
-## ⚠️ Notas importantes
-
-- Ejecutar primero el backend antes del frontend  
-- Verificar que los puertos 8080 estén libres  
-- Configurar correctamente la base de datos  
+```bash
+docker-compose up -d
+```
 
 ---
 
-## 💡 Diagrama Casos de Uso
-<p align="center"><img src="casos de uso.png"></p>
+## Seguridad
+
+- **JWT**: Tokens de acceso con expiracion configurable
+- **Roles**: CLIENTE y ADMIN con endpoints protegidos por `RoleGuard`
+- **OAuth2**: Login con Google como metodo alternativo
+- **Interceptors**: El frontend envia automaticamente el token en cada peticion
+- **CORS**: Configurado para desarrollo y produccion
 
 ---
 
+## Publicidad
 
-## 👤 ROL: VISITANTE
+El reproductor publico integra anuncios de **Adsterra**:
 
-| Código | Caso de Uso | Responsable | Estado | Avance | Evidencia | Descripción |
-|--------|-------------|--------------|--------|--------|------------|-------------|
-| CU-01 | Ver contenido público | Frans | Completado | 100% | http://localhost:8080/reproduccion-public-controller | Permite visualizar contenido gratuito sin autenticación |
-| CU-02 | Buscar contenido público | Frans | En proceso | 80% | En desarrollo | Permite buscar contenido disponible sin login |
-| CU-03 | Ver noticias | Bryan | Completado | 100% | http://localhost:8080/noticias | Visualización de noticias públicas |
-
----
-
-## 👤 ROL: CLIENTE
-
-| Código | Caso de Uso | Responsable | Estado | Avance | Evidencia | Descripción |
-|--------|-------------|--------------|--------|--------|------------|-------------|
-| CU-04 | Registro de usuario | Yhojan | Completado | 100% | http://localhost:8080/auth/register | Registro de nuevos usuarios |
-| CU-05 | Inicio de sesión | Yhojan | Completado | 100% | http://localhost:8080/auth/login | Autenticación de usuarios |
-| CU-07 | Ver noticias | Bryan | Completado | 100% | http://localhost:8080/noticias | Visualización de noticias publicadas |
-| CU-08 | Buscar contenido | Frans | En proceso | 100% | http://localhost:8080/reproduccion-public-controller/reproducirPublico | Búsqueda de contenido según tipo de cuenta |
-| CU-09 | Votar en sistema SP | Levi | En proceso | 90% | http://localhost:8080/peticion | Votación de películas para futuros contenidos |
-| CU-10 | Ver lista SP | Levi | Completado | 100% | — | Visualización de lista de votación |
-| CU-11 | Ver planes | Yhojan | Completado | 100% | http://localhost:8080/planes | Consulta de planes disponibles |
-| CU-12 | Filtrar por categorías | Frans | Completado | 100% | http://localhost:8080/contenido-cliente-controller/listarPorCategoria | Filtrado de contenido por categoría |
-| CU-13 | Ver recomendados | Frans | Completado | 100% | http://localhost:8080/contenido-cliente-controller/listarRecomendados | Recomendaciones personalizadas |
-| CU-14 | Ver plan actual | Yhojan | Completado | 100% | http://localhost:8080/cliente/suscripciones/mi-suscripcion | Consulta de suscripción activa |
-| CU-15 | Pago simulado | Yhojan | Completado | 100% | http://localhost:8080/payments/create | Procesamiento de pago |
-| CU-18 | Reproducir contenido | Frans | Completado | 100% | — | Reproducción de contenido por ID |
-| CU-22 | Ver catálogo | Frans | Completado | 100% | — | Visualización de catálogo completo |
+- **Banners en sidebar**: Componente `AdBannerComponent` reutilizable
+- **Anuncio interstitial**: Se ejecuta en cada play/pause del video
+- **Configuracion**: Los scripts de Adsterra se definen en `reproducir-publico.ts`
 
 ---
 
-## 👨‍💼 ROL: ADMINISTRADOR
+## Deployment
 
-| Código | Caso de Uso | Responsable | Estado | Avance | Evidencia | Descripción |
-|--------|-------------|--------------|--------|--------|------------|-------------|
-| CU-23 | Crear contenido | Frans | Completado | 100% | — | Registro de nuevo contenido |
-| CU-24 | Actualizar contenido | Frans | Completado | 100% | — | Edición de contenido existente |
-| CU-25 | Eliminar contenido | Frans | Completado | 100% | — | Eliminación de contenido por ID |
-| CU-26 | Listar contenido | Frans | Completado | 100% | — | Visualización de todo el contenido |
-| CU-27 | Ver usuarios | Yhojan | Completado | 100% | http://localhost:8080/admin/clientes | Gestión de usuarios |
-| CU-28 | Crear planes | Yhojan | Completado | 100% | http://localhost:8080/admin/planes | Creación de planes |
-| CU-29 | Eliminar planes | Yhojan | Completado | 100% | http://localhost:8080/admin/planes/{id} | Eliminación de planes |
-| CU-30 | Actualizar planes | Yhojan | Completado | 100% | http://localhost:8080/admin/planes/{id} | Modificación de planes |
-| CU-31 | Ver planes | Yhojan | Completado | 100% | http://localhost:8080/admin/planes | Listado de planes |
-| CU-32 | Crear noticias | Bryan | Completado | 100% | http://localhost:8080/noticias | Registro de noticias |
-| CU-33 | Eliminar noticias | Bryan | Completado | 100% | http://localhost:8080/noticias/{idPost} | Eliminación de noticias |
-| CU-34 | Actualizar noticias | Bryan | Completado | 100% | http://localhost:8080/noticias/{idPost} | Edición de noticias |
-| CU-35 | Noticias ordenadas | Bryan | Completado | 100% | http://localhost:8080/noticias/ordenadas | Ordenamiento de noticias |
-| CU-36 | Fijar noticias | Bryan | Completado | 100% | http://localhost:8080/noticias/{idPost}/fijar | Destacar noticias |
-| CU-37 | Ver pagos | Yhojan | Completado | 100% | — | Visualización de pagos realizados |
-| CU-38 | Crear votación SP | Levi | Completado | 100% | — | Generación de votaciones |
-| CU-39 | Actualizar SP | Levi | Completado | 100% | — | Modificación de listas SP |
-| CU-40 | Desactivar SP | Levi | Completado | 100% | — | Desactivación de contenido |
-| CU-41 | Ver ranking | Levi | Completado | 100% | — | Ranking de votaciones |
-| CU-42 | Login admin | Yhojan | Completado | 100% | http://localhost:8080/auth/login | Acceso de administrador |
-| CU-43 | Ver historial | Frans | Completado | 100% | http://localhost:8080/historial/obtenerhistorial | Historial del sistema |
-| CU-44 | Noticias por autor | Bryan | Completado | 100% | http://localhost:8080/noticias/autor/{idAutor} | Filtrado por autor |
-| CU-45 | Noticias por usuario | Bryan | Completado | 100% | http://localhost:8080/noticias/usuario/{idUsuario} | Filtrado por usuario |
-| CU-46 | Reaccionar noticia | Bryan | Completado | 100% | http://localhost:8080/noticias/{idPost}/reaccionar | Reacciones a noticias |
+| Servicio | Componente | URL |
+|----------|-----------|-----|
+| Render | Backend (Spring Boot) | `https://streamgo-backend-3ex8.onrender.com` |
+| Netlify | Frontend (Angular) | `https://streamgoaqp.netlify.app` |
 
 ---
 
+## Diagrama de Casos de Uso
 
-## 👨‍💻 Autor
+<p align="center"><img src="casos de uso.png" alt="Diagrama de Casos de Uso" width="800"></p>
 
-**Yhojan Yauli** 
+---
 
-**levi**
+## Equipo de Desarrollo
 
-**frans**
+| Nombre | Rol | GitHub |
+|--------|-----|--------|
+| **Yhojan Yauli** | Full Stack - Backend & Frontend | [@yhojan-yauli](https://github.com/yhojan-yauli) |
+| **Levi** | Backend - Peticiones & Votaciones | - |
+| **Frans** | Backend - Contenido & Reproduccion | - |
+| **Bryan** | Backend - Noticias & Comunidad | - |
+| **Cristian** | Backend - Soporte | - |
 
-**cristian**
-****
-**  ** 
-Proyecto académico – Ingeniería de Software  
+---
+
+## Licencia
+
+Proyecto academico - Ingenieria de Software
+
+Universidad Tecnologica del Peru (UTP)
