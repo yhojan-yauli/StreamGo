@@ -34,7 +34,6 @@ public class CalificacionService {
             String email,
             CalificacionRequest request
     ) {
-
         log.debug("Iniciando proceso de calificación. Usuario: {}, Contenido ID: {}, Puntaje: {}", 
                 email, contenidoId, request.getPuntaje());
 
@@ -58,7 +57,6 @@ public class CalificacionService {
                 .orElse(null);
 
         if (calificacion == null) {
-
             log.debug("Creando nueva calificación para el usuario {} en el contenido {}", 
                     email, contenido.getTitulo());
 
@@ -69,9 +67,7 @@ public class CalificacionService {
                     .comentario(request.getComentario())
                     .fechaCalificacion(LocalDateTime.now())
                     .build();
-
         } else {
-
             log.debug("Actualizando calificación existente. Puntaje anterior: {}, Nuevo puntaje: {}", 
                     calificacion.getPuntaje(), request.getPuntaje());
 
@@ -105,13 +101,40 @@ public class CalificacionService {
                 .mensaje("Calificación registrada correctamente")
                 .build();
     }
-/**
- * Recalcula el promedio de calificación de un contenido.
- *
- * @param contenido contenido al que se le actualiza el promedio.
- */
-    private void actualizarPromedio(Contenido contenido) {
 
+    public CalificacionResponse obtenerCalificacionUsuario(Long contenidoId, String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Contenido contenido = contenidoRepository.findById(contenidoId)
+                .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+
+        CalificacionContenido calificacion = calificacionRepository
+                .findByUsuarioAndContenido(usuario, contenido)
+                .orElse(null);
+
+        if (calificacion == null) {
+            return CalificacionResponse.builder()
+                    .contenidoId(contenidoId)
+                    .titulo(contenido.getTitulo())
+                    .promedioCalificacion(contenido.getPromedioCalificacion())
+                    .totalCalificaciones(contenido.getTotalCalificaciones())
+                    .mensaje("Aún no has calificado este contenido")
+                    .build();
+        }
+
+        return CalificacionResponse.builder()
+                .contenidoId(contenido.getId())
+                .titulo(contenido.getTitulo())
+                .puntaje(calificacion.getPuntaje())
+                .comentario(calificacion.getComentario())
+                .promedioCalificacion(contenido.getPromedioCalificacion())
+                .totalCalificaciones(contenido.getTotalCalificaciones())
+                .mensaje("Calificación encontrada")
+                .build();
+    }
+
+    private void actualizarPromedio(Contenido contenido) {
         log.debug("Actualizando promedio de calificaciones para contenido: {}", contenido.getTitulo());
 
         List<CalificacionContenido> calificaciones =
