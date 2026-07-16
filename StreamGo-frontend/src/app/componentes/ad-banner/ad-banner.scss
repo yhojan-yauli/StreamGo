@@ -1,0 +1,28 @@
+.ad-banner-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(10, 15, 30, .30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+
+  :host ::ng-deep {
+    iframe {
+      max-width: 100%;
+      border: none;
+      border-radius: 12px;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+    }
+
+    div[id^="container-"] {
+      width: 100%;
+    }
+  }
+}
