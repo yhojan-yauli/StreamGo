@@ -42,6 +42,10 @@ export class HomeClient implements OnInit, OnDestroy {
 
   carousels: CarouselData[] = [];
 
+  private scrollTimeout: any = null;
+  private scrollCooldown = false;
+  private readonly SCROLL_COOLDOWN_MS = 300;
+
   ngOnInit(): void {
     this.cargarContenidoCliente();
     this.cargarHistorial();
@@ -50,6 +54,9 @@ export class HomeClient implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     clearInterval(this.autoCarousel);
     this.carousels.forEach(c => clearInterval(c.autoTimer));
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
   }
 
   cargarContenidoCliente(): void {
@@ -84,6 +91,7 @@ export class HomeClient implements OnInit, OnDestroy {
     this.tendencias = [...this.contenidos].reverse();
 
     this.tipoActual = 'recomendados';
+    this.categoriaActual = 'Todas';
     this.carouselCurvoLista = [...this.recomendados];
     this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
     this.actualizarTituloCentro();
@@ -123,9 +131,19 @@ export class HomeClient implements OnInit, OnDestroy {
   // === CARRUSEL CURVO ===
   seleccionarTipo(tipo: 'recomendados' | 'tendencias'): void {
     this.tipoActual = tipo;
-    this.categoriaActual = 'Todas';
-    this.tituloPagina = 'Inicio';
-    this.carouselCurvoLista = tipo === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+    
+    // MANTENER la categoría actual, no resetear a 'Todas'
+    this.tituloPagina = this.categoriaActual === 'Todas' ? 'Inicio' : 'Categorías';
+    
+    // Obtener la lista según el tipo
+    let listaBase = tipo === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+    
+    // Si hay una categoría seleccionada (que no sea 'Todas'), filtrar
+    if (this.categoriaActual !== 'Todas') {
+      listaBase = listaBase.filter(item => item.categoria === this.categoriaActual);
+    }
+    
+    this.carouselCurvoLista = listaBase;
     this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
     this.actualizarTituloCentro();
     this.iniciarAutoCarousel();
@@ -137,33 +155,28 @@ export class HomeClient implements OnInit, OnDestroy {
     this.tituloPagina = categoria === 'Todas' ? 'Inicio' : 'Categorías';
     this.cargando = true;
 
-    if (categoria === 'Todas') {
-      this.carouselCurvoLista = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
-      this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
-      this.actualizarTituloCentro();
-      this.cargando = false;
-      this.iniciarAutoCarousel();
-      this.cdr.detectChanges();
-      return;
-    }
-
-    this.contenidoService.porCategoria(categoria).subscribe({
-      next: (data) => {
-        this.carouselCurvoLista = Array.isArray(data) ? [...data] : [];
-        this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
-        this.actualizarTituloCentro();
-        this.cargando = false;
-        this.iniciarAutoCarousel();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error por categoría:', err);
+    // Obtener la lista base según el tipo actual
+    let listaBase = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+    
+    // Filtrar por categoría si no es 'Todas'
+    if (categoria !== 'Todas') {
+      listaBase = listaBase.filter(item => item.categoria === categoria);
+      // Si no hay resultados, mostrar mensaje
+      if (listaBase.length === 0) {
         this.carouselCurvoLista = [];
-        this.tituloCentro = 'Sin contenido';
+        this.tituloCentro = 'Sin contenido en esta categoría';
         this.cargando = false;
         this.cdr.detectChanges();
+        return;
       }
-    });
+    }
+    
+    this.carouselCurvoLista = listaBase;
+    this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
+    this.actualizarTituloCentro();
+    this.cargando = false;
+    this.iniciarAutoCarousel();
+    this.cdr.detectChanges();
   }
 
   obtenerVisibles(): any[] {
@@ -180,12 +193,26 @@ export class HomeClient implements OnInit, OnDestroy {
 
   moverConScroll(event: WheelEvent): void {
     event.preventDefault();
+    if (this.scrollCooldown) return;
     if (!this.carouselCurvoLista.length) return;
-    this.indiceCentro += event.deltaY > 0 ? 1 : -1;
+    
+    const delta = event.deltaY;
+    const threshold = 15;
+    if (Math.abs(delta) < threshold) return;
+    
+    const direccion = delta > 0 ? 1 : -1;
+    this.indiceCentro += direccion;
     this.normalizarIndiceCurvo();
     this.actualizarTituloCentro();
     this.iniciarAutoCarousel();
     this.cdr.detectChanges();
+    
+    this.scrollCooldown = true;
+    if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
+    this.scrollTimeout = setTimeout(() => {
+      this.scrollCooldown = false;
+      this.scrollTimeout = null;
+    }, this.SCROLL_COOLDOWN_MS);
   }
 
   moverManual(direccion: number): void {
@@ -267,7 +294,15 @@ export class HomeClient implements OnInit, OnDestroy {
 
   verContenido(item: any): void {
     if (!item?.id) return;
-    localStorage.setItem('clientContenido', JSON.stringify(item));
+    let contenidoCompleto = this.contenidos.find(c => c.id === item.id);
+    if (!contenidoCompleto) {
+      contenidoCompleto = this.recomendados.find(c => c.id === item.id);
+    }
+    if (!contenidoCompleto) {
+      contenidoCompleto = this.tendencias.find(c => c.id === item.id);
+    }
+    const dataAGuardar = contenidoCompleto || item;
+    localStorage.setItem('clientContenido', JSON.stringify(dataAGuardar));
     this.router.navigate(['/client/reproducir', item.id]);
   }
 
@@ -277,14 +312,21 @@ export class HomeClient implements OnInit, OnDestroy {
     this.tituloPagina = texto ? 'Resultados' : 'Inicio';
 
     clearInterval(this.autoCarousel);
+    
     if (!texto) {
-      this.carouselCurvoLista = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+      // Restaurar según tipo y categoría actual
+      let listaBase = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
+      if (this.categoriaActual !== 'Todas') {
+        listaBase = listaBase.filter(item => item.categoria === this.categoriaActual);
+      }
+      this.carouselCurvoLista = listaBase;
       this.iniciarAutoCarousel();
     } else {
       this.carouselCurvoLista = this.contenidos.filter(item =>
         item.titulo?.toLowerCase().includes(texto)
       );
     }
+    
     this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
     this.actualizarTituloCentro();
 
@@ -301,6 +343,7 @@ export class HomeClient implements OnInit, OnDestroy {
       }
       this.normalizarIndiceCategoria(carousel);
     }
+    
     if (!texto) {
       for (const carousel of this.carousels) {
         this.iniciarAutoCategoria(carousel);
@@ -320,7 +363,15 @@ export class HomeClient implements OnInit, OnDestroy {
   cargarHistorial(): void {
     this.contenidoService.historial().subscribe({
       next: (data) => {
-        this.historial = Array.isArray(data) ? [...data].slice(0, 4) : [];
+        if (Array.isArray(data) && data.length > 0) {
+          const historialCompleto = data.map(item => {
+            const completo = this.contenidos.find(c => c.id === item.contenidoId);
+            return completo || item;
+          });
+          this.historial = historialCompleto.slice(0, 4);
+        } else {
+          this.historial = [];
+        }
         this.cdr.detectChanges();
       },
       error: () => {

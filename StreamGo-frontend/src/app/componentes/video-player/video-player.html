@@ -22,9 +22,26 @@
       <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     </div>
 
+    <div class="vp-buffer-indicator" *ngIf="cargando && !isPlaying">
+      <span class="vp-buffer-spinner"></span>
+      <span>Cargando video...</span>
+      <span class="vp-buffer-percent" *ngIf="bufferedPercent > 0">{{ bufferedPercent | number:'1.0-0' }}%</span>
+    </div>
+
     <div class="vp-controls-overlay" [class.visible]="controlsVisible">
       <div class="vp-progress-wrap">
+        <!-- BARRA DE BUFFER CIRCULAR (MULTIPLES SEGMENTOS) -->
+        <div class="vp-buffer-segments">
+          <div 
+            *ngFor="let segment of getBufferedSegments()" 
+            class="vp-buffer-segment" 
+            [style.left]="segment.left" 
+            [style.width]="segment.width">
+          </div>
+        </div>
+        
         <input type="range" class="vp-progress" min="0" max="100" [value]="progress" (input)="seek($event)">
+        
         <div class="vp-progress-fill" [style.width.%]="progress"></div>
       </div>
 
@@ -47,6 +64,25 @@
         </div>
 
         <div class="vp-controls-right">
+          <!-- CALIDAD -->
+          <div class="vp-quality-wrapper">
+            <button type="button" class="vp-btn vp-quality-btn" (click)="toggleQualityMenu()" title="Calidad">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              <span class="vp-quality-label">{{ getCurrentQualityLabel() }}</span>
+            </button>
+            <div class="vp-quality-menu" *ngIf="showQualityMenu">
+              <button *ngFor="let level of qualityLevels" (click)="setQualityLevel(level)" [class.active]="currentQuality === level">
+                {{ level }}
+              </button>
+            </div>
+          </div>
+
+          <!-- PIP (FLOTANTE) -->
+          <button type="button" class="vp-btn" (click)="togglePip()" [class.active]="isPipActive" title="Modo flotante">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M16 13h5v6h-5z"/><path d="M13 8l6-6"/><path d="M19 2h-4"/><path d="M19 2v4"/></svg>
+          </button>
+
+          <!-- FULLSCREEN -->
           <button type="button" class="vp-btn" (click)="toggleFullscreen()" title="Pantalla completa">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           </button>
