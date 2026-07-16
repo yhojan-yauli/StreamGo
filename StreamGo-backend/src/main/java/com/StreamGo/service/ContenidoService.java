@@ -219,8 +219,8 @@ public class ContenidoService {
      * Lista contenidos para un usuario autenticado según su estado y suscripción.
      *
      * Reglas:
-     * - Usuario ACTIVO o con suscripción activa: ve ACTIVO, INACTIVO y SINLOGIN.
-     * - Usuario INACTIVO: ve INACTIVO y SINLOGIN.
+     * - Usuario con suscripción activa: ve ACTIVO, INACTIVO y SINLOGIN.
+     * - Usuario sin suscripción: ve INACTIVO y SINLOGIN.
      * - Usuario SUSPENDIDO: no visualiza contenidos.
      *
      * @param email correo del usuario autenticado.
@@ -235,9 +235,10 @@ public class ContenidoService {
             throw new RuntimeException("Tu cuenta se encuentra suspendida");
         }
 
-        boolean accesoTotal = usuario.getEstado() == EstadoUsuario.ACTIVO || tieneSuscripcionActiva(usuario);
+        // VERIFICAR SUSCRIPCIÓN ACTIVA (SOLO LECTURA, SIN MODIFICAR ESTADO)
+        boolean tieneSuscripcion = suscripcionService.tieneSuscripcionActivaSoloLectura(usuario);
 
-        if (accesoTotal) {
+        if (tieneSuscripcion) {
             return listarParaClienteConSuscripcion();
         }
 

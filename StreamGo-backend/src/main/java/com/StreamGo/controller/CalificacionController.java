@@ -7,12 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-/**
- * Controlador encargado de gestionar las calificaciones de contenido.
- *
- * Permite que los usuarios autenticados califiquen películas
- * o contenidos disponibles en la plataforma.
- */
+
 @RestController
 @RequestMapping("/calificaciones")
 @RequiredArgsConstructor
@@ -33,14 +28,26 @@ public class CalificacionController {
             @RequestBody CalificacionRequest request,
             Authentication authentication
     ) {
-
         String email = authentication.getName();
-
         return ResponseEntity.ok(
                 calificacionService.calificarContenido(
                         contenidoId,
                         email,
                         request
+                )
+        );
+    }
+
+    @GetMapping("/{contenidoId}")
+    public ResponseEntity<CalificacionResponse> obtenerCalificacion(
+            @PathVariable("contenidoId") Long contenidoId,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(
+                calificacionService.obtenerCalificacionUsuario(
+                        contenidoId,
+                        email
                 )
         );
     }
