@@ -8,7 +8,7 @@
 
   <section class="public-player-layout">
     <div class="player-main">
-      <app-video-player [videoUrl]="videoUrl" [titulo]="titulo()"></app-video-player>
+      <app-video-player [videoUrl]="videoUrl" [titulo]="titulo()" [showAds]="true"></app-video-player>
 
       <div class="player-info">
         <h1>{{ titulo() }}</h1>
@@ -31,7 +31,6 @@
     <aside class="ads-right">
       <app-ad-banner [html]="ads[0]"></app-ad-banner>
       <app-ad-banner [html]="ads[1]"></app-ad-banner>
-      <app-ad-banner [html]="ads[2]"></app-ad-banner>
       <small>Publicidad</small>
     </aside>
   </section>

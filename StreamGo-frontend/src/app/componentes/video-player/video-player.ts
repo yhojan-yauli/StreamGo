@@ -19,6 +19,7 @@ export class VideoPlayer implements OnChanges, OnDestroy {
 
   @Input() videoUrl: string = '';
   @Input() titulo: string = '';
+  @Input() showAds: boolean = false;
 
   tipo: PlayerType = 'none';
   safeUrl: SafeResourceUrl | null = null;
@@ -193,6 +194,7 @@ export class VideoPlayer implements OnChanges, OnDestroy {
   private onPlay = (): void => {
     this.isPlaying = true;
     this.iniciarHideTimer();
+    if (this.showAds) this.lanzarAdInterstitial();
     this.cdr.detectChanges();
   };
 
@@ -200,6 +202,7 @@ export class VideoPlayer implements OnChanges, OnDestroy {
     this.isPlaying = false;
     if (this.hideTimer) clearTimeout(this.hideTimer);
     this.controlsVisible = true;
+    if (this.showAds) this.lanzarAdInterstitial();
     this.cdr.detectChanges();
   };
 
@@ -247,6 +250,20 @@ export class VideoPlayer implements OnChanges, OnDestroy {
     if (this.videoEl && this.videoEl.paused) {
       this.videoEl.play().catch(() => {});
     }
+  };
+
+  private lanzarAdInterstitial(): void {
+    const existing = document.querySelector('script[src*="61fd325f5078c89a8ace03e289873ed7"]');
+    if (existing) existing.remove();
+
+    const script = document.createElement('script');
+    script.src = 'https://pl30384311.effectivecpmnetwork.com/61/fd/32/61fd325f5078c89a8ace03e289873ed7.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    setTimeout(() => {
+      if (script.parentNode) script.remove();
+    }, 5000);
   };
 
   togglePlay(): void {
