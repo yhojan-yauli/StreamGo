@@ -45,6 +45,11 @@ export class VideoPlayer implements OnChanges, OnDestroy {
   private qualityObserver: any = null;
   isPipActive = false;
 
+  private togglePlayLock = false;
+  private mouseDownPos = { x: 0, y: 0 };
+  private isDragging = false;
+  private readonly DRAG_THRESHOLD = 10;
+
   ngOnChanges(): void {
     this.iniciar();
   }
@@ -159,7 +164,6 @@ export class VideoPlayer implements OnChanges, OnDestroy {
   onVideoInit(video: HTMLVideoElement): void {
     if (!video) return;
     this.videoEl = video;
-    this.cargando = true;
     this.duration = video.duration || 0;
     video.addEventListener('loadedmetadata', this.onMetadata);
     video.addEventListener('timeupdate', this.onTimeUpdate);
@@ -193,6 +197,7 @@ export class VideoPlayer implements OnChanges, OnDestroy {
 
   private onPlay = (): void => {
     this.isPlaying = true;
+    this.cargando = false;
     this.iniciarHideTimer();
     if (this.showAds) this.lanzarAdInterstitial();
     this.cdr.detectChanges();
@@ -247,7 +252,9 @@ export class VideoPlayer implements OnChanges, OnDestroy {
   };
 
   private onStalled = (): void => {
-    if (this.videoEl && this.videoEl.paused) {
+    this.cargando = true;
+    this.cdr.detectChanges();
+    if (this.videoEl && this.videoEl.paused && this.isPlaying) {
       this.videoEl.play().catch(() => {});
     }
   };
@@ -268,11 +275,41 @@ export class VideoPlayer implements OnChanges, OnDestroy {
 
   togglePlay(): void {
     if (!this.videoEl) return;
+    if (this.togglePlayLock) return;
+    this.togglePlayLock = true;
+    setTimeout(() => { this.togglePlayLock = false; }, 200);
+
     if (this.videoEl.paused || this.videoEl.ended) {
-      this.videoEl.play();
+      this.videoEl.play().catch(() => {});
     } else {
       this.videoEl.pause();
     }
+  }
+
+  onMouseDown(event: MouseEvent): void {
+    this.mouseDownPos.x = event.clientX;
+    this.mouseDownPos.y = event.clientY;
+    this.isDragging = false;
+  }
+
+  onMouseUp(event: MouseEvent): void {
+    const dx = event.clientX - this.mouseDownPos.x;
+    const dy = event.clientY - this.mouseDownPos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < this.DRAG_THRESHOLD && !this.isDragging) {
+      this.togglePlay();
+    }
+    this.isDragging = false;
+  }
+
+  onMouseMove(event: MouseEvent): void {
+    const dx = event.clientX - this.mouseDownPos.x;
+    const dy = event.clientY - this.mouseDownPos.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance > this.DRAG_THRESHOLD) {
+      this.isDragging = true;
+    }
+    this.showControls();
   }
 
   seek(event: Event): void {

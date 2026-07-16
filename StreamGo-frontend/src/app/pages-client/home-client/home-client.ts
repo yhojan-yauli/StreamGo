@@ -41,6 +41,7 @@ export class HomeClient implements OnInit, OnDestroy {
   autoCarousel: any;
 
   carousels: CarouselData[] = [];
+  carouselsFiltrados: CarouselData[] = [];
 
   private scrollTimeout: any = null;
   private scrollCooldown = false;
@@ -54,6 +55,7 @@ export class HomeClient implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     clearInterval(this.autoCarousel);
     this.carousels.forEach(c => clearInterval(c.autoTimer));
+    this.carouselsFiltrados.forEach(c => clearInterval(c.autoTimer));
     if (this.scrollTimeout) {
       clearTimeout(this.scrollTimeout);
     }
@@ -97,6 +99,7 @@ export class HomeClient implements OnInit, OnDestroy {
     this.actualizarTituloCentro();
 
     this.construirCarousels();
+    this.actualizarCarouselsFiltrados('Todas');
 
     this.cargando = false;
     this.iniciarAutoCarousel();
@@ -128,17 +131,33 @@ export class HomeClient implements OnInit, OnDestroy {
     }
   }
 
+  actualizarCarouselsFiltrados(categoria: string): void {
+    this.carouselsFiltrados.forEach(c => clearInterval(c.autoTimer));
+    this.carouselsFiltrados = [];
+
+    if (categoria === 'Todas') {
+      for (const carousel of this.carousels) {
+        const copia = { ...carousel, itemsFiltrados: [...carousel.itemsFiltrados], autoTimer: null as any };
+        this.carouselsFiltrados.push(copia);
+        this.iniciarAutoCategoria(copia);
+      }
+    } else {
+      const encontrado = this.carousels.find(c => c.categoria === categoria);
+      if (encontrado) {
+        const copia = { ...encontrado, itemsFiltrados: [...encontrado.itemsFiltrados], autoTimer: null as any };
+        this.carouselsFiltrados.push(copia);
+        this.iniciarAutoCategoria(copia);
+      }
+    }
+    this.cdr.detectChanges();
+  }
+
   // === CARRUSEL CURVO ===
   seleccionarTipo(tipo: 'recomendados' | 'tendencias'): void {
     this.tipoActual = tipo;
-    
-    // MANTENER la categoría actual, no resetear a 'Todas'
     this.tituloPagina = this.categoriaActual === 'Todas' ? 'Inicio' : 'Categorías';
     
-    // Obtener la lista según el tipo
     let listaBase = tipo === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
-    
-    // Si hay una categoría seleccionada (que no sea 'Todas'), filtrar
     if (this.categoriaActual !== 'Todas') {
       listaBase = listaBase.filter(item => item.categoria === this.categoriaActual);
     }
@@ -155,25 +174,16 @@ export class HomeClient implements OnInit, OnDestroy {
     this.tituloPagina = categoria === 'Todas' ? 'Inicio' : 'Categorías';
     this.cargando = true;
 
-    // Obtener la lista base según el tipo actual
     let listaBase = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
-    
-    // Filtrar por categoría si no es 'Todas'
     if (categoria !== 'Todas') {
       listaBase = listaBase.filter(item => item.categoria === categoria);
-      // Si no hay resultados, mostrar mensaje
-      if (listaBase.length === 0) {
-        this.carouselCurvoLista = [];
-        this.tituloCentro = 'Sin contenido en esta categoría';
-        this.cargando = false;
-        this.cdr.detectChanges();
-        return;
-      }
     }
-    
     this.carouselCurvoLista = listaBase;
     this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
     this.actualizarTituloCentro();
+
+    this.actualizarCarouselsFiltrados(categoria);
+
     this.cargando = false;
     this.iniciarAutoCarousel();
     this.cdr.detectChanges();
@@ -312,43 +322,35 @@ export class HomeClient implements OnInit, OnDestroy {
     this.tituloPagina = texto ? 'Resultados' : 'Inicio';
 
     clearInterval(this.autoCarousel);
-    
+    this.carouselsFiltrados.forEach(c => clearInterval(c.autoTimer));
+    this.carouselsFiltrados = [];
+
     if (!texto) {
-      // Restaurar según tipo y categoría actual
       let listaBase = this.tipoActual === 'recomendados' ? [...this.recomendados] : [...this.tendencias];
       if (this.categoriaActual !== 'Todas') {
         listaBase = listaBase.filter(item => item.categoria === this.categoriaActual);
       }
       this.carouselCurvoLista = listaBase;
       this.iniciarAutoCarousel();
+      this.actualizarCarouselsFiltrados(this.categoriaActual);
     } else {
       this.carouselCurvoLista = this.contenidos.filter(item =>
         item.titulo?.toLowerCase().includes(texto)
       );
-    }
-    
-    this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
-    this.actualizarTituloCentro();
-
-    for (const carousel of this.carousels) {
-      clearInterval(carousel.autoTimer);
-      if (!texto) {
-        const base = [...carousel.items];
-        carousel.itemsFiltrados = base.length > 4 ? [...base, ...base.slice(0, 4)] : base;
-      } else {
+      for (const carousel of this.carousels) {
         const filtrados = carousel.items.filter(item =>
           item.titulo?.toLowerCase().includes(texto)
         );
-        carousel.itemsFiltrados = filtrados.length > 4 ? [...filtrados, ...filtrados.slice(0, 4)] : filtrados;
-      }
-      this.normalizarIndiceCategoria(carousel);
-    }
-    
-    if (!texto) {
-      for (const carousel of this.carousels) {
-        this.iniciarAutoCategoria(carousel);
+        if (filtrados.length > 0) {
+          const conClones = filtrados.length > 4 ? [...filtrados, ...filtrados.slice(0, 4)] : filtrados;
+          const copia = { ...carousel, itemsFiltrados: conClones, autoTimer: null as any };
+          this.carouselsFiltrados.push(copia);
+          this.iniciarAutoCategoria(copia);
+        }
       }
     }
+    this.indiceCentro = this.carouselCurvoLista.length >= 3 ? 2 : 0;
+    this.actualizarTituloCentro();
     this.cdr.detectChanges();
   }
 
