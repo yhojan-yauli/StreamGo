@@ -3,11 +3,12 @@ import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavbarPublic } from '../../componentes/navbar-public/navbar-public';
 import { VideoPlayer } from '../../componentes/video-player/video-player';
+import { AdBannerComponent } from '../../componentes/ad-banner/ad-banner';
 import { ContenidoClienteService } from '../../services/contenido-cliente';
 
 @Component({
   selector: 'app-reproducir-publico',
-  imports: [CommonModule, NavbarPublic, VideoPlayer],
+  imports: [CommonModule, NavbarPublic, VideoPlayer, AdBannerComponent],
   templateUrl: './reproducir-publico.html',
   styleUrl: './reproducir-publico.scss',
 })
@@ -21,6 +22,12 @@ export class ReproducirPublico implements OnInit {
   reproduccion: any = null;
   cargando = false;
   error = '';
+
+  ads: string[] = [
+    `<script src="https://pl30384310.effectivecpmnetwork.com/cd/17/e5/cd17e5ac7ce9f02279764089f6a86fe1.js"></script>`,
+    `<script async="async" data-cfasync="false" src="https://pl30384314.effectivecpmnetwork.com/6a89cf9f67de75b12ebbeed3f2fac4a6/invoke.js"></script><div id="container-6a89cf9f67de75b12ebbeed3f2fac4a6"></div>`,
+    `<script>atOptions={'key':'e50c6ee07679c8c0d7b2da54b0069224','format':'iframe','height':60,'width':468,'params':{}};</script><script src="https://www.highperformanceformat.com/e50c6ee07679c8c0d7b2da54b0069224/invoke.js"></script>`,
+  ];
 
   ngOnInit(): void {
     this.contenidoId = Number(this.route.snapshot.paramMap.get('id'));
